@@ -1,0 +1,35 @@
+# Xcode
+.DS_Store
+build/
+DerivedData/
+xcuserdata/
+*.xcworkspace/
+*.xcuserstate
+
+# macOS
+*.DS_Store
+.AppleDouble
+.LSOverride
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Compiled files
+*.o
+*.obj
+*.so
+*.dylib
+*.a
+*.exe
+*.out
+
+# Metal shader binaries
+*.metallib
+*.air
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+
