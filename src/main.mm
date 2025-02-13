@@ -21,6 +21,10 @@ int main(int argc, const char * argv[]) {
         // シミュレーションループ
         for (int i = 0; i < 100; i++) {  // 100フレーム分実行
             [simulation update:0.016f];
+            if (i % 10 == 0) {  // 10ステップごとに出力
+                [simulation writeVTKFile:@"plasma_particles" forTimestep:i];
+                [simulation writeFieldVTKFile:@"plasma_field" forTimestep:i];
+            }
             NSLog(@"Frame %d completed", i);
         }
     }

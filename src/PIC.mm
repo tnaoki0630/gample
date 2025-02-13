@@ -1,7 +1,5 @@
-
 #import "PIC.h"
 
-// Metal Shaderコード
 static NSString *const kMetalShaderSource = @R"(
 #include <metal_stdlib>
 using namespace metal;
@@ -26,19 +24,20 @@ kernel void updateParticles(device Particle* particles [[buffer(0)]],
                           uint id [[thread_position_in_grid]]) {
     if (id >= particleCount) return;
     
-    Particle& p = particles[id];
+    // 参照ではなくポインタとして扱う
+    device Particle* p = &particles[id];
     
     // 最近接格子点からの電場を計算
-    uint2 gridPos = uint2(p.position);
+    uint2 gridPos = uint2(p->position);
     Field localField = fields[gridPos.y * uint(gridSize.x) + gridPos.x];
     
     // 運動方程式の解析
-    float2 acceleration = (p.charge / p.mass) * localField.value;
-    p.velocity += acceleration * deltaTime;
-    p.position += p.velocity * deltaTime;
+    float2 acceleration = (p->charge / p->mass) * localField.value;
+    p->velocity += acceleration * deltaTime;
+    p->position += p->velocity * deltaTime;
     
     // 周期的境界条件
-    p.position = fmod(p.position + gridSize, gridSize);
+    p->position = fmod(p->position + gridSize, gridSize);
 }
 
 // 電場計算カーネル
@@ -54,11 +53,12 @@ kernel void computeFields(device Field* fields [[buffer(0)]],
     
     // 各粒子からのクーロン力を計算
     for (uint i = 0; i < particleCount; i++) {
-        const Particle& p = particles[i];
-        float2 r = p.position - float2(pos);
+        // 参照ではなくポインタとして直接アクセス
+        const device Particle* p = &particles[i];
+        float2 r = p->position - float2(pos);
         float r2 = dot(r, r);
         if (r2 > 0.0001f) {  // 特異点を避ける
-            fieldValue += p.charge * normalize(r) / r2;
+            fieldValue += p->charge * normalize(r) / r2;
         }
     }
     
@@ -154,6 +154,132 @@ kernel void computeFields(device Field* fields [[buffer(0)]],
     }
     
     [commandBuffer commit];
+}
+
+- (void)writeVTKFile:(NSString *)filename forTimestep:(NSInteger)timestep {
+    // ファイル名の生成
+    NSString *fullPath = [filename stringByAppendingFormat:@"_%04ld.vtp", (long)timestep];
+    const char *cPath = [fullPath UTF8String];
+    
+    // ファイルを開く
+    std::ofstream file(cPath);
+    if (!file.is_open()) {
+        NSLog(@"Failed to open file: %@", fullPath);
+        return;
+    }
+    
+    // パーティクルデータへのアクセス
+    Particle *particles = (Particle *)self.particleBuffer.contents;
+    NSUInteger particleCount = self.particleBuffer.length / sizeof(Particle);
+    
+    // VTK XML ヘッダー
+    file << "<?xml version=\"1.0\"?>\n";
+    file << "<VTKFile type=\"PolyData\" version=\"0.1\" byte_order=\"LittleEndian\">\n";
+    file << "  <PolyData>\n";
+    file << "    <Piece NumberOfPoints=\"" << particleCount << "\" NumberOfVerts=\"" << particleCount << "\">\n";
+    
+    // 座標データ
+    file << "      <Points>\n";
+    file << "        <DataArray type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">\n";
+    for (NSUInteger i = 0; i < particleCount; i++) {
+        file << "          " << particles[i].position.x << " " 
+             << particles[i].position.y << " 0.0\n";
+    }
+    file << "        </DataArray>\n";
+    file << "      </Points>\n";
+    
+    // 頂点データ
+    file << "      <Verts>\n";
+    file << "        <DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n";
+    for (NSUInteger i = 0; i < particleCount; i++) {
+        file << "          " << i << "\n";
+    }
+    file << "        </DataArray>\n";
+    file << "        <DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n";
+    for (NSUInteger i = 0; i < particleCount; i++) {
+        file << "          " << i + 1 << "\n";
+    }
+    file << "        </DataArray>\n";
+    file << "      </Verts>\n";
+    
+    // 物理量データ
+    file << "      <PointData>\n";
+    // 速度
+    file << "        <DataArray type=\"Float32\" Name=\"velocity\" NumberOfComponents=\"3\" format=\"ascii\">\n";
+    for (NSUInteger i = 0; i < particleCount; i++) {
+        file << "          " << particles[i].velocity.x << " " 
+             << particles[i].velocity.y << " 0.0\n";
+    }
+    file << "        </DataArray>\n";
+    // 電荷
+    file << "        <DataArray type=\"Float32\" Name=\"charge\" format=\"ascii\">\n";
+    for (NSUInteger i = 0; i < particleCount; i++) {
+        file << "          " << particles[i].charge << "\n";
+    }
+    file << "        </DataArray>\n";
+    file << "      </PointData>\n";
+    
+    // フッター
+    file << "    </Piece>\n";
+    file << "  </PolyData>\n";
+    file << "</VTKFile>\n";
+    
+    file.close();
+}
+
+- (void)writeFieldVTKFile:(NSString *)filename forTimestep:(NSInteger)timestep {
+    NSString *fullPath = [filename stringByAppendingFormat:@"_field_%04ld.vti", (long)timestep];
+    const char *cPath = [fullPath UTF8String];
+    
+    std::ofstream file(cPath);
+    if (!file.is_open()) {
+        NSLog(@"Failed to open field file: %@", fullPath);
+        return;
+    }
+    
+    // フィールドデータへのアクセス
+    Field *fields = (Field *)self.fieldBuffer.contents;
+    NSUInteger gridSize = (NSUInteger)sqrt(self.fieldBuffer.length / sizeof(Field));
+    
+    // VTK XML ヘッダー
+    file << "<?xml version=\"1.0\"?>\n";
+    file << "<VTKFile type=\"ImageData\" version=\"0.1\" byte_order=\"LittleEndian\">\n";
+    file << "  <ImageData WholeExtent=\"0 " << gridSize-1 << " 0 " << gridSize-1 << " 0 0\"\n";
+    file << "             Origin=\"0 0 0\"\n";
+    file << "             Spacing=\"1 1 1\">\n";
+    file << "    <Piece Extent=\"0 " << gridSize-1 << " 0 " << gridSize-1 << " 0 0\">\n";
+    
+    // 電場ベクトルデータ
+    file << "      <PointData>\n";
+    file << "        <DataArray type=\"Float32\" Name=\"E\" NumberOfComponents=\"3\" format=\"ascii\">\n";
+    for (NSUInteger y = 0; y < gridSize; y++) {
+        for (NSUInteger x = 0; x < gridSize; x++) {
+            NSUInteger index = y * gridSize + x;
+            file << "          " << fields[index].value.x << " "
+                 << fields[index].value.y << " 0.0\n";
+        }
+    }
+    file << "        </DataArray>\n";
+    
+    // 電場強度（スカラー場）の出力
+    file << "        <DataArray type=\"Float32\" Name=\"E_magnitude\" format=\"ascii\">\n";
+    for (NSUInteger y = 0; y < gridSize; y++) {
+        for (NSUInteger x = 0; x < gridSize; x++) {
+            NSUInteger index = y * gridSize + x;
+            float magnitude = sqrt(fields[index].value.x * fields[index].value.x +
+                                 fields[index].value.y * fields[index].value.y);
+            file << "          " << magnitude << "\n";
+        }
+    }
+    file << "        </DataArray>\n";
+    file << "      </PointData>\n";
+    
+    // フッター
+    file << "    </Piece>\n";
+    file << "  </ImageData>\n";
+    file << "</VTKFile>\n";
+    
+    file.close();
 }
 
 @end

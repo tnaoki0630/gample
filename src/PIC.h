@@ -1,5 +1,7 @@
 #import <Metal/Metal.h>
 #import <simd/simd.h>
+#import <fstream>
+#import <string>
 
 // 粒子データ構造
 struct Particle {
@@ -22,10 +24,14 @@ struct Field {
 @property (nonatomic, strong) id<MTLBuffer> fieldBuffer;
 @property (nonatomic, strong) id<MTLComputePipelineState> updateParticlesPipeline;
 @property (nonatomic, strong) id<MTLComputePipelineState> computeFieldsPipeline;
-
+// 初期設定
 - (instancetype)initWithDevice:(id<MTLDevice>)device
                 particleCount:(NSUInteger)particleCount
                     gridSize:(NSUInteger)gridSize;
+// 時間更新
 - (void)update:(float)deltaTime;
+// VTK出力
+- (void)writeVTKFile:(NSString *)filename forTimestep:(NSInteger)timestep;
+- (void)writeFieldVTKFile:(NSString *)filename forTimestep:(NSInteger)timestep;
 
 @end
