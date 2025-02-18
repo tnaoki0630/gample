@@ -33,3 +33,10 @@ xcuserdata/
 *.tmp
 *.swp
 
+# result files
+*.vtk
+*.vti
+*.vtp
+
+# sourece files
+src.txt

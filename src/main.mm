@@ -1,5 +1,8 @@
 #import <Foundation/Foundation.h>
-#import "PIC.h"
+#import "Init.h"
+#import "Particle.h"
+#import "Moment.h"
+#import "EMField.h"
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
@@ -10,21 +13,31 @@ int main(int argc, const char * argv[]) {
             return 1;
         }
         
-        // シミュレーションの初期化
-        NSUInteger particleCount = 1024;
-        NSUInteger gridSize = 32;
-        PIC *simulation = [[PIC alloc] 
-                                      initWithDevice:device
-                                      particleCount:particleCount
-                                      gridSize:gridSize];
-        
+        // 初期化用クラスの設定
+        NSString *inputFilePath = @"cond.txt";
+        Init *init = [[Init alloc]
+                            initWithFile:inputFilePath];
+        // 粒子の初期化
+        NSUInteger particleCount = 10000;
+        Particle *ptcl = [[Particle alloc] 
+                            initWithDevice:device
+                            initWithParam:init];
+        // 場の初期化
+        EMField *fld = [[EMField alloc]
+                            initWithParam:init];
+        // モーメント量の初期化
+        Moment *mom = [[Moment alloc] initialize];
+
         // シミュレーションループ
-        for (int i = 0; i < 100; i++) {  // 100フレーム分実行
-            [simulation update:0.016f];
-            if (i % 10 == 0) {  // 10ステップごとに出力
-                [simulation writeVTKFile:@"plasma_particles" forTimestep:i];
-                [simulation writeFieldVTKFile:@"plasma_field" forTimestep:i];
-            }
+        double dt = 1e-3;
+        int maxCycle = 100;
+        for (int i = 0; i < maxCycle; i++) {
+            // 粒子の時間更新
+            [ptcl update:dt withEMField:fld];
+            // 電荷密度の更新
+            [fld culcChargeDensity:ptcl];
+            // 電場の更新
+            [fld solvePoisson];
             NSLog(@"Frame %d completed", i);
         }
     }
