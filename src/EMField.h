@@ -1,6 +1,8 @@
 #import <Foundation/Foundation.h>
 #import "Init.h"
 #import "Particle.h"
+// コンパイルうまくいかないので前方宣言
+@class Particle;
 
 struct ElectroStatic {
     double rho;

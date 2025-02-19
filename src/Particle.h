@@ -4,6 +4,8 @@
 #import <string>
 #import "Init.h"
 #import "EMField.h"
+// コンパイルうまくいかないので前方宣言
+@class EMField;
 
 // 粒子データ構造
 struct ParticleData {

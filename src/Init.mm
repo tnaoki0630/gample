@@ -2,8 +2,8 @@
 
 @implementation Init
 
-- (void)InitWithFile:(NSString*)InputFilePath {
-
+- (instancetype)initWithFile:(NSString*)InputFilePath {
+    return self;
 }
 
 @end
