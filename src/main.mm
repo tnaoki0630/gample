@@ -3,6 +3,7 @@
 #import "Particle.h"
 #import "Moment.h"
 #import "EMField.h"
+#import "DebugPrint.h"
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
@@ -14,11 +15,14 @@ int main(int argc, const char * argv[]) {
         }
         
         // 初期化用クラスの設定
-        NSString *inputFilePath = @"cond.txt";
+        NSString *inputFilePath = @"data/condition.txt";
         Init *init = [[Init alloc]
-                            initWithFile:inputFilePath];
+                            parseInputFile:inputFilePath];
+
+        // パース結果の出力(debugprint.mm)
+        printInitContents(init);
+
         // 粒子の初期化
-        NSUInteger particleCount = 10000;
         Particle *ptcl = [[Particle alloc] 
                             initWithDevice:device
                             initWithParam:init];

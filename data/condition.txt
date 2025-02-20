@@ -1,0 +1,64 @@
+FlagForEquation
+Particle 1
+EMField 1
+MCCollision 0
+#
+ParamForTimeIntegration
+Start       1
+End         100
+Output      10
+TimeStep    1e-3
+#
+ParamForParticle
+ParticleName            electron
+InitialParticleNumber   1000
+MaxParticleNumber       2000
+Charge                  -4.803204197e-10
+Mass                    9.10938188e-28
+Weight                  2.5e9
+/
+ParticleName            ion(Xe+)
+InitialParticleNumber   1000
+MaxParticleNumber       2000
+Charge                  4.803204197e-10
+Mass                    2.1801714e-22
+Weight                  2.5e9
+/
+#
+BoundaryConditionForParticle
+RegionName  Xmin
+BCType      outflow
+/
+RegionName  Xmax
+BCType      outflow
+/
+RegionName  Ymin
+BCType      periodic
+/
+RegionName  Ymax
+BCType      periodic
+/
+#
+ParamForField
+NumberOfGridX   32
+NumberOfGridY   32
+GridSizeOfX     6.25e-2
+GridSizeOfY     6.25e-2
+#
+BoundaryConditionForField
+RegionName  Xmin
+BCType      dirichlet
+0
+/
+RegionName  Xmax
+BCType      dirichlet
+200
+/
+RegionName  Ymin
+BCType      periodic
+/
+RegionName  Ymax
+BCType      periodic
+/
+#
+GOGO

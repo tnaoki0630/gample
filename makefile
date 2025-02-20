@@ -17,11 +17,13 @@ BUILD_DIR = build
 TARGET = PIC.out
 
 # ソースファイル
-SOURCES = $(SRC_DIR)/Particle.mm \
+SOURCES = $(SRC_DIR)/main.mm\
+          $(SRC_DIR)/Particle.mm \
           $(SRC_DIR)/EMField.mm \
           $(SRC_DIR)/Init.mm \
           $(SRC_DIR)/Moment.mm \
-          $(SRC_DIR)/main.mm
+          $(SRC_DIR)/DebugPrint.mm
+          
 
 # オブジェクトファイル
 OBJECTS = $(SOURCES:$(SRC_DIR)/%.mm=$(BUILD_DIR)/%.o)

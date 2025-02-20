@@ -39,31 +39,6 @@ kernel void updateParticles(device Particle* particles [[buffer(0)]],
     // 周期的境界条件
     p->position = fmod(p->position + gridSize, gridSize);
 }
-
-// 電場計算カーネル
-kernel void computeFields(device Field* fields [[buffer(0)]],
-                        device const Particle* particles [[buffer(1)]],
-                        const device uint& particleCount [[buffer(2)]],
-                        const device float2& gridSize [[buffer(3)]],
-                        uint2 pos [[thread_position_in_grid]]) {
-    if (pos.x >= uint(gridSize.x) || pos.y >= uint(gridSize.y)) return;
-    
-    uint index = pos.y * uint(gridSize.x) + pos.x;
-    float2 fieldValue = float2(0, 0);
-    
-    // 各粒子からのクーロン力を計算
-    for (uint i = 0; i < particleCount; i++) {
-        // 参照ではなくポインタとして直接アクセス
-        const device Particle* p = &particles[i];
-        float2 r = p->position - float2(pos);
-        float r2 = dot(r, r);
-        if (r2 > 0.0001f) {  // 特異点を避ける
-            fieldValue += p->charge * normalize(r) / r2;
-        }
-    }
-    
-    fields[index].value = fieldValue;
-}
 )";
 
 @implementation Particle
@@ -91,9 +66,11 @@ kernel void computeFields(device Field* fields [[buffer(0)]],
                                                                         error:&error];
         
         // バッファの初期化
+        // _particleBuffer = [device newBufferWithLength:sizeof(Particle) * particleCount
+        //                                     options:MTLResourceStorageModeShared];
         
         // 初期粒子分布の設定
-
+        // [self initializeParticles:particleCount gridSize:gridSize];
     }
     return self;
 }
