@@ -1,9 +1,11 @@
 #import "Init.h"
+#import "Constant.h"
 #import <string>
 #import <fstream>
 #import <iostream>
 #import <sstream>
 #import <vector>
+
 
 @interface Init() {
     // Private properties to store parsed values
@@ -139,9 +141,7 @@
     double value;
     
     if (iss >> key >> value) {
-        if (key == "Start") {
-            _timeIntegration.StartCycle = (int)value;
-        } else if (key == "End") {
+        if (key == "End") {
             _timeIntegration.EndCycle = (int)value;
         } else if (key == "Output") {
             _timeIntegration.OutputCycle = (int)value;
@@ -161,18 +161,15 @@
     particle.q = 0.0;
     particle.m = 0.0;
     particle.w = 0.0;
-    particle.initalU = 0.0;
-    particle.initalV = 0.0;
-    particle.initalW = 0.0;
-    particle.initialT = 0.0;
-    
-    // Parse the first line (ParticleName)
-    std::istringstream nameIss(line);
-    std::string key, value;
-    if (nameIss >> key >> value && key == "ParticleName") {
-        // Convert std::string to char* safely
-        particle.pName = strdup(value.c_str());
-    }
+    particle.GenerateType = NULL;
+    particle.initX[0] = 0.0;
+    particle.initX[1] = 0.0;
+    particle.initY[0] = 0.0;
+    particle.initY[1] = 0.0;
+    particle.initU[0] = 0.0;
+    particle.initU[1] = 0.0;
+    particle.initU[2] = 0.0;
+    particle.initT = 0.0;
     
     // Parse subsequent lines for this particle until we hit a '/' line
     std::string particleLine;
@@ -184,31 +181,46 @@
         
         std::istringstream lineIss(particleLine);
         std::string paramKey;
-        double paramValue;
+        std::string paramValue;
+        std::string val1;
+        std::string val2;
         
         if (lineIss >> paramKey >> paramValue) {
-            if (paramKey == "InitialParticleNumber") {
-                particle.pNum = (int)paramValue;
+            if (paramKey == "ParticleName") {
+                particle.pName = [NSString stringWithUTF8String:paramValue.c_str()];
+            } else if (paramKey == "InitialParticleNumber") {
+                particle.pNum = std::stoi(paramValue);
             } else if (paramKey == "MaxParticleNumber") {
-                particle.pNumMax = (int)paramValue;
+                particle.pNumMax = std::stoi(paramValue);
             } else if (paramKey == "Charge") {
-                particle.q = paramValue;
+                particle.q = std::stod(paramValue);
             } else if (paramKey == "Mass") {
-                particle.m = paramValue;
+                particle.m = std::stod(paramValue);
             } else if (paramKey == "Weight") {
-                particle.w = paramValue;
-            } else if (paramKey == "InitialU") {
-                particle.initalU = paramValue;
-            } else if (paramKey == "InitialV") {
-                particle.initalV = paramValue;
-            } else if (paramKey == "InitialW") {
-                particle.initalW = paramValue;
-            } else if (paramKey == "InitialT") {
-                particle.initialT = paramValue;
+                particle.w = std::stod(paramValue);
+            } else if (paramKey == "GenerateType") {
+                particle.GenerateType = [NSString stringWithUTF8String:paramValue.c_str()];
+            } else if (paramKey == "InitialPosX") {
+                particle.initX[0] = std::stod(paramValue);
+                if (lineIss >> val1) {
+                particle.initX[1] = std::stod(val1);
+                }
+            } else if (paramKey == "InitialPosY") {
+                particle.initY[0] = std::stod(paramValue);
+                if (lineIss >> val1) {
+                particle.initY[1] = std::stod(val1);
+                }
+            } else if (paramKey == "InitialVel") {
+                particle.initU[0] = std::stod(paramValue);
+                if (lineIss >> val1 >> val2) {
+                particle.initU[1] = std::stod(val1);
+                particle.initU[2] = std::stod(val2);
+                }
+            } else if (paramKey == "InitialTemp[eV]") {
+                particle.initT = std::stod(paramValue)*evtok;
             }
         }
-    }
-    
+    }    
     // Add the completed particle to our vector
     _particles.push_back(particle);
 }
@@ -224,7 +236,7 @@
     std::istringstream nameIss(line);
     std::string key, value;
     if (nameIss >> key >> value && key == "RegionName") {
-        boundary.position = strdup(value.c_str());
+        boundary.position = [NSString stringWithUTF8String:value.c_str()];;
     }
     
     // Parse the type line
@@ -232,7 +244,7 @@
     if (std::getline(inputFile, typeLine)) {
         std::istringstream typeIss(typeLine);
         if (typeIss >> key >> value && key == "BCType") {
-            boundary.type = strdup(value.c_str());
+            boundary.type = [NSString stringWithUTF8String:value.c_str()];;
         }
     }
     
@@ -285,7 +297,7 @@
     std::istringstream nameIss(line);
     std::string key, value;
     if (nameIss >> key >> value && key == "RegionName") {
-        boundary.position = strdup(value.c_str());
+        boundary.position = [NSString stringWithUTF8String:value.c_str()];
     }
     
     // Parse the type line
@@ -293,7 +305,7 @@
     if (std::getline(inputFile, typeLine)) {
         std::istringstream typeIss(typeLine);
         if (typeIss >> key >> value && key == "BCType") {
-            boundary.type = strdup(value.c_str());
+            boundary.type = [NSString stringWithUTF8String:value.c_str()];
         }
     }
     
@@ -326,7 +338,7 @@
     return _timeIntegration;
 }
 
-- (NSArray*)getParticles {
+- (NSArray*)getParamForParticle {
     NSMutableArray *result = [NSMutableArray array];
     for (const auto& particle : _particles) {
         // Create a copy to return
@@ -359,26 +371,4 @@
     }
     return result;
 }
-
-// Deallocation method to free memory for C-strings
-- (void)dealloc {
-    // Free all allocated C strings
-    for (auto& particle : _particles) {
-        if (particle.pName) free(particle.pName);
-    }
-    
-    for (auto& boundary : _particleBoundaries) {
-        if (boundary.position) free(boundary.position);
-        if (boundary.type) free(boundary.type);
-    }
-    
-    for (auto& boundary : _fieldBoundaries) {
-        if (boundary.position) free(boundary.position);
-        if (boundary.type) free(boundary.type);
-    }
-    
-    // Call super dealloc (important for manual reference counting)
-    [super dealloc];
-}
-
 @end

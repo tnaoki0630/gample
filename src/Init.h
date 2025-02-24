@@ -1,5 +1,6 @@
-#import <Foundation/Foundation.h>
-#import <string>
+#include <Foundation/Foundation.h>
+#include <string>
+#include <array>
 
 @interface Init : NSObject
 
@@ -10,28 +11,28 @@ struct FragForEquation {
 };
 
 struct ParamForTimeIntegration {
-    int StartCycle;
     int EndCycle;
     int OutputCycle;
     double dt;
 };
 
 struct ParamForParticle {
-    char* pName;
+    NSString* pName;
     int pNum;
     int pNumMax;
     double q;
     double m;
     double w;
-    double initalU;
-    double initalV;
-    double initalW;
-    double initialT;
+    NSString* GenerateType;
+    double initX[2];
+    double initY[2];
+    double initU[3];
+    double initT;
 };
 
 struct BoundaryConditionForParticle {
-    char* position;
-    char* type;
+    NSString* position;
+    NSString* type;
     double val;
 };
 
@@ -43,12 +44,12 @@ struct ParamForField {
 };
 
 struct BoundaryConditionForField {
-    char* position;
-    char* type;
+    NSString* position;
+    NSString* type;
     double val;
 };
 
-- (instancetype)parseInputFile:(NSString*) InputFilePath;
+- (instancetype)parseInputFile:(NSString*)inputFilePath;
 - (BOOL)parseFile:(std::ifstream&) inputFile;
 - (void)parseFlagForEquation:(const std::string&)line;
 - (void)parseParamForTimeIntegration:(const std::string&)line;
@@ -58,10 +59,9 @@ struct BoundaryConditionForField {
 - (void)parseBoundaryConditionForField:(const std::string&)line inputFile:(std::ifstream&)inputFile;
 - (struct FragForEquation)getFragForEquation;
 - (struct ParamForTimeIntegration)getParamForTimeIntegration;
-- (NSArray*)getParticles;
+- (NSArray*)getParamForParticle;
 - (NSArray*)getParticleBoundaries;
 - (struct ParamForField)getParamForField;
 - (NSArray*)getFieldBoundaries;
-- (void)dealloc;
 
 @end

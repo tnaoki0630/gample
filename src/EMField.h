@@ -25,7 +25,7 @@ struct MagneticField {
 
 - (instancetype)initWithParam:(Init*) init;
 
-- (void)culcChargeDensity:(Particle*) ptcl;
+- (void)integrateChargeDensity:(Particle*) ptcl;
 
 - (void)solvePoisson;
 

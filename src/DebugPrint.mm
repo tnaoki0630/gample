@@ -1,5 +1,8 @@
 #import <Foundation/Foundation.h>
 #import "Init.h"
+#import "Particle.h"
+#import "Moment.h"
+#import "EMField.h"
 
 void printInitContents(Init* init) {
     NSLog(@"==== パース結果出力開始 ====");
@@ -14,13 +17,12 @@ void printInitContents(Init* init) {
     // ParamForTimeIntegration の出力
     struct ParamForTimeIntegration timeParams = [init getParamForTimeIntegration];
     NSLog(@"--- ParamForTimeIntegration ---");
-    NSLog(@"StartCycle: %d", timeParams.StartCycle);
     NSLog(@"EndCycle: %d", timeParams.EndCycle);
     NSLog(@"OutputCycle: %d", timeParams.OutputCycle);
     NSLog(@"dt: %e", timeParams.dt);
     
     // ParamForParticle の出力
-    NSArray *particles = [init getParticles];
+    NSArray *particles = [init getParamForParticle];
     NSLog(@"--- ParamForParticle (%lu entries) ---", (unsigned long)particles.count);
     for (NSUInteger i = 0; i < particles.count; i++) {
         NSValue *value = particles[i];
@@ -28,16 +30,16 @@ void printInitContents(Init* init) {
         [value getValue:&particle];
         
         NSLog(@"[Particle %lu]", (unsigned long)i + 1);
-        NSLog(@"  Name: %s", particle.pName);
+        NSLog(@"  Name: %@", particle.pName);
         NSLog(@"  InitialParticleNumber: %d", particle.pNum);
         NSLog(@"  MaxParticleNumber: %d", particle.pNumMax);
         NSLog(@"  Charge: %e", particle.q);
         NSLog(@"  Mass: %e", particle.m);
         NSLog(@"  Weight: %e", particle.w);
-        NSLog(@"  initialU: %e", particle.initalU);
-        NSLog(@"  initialV: %e", particle.initalV);
-        NSLog(@"  initialW: %e", particle.initalW);
-        NSLog(@"  initialT: %e", particle.initialT);
+        NSLog(@"  initialU: %e", particle.initU[0]);
+        NSLog(@"  initialV: %e", particle.initU[1]);
+        NSLog(@"  initialW: %e", particle.initU[2]);
+        NSLog(@"  initialT: %e", particle.initT);
     }
     
     // BoundaryConditionForParticle の出力
@@ -49,8 +51,8 @@ void printInitContents(Init* init) {
         [value getValue:&boundary];
         
         NSLog(@"[Boundary %lu]", (unsigned long)i + 1);
-        NSLog(@"  Position: %s", boundary.position);
-        NSLog(@"  Type: %s", boundary.type);
+        NSLog(@"  Position: %@", boundary.position);
+        NSLog(@"  Type: %@", boundary.type);
         NSLog(@"  Value: %e", boundary.val);
     }
     
@@ -71,8 +73,8 @@ void printInitContents(Init* init) {
         [value getValue:&boundary];
         
         NSLog(@"[Boundary %lu]", (unsigned long)i + 1);
-        NSLog(@"  Position: %s", boundary.position);
-        NSLog(@"  Type: %s", boundary.type);
+        NSLog(@"  Position: %@", boundary.position);
+        NSLog(@"  Type: %@", boundary.type);
         NSLog(@"  Value: %e", boundary.val);
     }
     

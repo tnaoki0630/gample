@@ -1,0 +1,22 @@
+#import <Foundation/Foundation.h>
+// physical constants
+extern double ec;
+extern double kb;
+extern double c;
+// unit transform
+extern double evtoerg;
+extern double ergtoev;
+extern double ergtoj;
+extern double jtoerg;
+extern double ktoev;
+extern double evtok;
+extern double patoatm;
+extern double atmtopa;
+extern double VtoG;
+extern double GtoV;
+extern double VtosV;
+extern double sVtoV;
+extern double AtosA;
+extern double sAtoA;
+extern double JtosJ;
+extern double sJtoJ;

@@ -16,14 +16,23 @@ SRC_DIR = src
 BUILD_DIR = build
 TARGET = PIC.out
 
-# ソースファイル
-SOURCES = $(SRC_DIR)/main.mm\
-          $(SRC_DIR)/Particle.mm \
-          $(SRC_DIR)/EMField.mm \
-          $(SRC_DIR)/Init.mm \
-          $(SRC_DIR)/Moment.mm \
-          $(SRC_DIR)/DebugPrint.mm
-          
+# 共通のソースファイル
+SOURCES_COMMON = $(SRC_DIR)/main.mm \
+                 $(SRC_DIR)/EMField.mm \
+                 $(SRC_DIR)/Init.mm \
+                 $(SRC_DIR)/Moment.mm \
+                 $(SRC_DIR)/DebugPrint.mm\
+                 $(SRC_DIR)/Constant.mm\
+
+# EXEC の値によって Particle ソースを切り替え
+ifeq ($(EXEC), mpi)
+    PARTICLE_SRC = $(SRC_DIR)/Particle_mpi.mm
+else
+    PARTICLE_SRC = $(SRC_DIR)/Particle.mm
+endif
+
+# ソースリスト
+SOURCES = $(SOURCES_COMMON) $(PARTICLE_SRC)
 
 # オブジェクトファイル
 OBJECTS = $(SOURCES:$(SRC_DIR)/%.mm=$(BUILD_DIR)/%.o)

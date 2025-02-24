@@ -1,50 +1,35 @@
 #import "Particle.h"
+#import "Init.h"
+#import "Constant.h"
+#include <random>
 
 static NSString *const kMetalShaderSource = @R"(
 #include <metal_stdlib>
 using namespace metal;
 
-struct Particle {
-    float2 position;
-    float2 velocity;
-    float charge;
-    float mass;
-};
-
-struct Field {
-    float2 value;
+struct ParticleState {
+    float x;
+    float y;
+    float vx;
+    float vy;
+    float vz;
 };
 
 // 粒子更新カーネル
-kernel void updateParticles(device Particle* particles [[buffer(0)]],
-                          device const Field* fields [[buffer(1)]],
-                          const device uint& particleCount [[buffer(2)]],
-                          const device float& deltaTime [[buffer(3)]],
-                          const device float2& gridSize [[buffer(4)]],
+kernel void updateParticles(device ParticleState* particles[[buffer(0)]],
                           uint id [[thread_position_in_grid]]) {
-    if (id >= particleCount) return;
+    if (id >= 10000) return;
     
     // 参照ではなくポインタとして扱う
-    device Particle* p = &particles[id];
-    
-    // 最近接格子点からの電場を計算
-    uint2 gridPos = uint2(p->position);
-    Field localField = fields[gridPos.y * uint(gridSize.x) + gridPos.x];
-    
-    // 運動方程式の解析
-    float2 acceleration = (p->charge / p->mass) * localField.value;
-    p->velocity += acceleration * deltaTime;
-    p->position += p->velocity * deltaTime;
-    
-    // 周期的境界条件
-    p->position = fmod(p->position + gridSize, gridSize);
+    device ParticleState* p = &particles[id];
 }
 )";
 
 @implementation Particle
 // 初期設定
 - (instancetype)initWithDevice:(id<MTLDevice>)device
-                initWithParam:(Init*) init{
+                withParticleParam:(ParamForParticle) ParticleParam
+                withFieldParam:(ParamForField) FieldParam{
     self = [super init];
     if (self) {
         _device = device;
@@ -64,15 +49,35 @@ kernel void updateParticles(device Particle* particles [[buffer(0)]],
         
         _updateParticlesPipeline = [device newComputePipelineStateWithFunction:updateParticlesFunction
                                                                         error:&error];
-        
+
         // バッファの初期化
-        // _particleBuffer = [device newBufferWithLength:sizeof(Particle) * particleCount
-        //                                     options:MTLResourceStorageModeShared];
+        _particleBuffer = [device newBufferWithLength:sizeof(ParticleState) * ParticleParam.pNum
+                                            options:MTLResourceStorageModeShared];
         
         // 初期粒子分布の設定
-        // [self initializeParticles:particleCount gridSize:gridSize];
+        [self generateParticles:ParticleParam withFieldParam:FieldParam];
     }
     return self;
+}
+
+- (void)generateParticles:(ParamForParticle)ParticleParam
+            withFieldParam:(ParamForField)FieldParam{
+    // 乱数の初期化
+    std::random_device seed_gen;
+    std::default_random_engine engine(seed_gen());
+    // 粒子の初期化
+    ParticleState *particles = (ParticleState *)self.particleBuffer.contents;
+    double Lx = FieldParam.dx * FieldParam.ngx;
+    double Ly = FieldParam.dy * FieldParam.ngy;
+    double vth_epi  = sqrt(2*kb*ParticleParam.initT/ParticleParam.m);
+    std::normal_distribution norm_dist(0.0, vth_epi);
+    for (int i = 0; i < ParticleParam.pNum; i++) {
+        particles[i].x = (double)arc4random_uniform(Lx);
+        particles[i].y = (double)arc4random_uniform(Ly);
+        particles[i].vx = (double)norm_dist(engine);
+        particles[i].vy = (double)norm_dist(engine);
+        particles[i].vz = (double)norm_dist(engine);
+    }
 }
 // 時間更新
 - (void)update:(double)dt

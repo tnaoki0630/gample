@@ -23,9 +23,19 @@ int main(int argc, const char * argv[]) {
         printInitContents(init);
 
         // 粒子の初期化
-        Particle *ptcl = [[Particle alloc] 
-                            initWithDevice:device
-                            initWithParam:init];
+        NSArray *ParticleParams = [init getParamForParticle];
+        NSMutableArray *ptclArr = [NSMutableArray arrayWithCapacity:ParticleParams.count];
+        struct ParamForField FieldParam = [init getParamForField];
+        for (int s = 0; s < ParticleParams.count; s++) {
+            NSValue *value = ParticleParams[s];
+            struct ParamForParticle ParticleParam;
+            [value getValue:&ParticleParam];
+            NSLog(@"initParticles: %d", s);
+            Particle *ptcl = [[Particle alloc] initWithDevice:device
+                                                withParticleParam:ParticleParam
+                                                withFieldParam:FieldParam];
+            [ptclArr addObject:ptcl];
+        }
         // 場の初期化
         EMField *fld = [[EMField alloc]
                             initWithParam:init];
@@ -33,13 +43,17 @@ int main(int argc, const char * argv[]) {
         Moment *mom = [[Moment alloc] initialize];
 
         // シミュレーションループ
-        double dt = 1e-3;
-        int maxCycle = 100;
-        for (int i = 0; i < maxCycle; i++) {
-            // 粒子の時間更新
-            [ptcl update:dt withEMField:fld];
-            // 電荷密度の更新
-            [fld culcChargeDensity:ptcl];
+        struct ParamForTimeIntegration timeParams = [init getParamForTimeIntegration];
+        int StartCycle = 0; // リスタート時は最終サイクルを引き継ぎたい
+        double dt = timeParams.dt; // そのうち dt の更新が必要になるかも
+        for (int i = StartCycle; i < timeParams.EndCycle; i++) {
+            for (int s = 0; s < ParticleParams.count; s++) {
+                Particle *ptcl = [ptclArr objectAtIndex:s];
+                // 粒子の時間更新
+                [ptcl update:dt withEMField:fld];
+                // 電荷密度の更新
+                [fld integrateChargeDensity:ptcl];
+            }
             // 電場の更新
             [fld solvePoisson];
             NSLog(@"Frame %d completed", i);

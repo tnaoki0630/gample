@@ -6,7 +6,7 @@
     return self;
 }
 
-- (void)culcChargeDensity:(Particle*) ptcl{
+- (void)integrateChargeDensity:(Particle*) ptcl{
 
 }
 
