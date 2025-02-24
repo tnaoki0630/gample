@@ -37,8 +37,7 @@ int main(int argc, const char * argv[]) {
             [ptclArr addObject:ptcl];
         }
         // 場の初期化
-        EMField *fld = [[EMField alloc]
-                            initWithParam:init];
+        EMField *fld = [[EMField alloc] initWithDevice:device withParam:init];
         // モーメント量の初期化
         Moment *mom = [[Moment alloc] initialize];
 
@@ -52,7 +51,7 @@ int main(int argc, const char * argv[]) {
                 // 粒子の時間更新
                 [ptcl update:dt withEMField:fld];
                 // 電荷密度の更新
-                [fld integrateChargeDensity:ptcl];
+                [ptcl integrateChargeDensity:fld];
             }
             // 電場の更新
             [fld solvePoisson];

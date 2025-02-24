@@ -1,32 +1,28 @@
 #import <Foundation/Foundation.h>
+#import <Metal/Metal.h>
 #import "Init.h"
 #import "Particle.h"
-// コンパイルうまくいかないので前方宣言
 @class Particle;
-
-struct ElectroStatic {
-    double rho;
-    double phi;
-};
-
-struct ElectricField {
-    double Ex;
-    double Ey;
-    double Ez;
-};
-
-struct MagneticField {
-    double Bx;
-    double By;
-    double Bz;
-};
 
 @interface EMField : NSObject
 
-- (instancetype)initWithParam:(Init*) init;
-
-- (void)integrateChargeDensity:(Particle*) ptcl;
+// デバイスを受け取るように初期化メソッドを修正
+- (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam ;
 
 - (void)solvePoisson;
+
+// Metal バッファへのアクセサ
+- (id<MTLBuffer>)ExBuffer;
+- (id<MTLBuffer>)EyBuffer;
+- (id<MTLBuffer>)EzBuffer;
+- (id<MTLBuffer>)BxBuffer;
+- (id<MTLBuffer>)ByBuffer;
+- (id<MTLBuffer>)BzBuffer;
+
+// グリッド情報へのアクセサ
+- (int)ngx;
+- (int)ngy;
+- (double)dx;
+- (double)dy;
 
 @end

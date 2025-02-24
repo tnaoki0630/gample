@@ -16,6 +16,27 @@ struct ParticleState {
         double vz;
 };
 
+// 電場データ構造体
+struct EMFieldData {
+        float* Ex;
+        float* Ey;
+        float* Ez;
+        int ngx;
+        int ngy;
+        float dx;
+        float dy;
+};
+
+// シミュレーションパラメータ構造体
+struct SimulationParams {
+        int particleCount;
+        float charge;
+        float mass;
+        float weight;
+        float dt;
+};
+    
+
 @interface Particle : NSObject
 
 // metal関連
@@ -36,7 +57,7 @@ struct ParticleState {
 - (void)generateParticles:(ParamForParticle)ParticleParam
                 withFieldParam:(ParamForField)FieldParam;
 // 時間更新
-- (void)update:(double)dt
-        withEMField:(EMField*)fld ;
-
+- (void)update:(double)dt withEMField:(EMField*)fld;
+// 電荷密度更新
+- (void)integrateChargeDensity:(EMField*)fld;
 @end
