@@ -1,18 +1,18 @@
 FlagForEquation
-Particle 1
-EMField 1
+Particle    1
+EMField     0
 MCCollision 0
 #
 ParamForTimeIntegration
 Start       1
 End         100
-Output      10
-TimeStep    1e-3
+Output      1
+TimeStep    5e-12
 #
 ParamForParticle
 ParticleName            electron
-InitialParticleNumber   1000
-MaxParticleNumber       2000
+InitialParticleNumber   100000
+MaxParticleNumber       200000
 Charge                  -4.803204197e-10
 Mass                    9.10938188e-28
 Weight                  2.5e9
@@ -31,10 +31,10 @@ InitialTemp[eV]         0.5
 #
 BoundaryConditionForParticle
 RegionName  Xmin
-BCType      outflow
+BCType      periodic
 /
 RegionName  Xmax
-BCType      outflow
+BCType      periodic
 /
 RegionName  Ymin
 BCType      periodic
@@ -45,9 +45,12 @@ BCType      periodic
 #
 ParamForField
 NumberOfGridX   64
-NumberOfGridY   32
+NumberOfGridY   64
 GridSizeOfX     3.125e-2
 GridSizeOfY     3.125e-2
+InitializeType  Uniform
+AmplitudeOfE[SI]  0.0 0.0 0.0
+AmplitudeOfB[SI]  0.0 0.0 10e-3
 #
 BoundaryConditionForField
 RegionName  Xmin

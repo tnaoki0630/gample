@@ -37,6 +37,9 @@ xcuserdata/
 *.vtk
 *.vti
 *.vtp
+*.bin
+*.mp4
+*.png
 
 # source files
 src.txt

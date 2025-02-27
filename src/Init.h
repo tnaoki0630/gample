@@ -41,6 +41,9 @@ struct ParamForField {
     int ngy;
     double dx;
     double dy;
+    NSString* InitType;
+    double ampE[3];
+    double ampB[3];
 };
 
 struct BoundaryConditionForField {

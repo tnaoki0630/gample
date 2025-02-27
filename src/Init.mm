@@ -171,6 +171,17 @@
     particle.initU[2] = 0.0;
     particle.initT = 0.0;
     
+    std::istringstream iss(line);
+    std::string key;
+    std::string value;
+    if (iss >> key >> value) {
+        if (key == "ParticleName") {
+            particle.pName = [NSString stringWithUTF8String:value.c_str()];
+            NSLog(@"value: %@", [NSString stringWithUTF8String:value.c_str()]);
+            NSLog(@"pName: %@", particle.pName);
+        }
+    }
+    
     // Parse subsequent lines for this particle until we hit a '/' line
     std::string particleLine;
     while (std::getline(inputFile, particleLine)) {
@@ -185,10 +196,9 @@
         std::string val1;
         std::string val2;
         
+        // NSLog(@"ParamValue: %@", [NSString stringWithUTF8String:particleLine.c_str()]);
         if (lineIss >> paramKey >> paramValue) {
-            if (paramKey == "ParticleName") {
-                particle.pName = [NSString stringWithUTF8String:paramValue.c_str()];
-            } else if (paramKey == "InitialParticleNumber") {
+            if (paramKey == "InitialParticleNumber") {
                 particle.pNum = std::stoi(paramValue);
             } else if (paramKey == "MaxParticleNumber") {
                 particle.pNumMax = std::stoi(paramValue);
@@ -271,17 +281,33 @@
 - (void)parseParamForField:(const std::string&)line {
     std::istringstream iss(line);
     std::string key;
-    double value;
+    std::string value;
+    std::string val1;
+    std::string val2;
     
     if (iss >> key >> value) {
         if (key == "NumberOfGridX") {
-            _field.ngx = (int)value;
+            _field.ngx = stoi(value);
         } else if (key == "NumberOfGridY") {
-            _field.ngy = (int)value;
+            _field.ngy = stoi(value);
         } else if (key == "GridSizeOfX") {
-            _field.dx = value;
+            _field.dx = stod(value);
         } else if (key == "GridSizeOfY") {
-            _field.dy = value;
+            _field.dy = stod(value);
+        } else if (key == "InitializeType") {
+            _field.InitType = [NSString stringWithUTF8String:value.c_str()];
+        } else if (key == "AmplitudeOfE[SI]") {
+            _field.ampE[0] = stod(value)*VtoG;
+            if (iss >> val1 >> val2) {
+                _field.ampE[1] = stod(val1)*VtoG;
+                _field.ampE[2] = stod(val2)*VtoG;
+            }
+        } else if (key == "AmplitudeOfB[SI]") {
+            _field.ampB[0] = stod(value)*TtoG;
+            if (iss >> val1 >> val2) {
+                _field.ampB[1] = stod(val1)*TtoG;
+                _field.ampB[2] = stod(val2)*TtoG;
+            }
         }
     }
 }

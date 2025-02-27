@@ -20,3 +20,5 @@ extern double AtosA;
 extern double sAtoA;
 extern double JtosJ;
 extern double sJtoJ;
+extern double TtoG;
+extern double GtoT;

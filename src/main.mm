@@ -30,7 +30,7 @@ int main(int argc, const char * argv[]) {
             NSValue *value = ParticleParams[s];
             struct ParamForParticle ParticleParam;
             [value getValue:&ParticleParam];
-            NSLog(@"initParticles: %d", s);
+            NSLog(@"initParticles: %@", ParticleParam.pName);
             Particle *ptcl = [[Particle alloc] initWithDevice:device
                                                 withParticleParam:ParticleParam
                                                 withFieldParam:FieldParam];
@@ -52,10 +52,19 @@ int main(int argc, const char * argv[]) {
                 [ptcl update:dt withEMField:fld];
                 // 電荷密度の更新
                 [ptcl integrateChargeDensity:fld];
+                // 粒子軌道の出力
+                if (i%timeParams.OutputCycle == 0){
+                    NSValue *value = ParticleParams[s];
+                    struct ParamForParticle ParticleParam;
+                    [value getValue:&ParticleParam];
+                    [ptcl outputPhaseSpace:i withParticleParam:ParticleParam];
+                }
             }
             // 電場の更新
             [fld solvePoisson];
-            NSLog(@"Frame %d completed", i);
+            if (i%timeParams.OutputCycle == 0){
+                NSLog(@"Frame %d completed", i);
+            }
         }
     }
     return 0;

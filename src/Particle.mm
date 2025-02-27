@@ -145,7 +145,9 @@ kernel void updateParticles(device ParticleState* particles [[buffer(0)]],
     p.x = p.x + p.vx * params.constX;
     p.y = p.y + p.vy * params.constY;
 
-    // boundary condition
+    // periodic boundary
+    p.x = fmod(p.x, float(params.ngx));
+    p.y = fmod(p.y, float(params.ngy));
 }
 )";
 
@@ -293,5 +295,40 @@ kernel void updateParticles(device ParticleState* particles [[buffer(0)]],
 - (void)integrateChargeDensity:(EMField*)fld{
     
 };
+
+- (void)outputPhaseSpace:(int)i withParticleParam:(ParamForParticle)ParticleParam{
+    // 粒子状態の内容にアクセス
+    ParticleState *p = (ParticleState*)[_particleBuffer contents];
+    // dx, dy の取得用にパラメータ取得
+    SimulationParams *params = (SimulationParams*)_paramsBuffer.contents;
+
+    // 位置を格納する変数
+    float x,y;
+    // 各粒子についてバイナリファイルに出力する 
+    for (int idx = 0; idx < 20; idx++) {
+        NSString *filePath = [NSString stringWithFormat:@"bin/PhaseSpace_%@_%d.bin", ParticleParam.pName, idx];
+        // std::ofstream を利用してバイナリ書き出し（Objective-C++としてコンパイル）
+        std::ofstream ofs([filePath UTF8String], std::ios::binary | std::ios::app);
+        if (!ofs) {
+            NSLog(@"Failed to open file: %@", filePath);
+            continue;
+        }
+
+        // 位置を物理次元に戻す
+        x = p[idx].x*_dx;
+        y = p[idx].y*_dy;
+        if (idx == 0) NSLog(@"x: %f", x);
+        
+        // phasespace を出力
+        ofs.write(reinterpret_cast<const char*>(&i), sizeof(int));
+        ofs.write(reinterpret_cast<const char*>(&x), sizeof(float));
+        ofs.write(reinterpret_cast<const char*>(&y), sizeof(float));
+        ofs.write(reinterpret_cast<const char*>(&p[idx].vx), sizeof(float));
+        ofs.write(reinterpret_cast<const char*>(&p[idx].vy), sizeof(float));
+        ofs.write(reinterpret_cast<const char*>(&p[idx].vz), sizeof(float));
+        
+        ofs.close();
+    }
+}
 
 @end

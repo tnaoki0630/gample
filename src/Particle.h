@@ -68,4 +68,6 @@ struct SimulationParams {
 - (void)update:(double)dt withEMField:(EMField*)fld;
 // 電荷密度更新
 - (void)integrateChargeDensity:(EMField*)fld;
+// 粒子軌道出力
+- (void)outputPhaseSpace:(int)i withParticleParam:(ParamForParticle)ParticleParam;
 @end

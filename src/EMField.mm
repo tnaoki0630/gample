@@ -57,15 +57,16 @@
         float* By = (float*)_ByBuffer.contents;
         float* Bz = (float*)_BzBuffer.contents;
         
+        // Uniform
         for (NSUInteger i = 0; i < gridSize; i++) {
             rho[i] = 0.0f;
             phi[i] = 0.0f;
-            Ex[i] = 0.0f;
-            Ey[i] = 0.0f;
-            Ez[i] = 0.0f;
-            Bx[i] = 0.0f;
-            By[i] = 0.0f;
-            Bz[i] = 0.0f;
+            Ex[i] = fieldParam.ampE[0];
+            Ey[i] = fieldParam.ampE[1];
+            Ez[i] = fieldParam.ampE[2];
+            Bx[i] = fieldParam.ampB[0];
+            By[i] = fieldParam.ampB[1];
+            Bz[i] = fieldParam.ampB[2];
         }
     }
     return self;
