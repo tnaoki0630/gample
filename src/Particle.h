@@ -34,6 +34,10 @@ struct SimulationParams {
         float mass;
         float weight;
         float dt;
+        float constE;
+        float constB;
+        float constX;
+        float constY;
 };
     
 
@@ -48,6 +52,10 @@ struct SimulationParams {
 @property (nonatomic) double charge;
 @property (nonatomic) double mass;
 @property (nonatomic) double weight;
+@property (nonatomic) double ngx;
+@property (nonatomic) double ngy;
+@property (nonatomic) double dx;
+@property (nonatomic) double dy;
 
 // 初期設定
 - (instancetype)initWithDevice:(id<MTLDevice>)device
