@@ -18,8 +18,8 @@ struct ParamForTimeIntegration {
 
 struct ParamForParticle {
     NSString* pName;
-    int pNum;
-    int pNumMax;
+    uint pNum;
+    uint pNumMax;
     double q;
     double m;
     double w;
@@ -44,6 +44,7 @@ struct ParamForField {
     NSString* InitType;
     double ampE[3];
     double ampB[3];
+    int weightOrder;
 };
 
 struct BoundaryConditionForField {

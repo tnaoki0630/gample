@@ -50,8 +50,8 @@ ax.set_ylabel("y")
 ax.set_title(f"Time step: {times[0]}")
 
 # 軸の範囲はシミュレーション領域に合わせて調整してください
-ax.set_xlim(0, 2)
-ax.set_ylim(0, 2)
+ax.set_xlim(0, 1)
+ax.set_ylim(0, 1)
 
 def update(frame):
     # フレームごとに粒子の位置を更新
@@ -64,6 +64,6 @@ def update(frame):
 ani = animation.FuncAnimation(fig, update, frames=num_frames, interval=100, blit=True)
 
 # 動画として保存（ffmpegがインストールされている必要があります）
-ani.save("particle_trajectories.mp4", writer="ffmpeg", fps=10)
+ani.save("particle_trajectories.mp4", writer="ffmpeg", fps=60)
 
 

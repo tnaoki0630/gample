@@ -9,11 +9,11 @@
 
 // 粒子データ構造
 struct ParticleState {
-        double x;
-        double y;
-        double vx;
-        double vy;
-        double vz;
+        float x;
+        float y;
+        float vx;
+        float vy;
+        float vz;
 };
 
 // 電場データ構造体
@@ -29,7 +29,7 @@ struct EMFieldData {
 
 // シミュレーションパラメータ構造体
 struct SimulationParams {
-        int particleCount;
+        uint particleCount;
         float charge;
         float mass;
         float weight;
@@ -38,17 +38,21 @@ struct SimulationParams {
         float constB;
         float constX;
         float constY;
+        int ngx;
+        int ngy;
 };
-    
 
 @interface Particle : NSObject
 
 // metal関連
 @property (nonatomic, strong) id<MTLDevice> device;
 @property (nonatomic, strong) id<MTLCommandQueue> commandQueue;
-@property (nonatomic, strong) id<MTLBuffer> particleBuffer;
 @property (nonatomic, strong) id<MTLComputePipelineState> updateParticlesPipeline;
+@property (nonatomic, strong) id<MTLBuffer> particleBuffer;
+@property (nonatomic, strong) id<MTLBuffer> paramsBuffer;
+@property (nonatomic, strong) id<MTLBuffer> printBuffer;
 // スカラー変数
+@property (nonatomic) uint pNum;
 @property (nonatomic) double charge;
 @property (nonatomic) double mass;
 @property (nonatomic) double weight;

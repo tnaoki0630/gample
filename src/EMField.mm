@@ -16,6 +16,8 @@
     int _ngy;                    // y方向グリッド数
     double _dx;                  // x方向グリッド幅
     double _dy;                  // y方向グリッド幅
+    
+    int _weightOrder;            // weighting のオーダー
 }
 @end
 
@@ -32,7 +34,9 @@
         _ngy = fieldParam.ngy;
         _dx = fieldParam.dx;
         _dy = fieldParam.dy;
-        
+        _weightOrder = fieldParam.weightOrder;
+
+
         // バッファサイズの計算
         NSUInteger gridSize = _ngx * _ngy;
         NSUInteger bufferSize = sizeof(float) * gridSize;

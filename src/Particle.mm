@@ -2,6 +2,7 @@
 #import "Init.h"
 #import "Constant.h"
 #include <random>
+#import <string>
 
 // Metal シェーダーのソースコード
 static NSString *const kMetalShaderSource = @R"(
@@ -28,7 +29,7 @@ struct EMFieldData {
 
 // シミュレーションパラメータ構造体
 struct SimulationParams {
-    int particleCount;
+    uint particleCount;
     float charge;
     float mass;
     float weight;
@@ -39,8 +40,6 @@ struct SimulationParams {
     float constY;
     int ngx;
     int ngy;
-    float dx;
-    float dy;
 };
 
 // 粒子更新カーネル
@@ -52,11 +51,12 @@ kernel void updateParticles(device ParticleState* particles [[buffer(0)]],
                           device const float* Bx [[buffer(5)]],
                           device const float* By [[buffer(6)]],
                           device const float* Bz [[buffer(7)]],
+                          device float* print [[buffer(8)]],
                           uint id [[thread_position_in_grid]]) {
     if (id >= params.particleCount) return;
     
     device ParticleState& p = particles[id];
-    
+
     // electro-magnetic field on each particles
     float xh = p.x - 0.5;
     float yh = p.y - 0.5;
@@ -148,6 +148,9 @@ kernel void updateParticles(device ParticleState* particles [[buffer(0)]],
     // periodic boundary
     p.x = fmod(p.x, float(params.ngx));
     p.y = fmod(p.y, float(params.ngy));
+
+    // debug print
+    print[id] = Bpz;
 }
 )";
 
@@ -159,7 +162,6 @@ kernel void updateParticles(device ParticleState* particles [[buffer(0)]],
     id<MTLBuffer> _BxBuffer;
     id<MTLBuffer> _ByBuffer;
     id<MTLBuffer> _BzBuffer;
-    id<MTLBuffer> _paramsBuffer;
 }
 
 // 初期設定
@@ -172,6 +174,7 @@ kernel void updateParticles(device ParticleState* particles [[buffer(0)]],
         _commandQueue = [device newCommandQueue];
         
         // 物理パラメータの設定
+        _pNum = ParticleParam.pNum;
         _charge = ParticleParam.q;
         _mass = ParticleParam.m;
         _weight = ParticleParam.w;
@@ -194,52 +197,72 @@ kernel void updateParticles(device ParticleState* particles [[buffer(0)]],
         _updateParticlesPipeline = [device newComputePipelineStateWithFunction:updateParticlesFunction
                                                                         error:&error];
         
-        // パーティクルバッファの初期化
-        _particleBuffer = [device newBufferWithLength:sizeof(ParticleState) * ParticleParam.pNum
-                                            options:MTLResourceStorageModeShared];
+        // バッファサイズ
+        size_t buffSize;
+
+        // 粒子バッファ
+        buffSize = sizeof(ParticleState)*ParticleParam.pNum;
+        _particleBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
         
-        // 電場バッファの初期化
-        size_t fieldSize = sizeof(float) * FieldParam.ngx * FieldParam.ngy;
-        _ExBuffer = [device newBufferWithLength:fieldSize options:MTLResourceStorageModeShared];
-        _EyBuffer = [device newBufferWithLength:fieldSize options:MTLResourceStorageModeShared];
-        _EzBuffer = [device newBufferWithLength:fieldSize options:MTLResourceStorageModeShared];
-        // 磁場バッファの初期化
-        _BxBuffer = [device newBufferWithLength:fieldSize options:MTLResourceStorageModeShared];
-        _ByBuffer = [device newBufferWithLength:fieldSize options:MTLResourceStorageModeShared];
-        _BzBuffer = [device newBufferWithLength:fieldSize options:MTLResourceStorageModeShared];
+        // 電磁場バッファ
+        buffSize = sizeof(float)*FieldParam.ngx*FieldParam.ngy;
+        _ExBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
+        _EyBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
+        _EzBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
+        _BxBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
+        _ByBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
+        _BzBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
         
-        // シミュレーションパラメータバッファの初期化
-        _paramsBuffer = [device newBufferWithLength:sizeof(SimulationParams)
-                                          options:MTLResourceStorageModeShared];
+        // シミュレーションパラメータバッファ
+        buffSize = sizeof(SimulationParams);
+        _paramsBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
         
+        // デバッグ出力用バッファ
+        buffSize = sizeof(float)*ParticleParam.pNum;
+        _printBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
+
         // 初期粒子分布の設定
         [self generateParticles:ParticleParam withFieldParam:FieldParam];
+
     }
     return self;
 }
 
 - (void)generateParticles:(ParamForParticle)ParticleParam
             withFieldParam:(ParamForField)FieldParam{
-    // 乱数の初期化
+    // 乱数生成器
     std::random_device seed_gen;
     std::default_random_engine engine(seed_gen());
+    float Lx = FieldParam.dx * FieldParam.ngx;
+    float Ly = FieldParam.dy * FieldParam.ngy;
+    std::uniform_real_distribution<> unif_dist(0.0, 1.0);
+    float vth_epi  = sqrt(2*kb*ParticleParam.initT/ParticleParam.m);
+    std::normal_distribution<> norm_dist(0.0, vth_epi);
     // 粒子の初期化
     ParticleState *particles = (ParticleState *)self.particleBuffer.contents;
-    double Lx = FieldParam.dx * FieldParam.ngx;
-    double Ly = FieldParam.dy * FieldParam.ngy;
-    double vth_epi  = sqrt(2*kb*ParticleParam.initT/ParticleParam.m);
-    std::normal_distribution norm_dist(0.0, vth_epi);
     for (int i = 0; i < ParticleParam.pNum; i++) {
-        // uniform distribution for position
-        particles[i].x = (double)arc4random_uniform(Lx);
-        particles[i].y = (double)arc4random_uniform(Ly);
+        if ([ParticleParam.GenerateType isEqualToString:@"UniformGaussian"]){
+            // uniform distribution for position
+            particles[i].x = (float)unif_dist(engine)*Lx;
+            particles[i].y = (float)unif_dist(engine)*Ly;
+            // Maxwellian for velocity 
+            particles[i].vx = (float)norm_dist(engine);
+            particles[i].vy = (float)norm_dist(engine);
+            particles[i].vz = (float)norm_dist(engine);
+        } else if ([ParticleParam.GenerateType isEqualToString:@"UniformConstant"]){
+            // uniform distribution for position
+            particles[i].x = (float)unif_dist(engine)*Lx;
+            particles[i].y = (float)unif_dist(engine)*Ly;
+            // constant for velosity
+            particles[i].vx = (float)ParticleParam.initU[0];
+            particles[i].vy = (float)ParticleParam.initU[1];
+            particles[i].vz = (float)ParticleParam.initU[2];
+        }
         // shift from real coordinate to integer coodinate
         particles[i].x = particles[i].x/FieldParam.dx;
         particles[i].y = particles[i].y/FieldParam.dy;
-        // Maxwellian for velocity 
-        particles[i].vx = (double)norm_dist(engine);
-        particles[i].vy = (double)norm_dist(engine);
-        particles[i].vz = (double)norm_dist(engine);
+        // check
+        NSLog(@"initial x[%d]: %f", i, particles[i].x);
     }
 }
 
@@ -248,12 +271,14 @@ kernel void updateParticles(device ParticleState* particles [[buffer(0)]],
 - (void)update:(double)dt withEMField:(EMField*)fld {
     // シミュレーションパラメータの更新
     SimulationParams* params = (SimulationParams*)_paramsBuffer.contents;
-    params->particleCount = (int)(_particleBuffer.length / sizeof(ParticleState));
+    params->particleCount = _pNum;
     params->dt = dt;
     params->constE = 0.5*_charge*dt/_mass;
     params->constB = 0.5*_charge*dt/_mass/c;
     params->constX = dt/_dx;
     params->constY = dt/_dy;
+    params->ngx = _ngx;
+    params->ngy = _ngy;
     
     // EMFieldのバッファを直接使用
     id<MTLBuffer> ExBuffer = [fld ExBuffer];
@@ -277,6 +302,7 @@ kernel void updateParticles(device ParticleState* particles [[buffer(0)]],
     [computeEncoder setBuffer:BxBuffer offset:0 atIndex:5];
     [computeEncoder setBuffer:ByBuffer offset:0 atIndex:6];
     [computeEncoder setBuffer:BzBuffer offset:0 atIndex:7];
+    [computeEncoder setBuffer:_printBuffer offset:0 atIndex:8];
     
     // グリッドとスレッドグループのサイズ設定
     NSUInteger gridSize = params->particleCount;
@@ -287,9 +313,27 @@ kernel void updateParticles(device ParticleState* particles [[buffer(0)]],
     [computeEncoder dispatchThreadgroups:gridSizeMetalStyle
                   threadsPerThreadgroup:threadGroupSize];
     
-    // エンコーダと実行
+    // 粒子状態の内容にアクセス
+    ParticleState* p = (ParticleState*)[_particleBuffer contents];
+    for (int idx = 0; idx < 1; idx++){
+        NSLog(@"before update: p.x[%d]: %f", idx, p[idx].x);
+    }
+
+    // エンコーディングと実行
     [computeEncoder endEncoding];
     [commandBuffer commit];
+    [commandBuffer waitUntilCompleted];
+
+    // 粒子状態の内容にアクセス
+    p = (ParticleState*)[_particleBuffer contents];
+    for (int idx = 0; idx < 1; idx++){
+        NSLog(@"after update: p.x[%d]: %f", idx, p[idx].x);
+    }
+    // 結果を取得
+    float* prt = (float*)_printBuffer.contents;
+    for (int idx = 0; idx < 1; idx++){
+        NSLog(@"debug print: val[%d]: %f", idx, prt[idx]);
+    }
 }
 
 - (void)integrateChargeDensity:(EMField*)fld{
@@ -307,7 +351,7 @@ kernel void updateParticles(device ParticleState* particles [[buffer(0)]],
     // 各粒子についてバイナリファイルに出力する 
     for (int idx = 0; idx < 20; idx++) {
         NSString *filePath = [NSString stringWithFormat:@"bin/PhaseSpace_%@_%d.bin", ParticleParam.pName, idx];
-        // std::ofstream を利用してバイナリ書き出し（Objective-C++としてコンパイル）
+        // バイナリ書き出し
         std::ofstream ofs([filePath UTF8String], std::ios::binary | std::ios::app);
         if (!ofs) {
             NSLog(@"Failed to open file: %@", filePath);
@@ -317,7 +361,6 @@ kernel void updateParticles(device ParticleState* particles [[buffer(0)]],
         // 位置を物理次元に戻す
         x = p[idx].x*_dx;
         y = p[idx].y*_dy;
-        if (idx == 0) NSLog(@"x: %f", x);
         
         // phasespace を出力
         ofs.write(reinterpret_cast<const char*>(&i), sizeof(int));

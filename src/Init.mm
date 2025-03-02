@@ -308,6 +308,8 @@
                 _field.ampB[1] = stod(val1)*TtoG;
                 _field.ampB[2] = stod(val2)*TtoG;
             }
+        } else if (key == "WeightingOrder") {
+            _field.weightOrder = stoi(value);
         }
     }
 }

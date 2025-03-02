@@ -23,6 +23,7 @@ xcuserdata/
 *.a
 *.exe
 *.out
+*.app
 
 # Metal shader binaries
 *.metallib

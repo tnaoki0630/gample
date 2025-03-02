@@ -36,6 +36,7 @@ void printInitContents(Init* init) {
         NSLog(@"  Charge: %e", particle.q);
         NSLog(@"  Mass: %e", particle.m);
         NSLog(@"  Weight: %e", particle.w);
+        NSLog(@"  Weight: %@", particle.GenerateType);
         NSLog(@"  initialU: %e", particle.initU[0]);
         NSLog(@"  initialV: %e", particle.initU[1]);
         NSLog(@"  initialW: %e", particle.initU[2]);

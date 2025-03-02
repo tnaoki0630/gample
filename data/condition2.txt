@@ -16,8 +16,8 @@ MaxParticleNumber       200000
 Charge                  -4.803204197e-10
 Mass                    9.10938188e-28
 Weight                  2.5e9
-GenerateType            UniformConstant
-InitialVel              5e8 5e8 0 
+GenerateType            UniformGaussian
+InitialTemp[eV]         10.0
 /
 ParticleName            ion(Xe+)
 InitialParticleNumber   20
@@ -25,8 +25,8 @@ MaxParticleNumber       2000
 Charge                  4.803204197e-10
 Mass                    2.1801714e-22
 Weight                  2.5e9
-GenerateType            UniformConstant
-InitialVel              5e8 5e8 0 
+GenerateType            UniformGaussian
+InitialTemp[eV]         0.5
 /
 #
 BoundaryConditionForParticle
