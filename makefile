@@ -14,7 +14,8 @@ LDFLAGS = -framework Metal \
 # ディレクトリ設定
 SRC_DIR = src
 BUILD_DIR = build
-TARGET = PIC.app
+TARGET = PIC
+RESULT_DIR = bin
 
 # 共通のソースファイル
 SOURCES_COMMON = $(SRC_DIR)/main.mm \
@@ -51,11 +52,11 @@ $(TARGET): $(OBJECTS)
 # オブジェクトファイルの生成
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.mm
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-
+ 
 # デバッグ実行
 debug: $(TARGET)
 	chmod +x run_debug.sh
-	./run_debug.sh $(TARGET)
+	./run_debug.sh $(TARGET) $(RESULT_DIR)
 
 # clean
 clean:

@@ -68,25 +68,25 @@ kernel void updateParticles(device ParticleState* particles [[buffer(0)]],
     hv[0][0] = xh  - float(i1);
     hv[0][1] = p.y - float(j1);
     hv[1][0] = p.x - float(i2);
-    hv[1][1] = yh  - float(i2);
+    hv[1][1] = yh  - float(j2);
     
     // 5th-order weighting
     float sc;
     float sf[6][2][2];
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {
-            sc = 2 + hv[i][j];
-            sf[0][i][j] = 1/120 *pow(3-sc, 5);
-            sc = 1 + hv[i][j];
-            sf[1][i][j] = 1/120 *(51 +75*sc -210*pow(sc,2) +150*pow(sc,3) -45*pow(sc,4) +5*pow(sc,5));
+            sc = 2.0 + hv[i][j];
+            sf[0][i][j] = 1.0/120.0 *pow(3.0-sc, 5);
+            sc = 1.0 + hv[i][j];
+            sf[1][i][j] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
             sc = hv[i][j];
-            sf[2][i][j] = 1/60 *(33 -30*pow(sc,2) +15*pow(sc,4) -5*pow(sc,5));
-            sc = 1 - hv[i][j];
-            sf[3][i][j] = 1/60 *(33 -30*pow(sc,2) +15*pow(sc,4) -5*pow(sc,5));
-            sc = 2 - hv[i][j];
-            sf[4][i][j] = 1/120 *(51 +75*sc -210*pow(sc,2) +150*pow(sc,3) -45*pow(sc,4) +5*pow(sc,5));
-            sc = 3 - hv[i][j];
-            sf[5][i][j] = 1/120 *pow(3-sc, 5);
+            sf[2][i][j] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+            sc = 1.0 - hv[i][j];
+            sf[3][i][j] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+            sc = 2.0 - hv[i][j];
+            sf[4][i][j] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+            sc = 3.0 - hv[i][j];
+            sf[5][i][j] = 1.0/120.0 *pow(3.0-sc, 5);
         }
     }
 
@@ -146,8 +146,8 @@ kernel void updateParticles(device ParticleState* particles [[buffer(0)]],
     p.y = p.y + p.vy * params.constY;
 
     // periodic boundary
-    p.x = fmod(p.x, float(params.ngx));
-    p.y = fmod(p.y, float(params.ngy));
+    p.x = fmod(p.x + float(params.ngx) - 2.0, float(params.ngx)) + 2.0;
+    p.y = fmod(p.y + float(params.ngy) - 2.0, float(params.ngy)) + 2.0;
 
     // debug print
     print[id] = Bpz;
@@ -261,6 +261,11 @@ kernel void updateParticles(device ParticleState* particles [[buffer(0)]],
         // shift from real coordinate to integer coodinate
         particles[i].x = particles[i].x/FieldParam.dx;
         particles[i].y = particles[i].y/FieldParam.dy;
+        // shift origin for high-order weighting
+        if (FieldParam.weightOrder == 5){
+            particles[i].x = particles[i].x + 2.0;
+            particles[i].y = particles[i].y + 2.0;
+        }
         // check
         NSLog(@"initial x[%d]: %f", i, particles[i].x);
     }
@@ -359,8 +364,8 @@ kernel void updateParticles(device ParticleState* particles [[buffer(0)]],
         }
 
         // 位置を物理次元に戻す
-        x = p[idx].x*_dx;
-        y = p[idx].y*_dy;
+        x = (p[idx].x - 2.0)*_dx;
+        y = (p[idx].y - 2.0)*_dy;
         
         // phasespace を出力
         ofs.write(reinterpret_cast<const char*>(&i), sizeof(int));

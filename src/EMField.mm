@@ -21,7 +21,18 @@
 }
 @end
 
-@implementation EMField
+@implementation EMField {
+    // プライベートインスタンス変数
+    int _ngb;
+    int _ngbrho[2];
+    int _ngbphi[2];
+    int _ngbEx[2];
+    int _ngbEy[2];
+    int _ngbEz[2];
+    int _ngbBx[2];
+    int _ngbBy[2];
+    int _ngbBz[2];
+}
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam {
     self = [super init];
@@ -36,9 +47,34 @@
         _dy = fieldParam.dy;
         _weightOrder = fieldParam.weightOrder;
 
+        // 小行列の配列サイズ（A[1][1] が解析領域で、それ以外は領域境界）
+        if (_weightOrder == 5){
+            // general
+            _ngb = 2;
+            // rho,phi,Ez
+            _ngbrho[0] = 2;
+            _ngbphi[0] = 2;
+            _ngbEz[0] = 2;
+            _ngbrho[1] = 2;
+            _ngbphi[1] = 2;
+            _ngbEz[1] = 2;
+            // Ex, By
+            _ngbEx[0] = 3;
+            _ngbBy[0] = 3;
+            _ngbEx[1] = 2;
+            _ngbBy[1] = 2;
+            // Ey, Bx
+            _ngbEy[0] = 2;
+            _ngbBx[0] = 2;
+            _ngbEy[1] = 3;
+            _ngbBx[1] = 3;
+            // Bz
+            _ngbBz[0] = 3;
+            _ngbBz[0] = 3;
+        }
 
         // バッファサイズの計算
-        NSUInteger gridSize = _ngx * _ngy;
+        NSUInteger gridSize = (_ngx + 2*_ngb) * (_ngy + 2*_ngb) ;
         NSUInteger bufferSize = sizeof(float) * gridSize;
         
         // Metal バッファの初期化
