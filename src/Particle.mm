@@ -214,12 +214,12 @@ kernel void integrateChargeDensity(
 
     // accumulation
     int ii, jj;
-    const int ngy = (params.ngy + 2*2);
+    const int ngx = (params.ngx + 2*2);
     for (int i = 0; i < 6; i++) {
         for (int j = 0; j < 6; j++) {
             ii = i1+(i-2);
             jj = j1+(j-2);
-            idx_out = gid + (ii+jj*ngy)*chunkSize;
+            idx_out = gid + (ii+jj*ngx)*chunkSize;
             temp[idx_out] = sf[i][0]*sf[j][1]*constRho;
         }
     }
@@ -515,7 +515,7 @@ kernel void integrateChargeDensity(
         int i,j,idx;
         i = 10;
         j = 10;
-        idx = i + j *(fld.ngy+fld.ngb);
+        idx = i + j *(fld.ngx+2*fld.ngb);
         // NSLog(@"integration: chunk: %d, fld.rho[%d,%d]: %f", chunk, i, j, fld.rho[idx]);
     }
     // 加算後
