@@ -15,8 +15,8 @@
     int _ngx;                    // x方向グリッド数
     int _ngy;                    // y方向グリッド数
     int _ngb;                    // バッファ領域グリッド数
-    double _dx;                  // x方向グリッド幅
-    double _dy;                  // y方向グリッド幅
+    float _dx;                  // x方向グリッド幅
+    float _dy;                  // y方向グリッド幅
     
     int _weightOrder;            // weighting のオーダー
 }
@@ -115,11 +115,52 @@
 }
 
 - (void)solvePoisson{
+
+}
+
+- (void)resetChargeDensity{
     // 電荷密度の初期化
     int ng = (_ngx + 2*_ngb) * (_ngy + 2*_ngb);
     for (int i = 0; i < ng; i++){
         _rho[i] = 0.0f;
     }
+}
+
+- (void)outputField:(int)cycle{
+    // サイクル番号を用いてファイル名を作成 (例: field_0001.bin)
+    NSString *fileName = [NSString stringWithFormat:@"bin/field_%08d.bin", cycle];
+    const char *filePath = [fileName UTF8String];
+    
+    FILE *fp = fopen(filePath, "wb");
+    if (!fp) {
+        NSLog(@"Error: Unable to open file %s for writing", filePath);
+        return;
+    }
+    
+    // ヘッダ情報としてメッシュ情報を出力
+    fwrite(&_ngx, sizeof(int), 1, fp);
+    fwrite(&_ngy, sizeof(int), 1, fp);
+    fwrite(&_ngb, sizeof(int), 1, fp);
+    fwrite(&_dx, sizeof(float), 1, fp);
+    fwrite(&_dy, sizeof(float), 1, fp);
+    
+    // 全グリッドサイズ (境界含む) の計算
+    int ng = (_ngx + 2 * _ngb) * (_ngy + 2 * _ngb);
+    
+    // 順にフィールドデータを書き出す: _rho, _phi, Ex, Ey, Bz
+    fwrite(_rho, sizeof(float), ng, fp);
+    fwrite(_phi, sizeof(float), ng, fp);
+    
+    float *Ex = (float *)_ExBuffer.contents;
+    float *Ey = (float *)_EyBuffer.contents;
+    float *Bz = (float *)_BzBuffer.contents;
+    
+    fwrite(Ex, sizeof(float), ng, fp);
+    fwrite(Ey, sizeof(float), ng, fp);
+    fwrite(Bz, sizeof(float), ng, fp);
+    
+    fclose(fp);
+    NSLog(@"Field data successfully written to %s", filePath);
 }
 
 // 電荷密度へのアクセサ

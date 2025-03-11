@@ -6,10 +6,10 @@
 
 @interface EMField : NSObject
 
-// デバイスを受け取るように初期化メソッドを修正
 - (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam ;
-
 - (void)solvePoisson;
+- (void)resetChargeDensity;
+- (void)outputField:(int)cycle;
 
 // 電荷密度へのアクセサ
 - (float*)rho;

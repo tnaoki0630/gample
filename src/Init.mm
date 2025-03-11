@@ -143,8 +143,10 @@
     if (iss >> key >> value) {
         if (key == "End") {
             _timeIntegration.EndCycle = (int)value;
-        } else if (key == "Output") {
-            _timeIntegration.OutputCycle = (int)value;
+        } else if (key == "ParticleOutput") {
+            _timeIntegration.pOutCycle = (int)value;
+        } else if (key == "FieldOutput") {
+            _timeIntegration.fOutCycle = (int)value;
         } else if (key == "TimeStep") {
             _timeIntegration.dt = value;
         }

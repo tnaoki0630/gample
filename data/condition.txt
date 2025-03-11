@@ -1,13 +1,14 @@
 FlagForEquation
 Particle    1
-EMField     0
+EMField     1
 MCCollision 0
 #
 ParamForTimeIntegration
-Start       1
-End         2000
-Output      2000
-TimeStep    5e-12
+Start           1
+End             20
+ParticleOutput  20
+FieldOutput     20
+TimeStep        5e-12
 #
 ParamForParticle
 ParticleName            electron
@@ -45,7 +46,7 @@ BCType      periodic
 #
 ParamForField
 NumberOfGridX     64
-NumberOfGridY     64
+NumberOfGridY     128
 GridSizeOfX       7.8125e-3
 GridSizeOfY       7.8125e-3
 InitializeType    Uniform

@@ -185,11 +185,11 @@ kernel void integrateChargeDensity(
     device ParticleState& p = particles[pid];
 
     // electro-magnetic field on each particles
+    int i1 = int(p.x);
     int j1 = int(p.y);
-    int i2 = int(p.x);
     float hv[2];
-    hv[0] = p.y - float(j1);
-    hv[1] = p.x - float(i2);
+    hv[0] = p.x - float(i1);
+    hv[1] = p.y - float(j1);
     
     // 5th-order weighting
     float sc;
@@ -217,7 +217,7 @@ kernel void integrateChargeDensity(
     const int ngy = (params.ngy + 2*2);
     for (int i = 0; i < 6; i++) {
         for (int j = 0; j < 6; j++) {
-            ii = i2+(i-2);
+            ii = i1+(i-2);
             jj = j1+(j-2);
             idx_out = gid + (ii+jj*ngy)*chunkSize;
             temp[idx_out] = sf[i][0]*sf[j][1]*constRho;
@@ -280,7 +280,7 @@ kernel void integrateChargeDensity(
         _dy = FieldParam.dy;
 
         // 並列計算パラメータ
-        _integrationChunkSize = 1024;
+        _integrationChunkSize = 4096;
         _threadGroupSize = 256;
         
         // コンピュートパイプラインの設定
@@ -448,7 +448,7 @@ kernel void integrateChargeDensity(
     // 粒子情報取得
     SimulationParams* params = (SimulationParams*)_paramsBuffer.contents;
     // 格子情報取得
-    int ng = (fld.ngx+fld.ngb)*(fld.ngy+fld.ngb);
+    int ng = (fld.ngx+2*fld.ngb)*(fld.ngy+2*fld.ngb);
     // constant 引数バッファ
     id<MTLBuffer> chunkSizeBuffer = [_device newBufferWithBytes:&_integrationChunkSize
                                                 length:sizeof(int)
@@ -526,7 +526,7 @@ kernel void integrateChargeDensity(
     NSLog(@"after integration: fld.rho[%d,%d]: %f", i, j, fld.rho[idx]);
 };
 
-- (void)outputPhaseSpace:(int)i withParticleParam:(ParamForParticle)ParticleParam{
+- (void)outputPhaseSpace:(int)cycle withParticleParam:(ParamForParticle)ParticleParam{
     // 粒子状態の内容にアクセス
     ParticleState *p = (ParticleState*)[_particleBuffer contents];
     // dx, dy の取得用にパラメータ取得
@@ -549,7 +549,7 @@ kernel void integrateChargeDensity(
         y = (p[idx].y - 2.0)*_dy;
         
         // phasespace を出力
-        ofs.write(reinterpret_cast<const char*>(&i), sizeof(int));
+        ofs.write(reinterpret_cast<const char*>(&cycle), sizeof(int));
         ofs.write(reinterpret_cast<const char*>(&x), sizeof(float));
         ofs.write(reinterpret_cast<const char*>(&y), sizeof(float));
         ofs.write(reinterpret_cast<const char*>(&p[idx].vx), sizeof(float));

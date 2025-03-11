@@ -41,28 +41,42 @@ int main(int argc, const char * argv[]) {
         // モーメント量の初期化
         Moment *mom = [[Moment alloc] initialize];
 
-        // シミュレーションループ
+        // 時間更新ループ
         struct ParamForTimeIntegration timeParams = [init getParamForTimeIntegration];
-        int StartCycle = 0; // リスタート時は最終サイクルを引き継ぎたい
+        struct FragForEquation EqFrags = [init getFragForEquation];
+        int StartCycle = 1; // リスタート時は最終サイクルを引き継ぎたい
         double dt = timeParams.dt; // そのうち dt の更新が必要になるかも
-        for (int i = StartCycle; i < timeParams.EndCycle; i++) {
+        for (int cycle = StartCycle; cycle <= timeParams.EndCycle; cycle++) {
+            // 電荷密度の初期化
+            [fld resetChargeDensity];
+            // 粒子ループ
             for (int s = 0; s < ParticleParams.count; s++) {
                 Particle *ptcl = [ptclArr objectAtIndex:s];
                 // 粒子の時間更新
-                [ptcl update:dt withEMField:fld];
+                if (EqFrags.Particle == 1){
+                    [ptcl update:dt withEMField:fld];
+                }
                 // 電荷密度の更新
-                [ptcl integrateChargeDensity:fld];
+                if (EqFrags.EMField == 1){
+                    [ptcl integrateChargeDensity:fld];
+                }
                 // 粒子軌道の出力
-                if (i%timeParams.OutputCycle == 0){
+                if (cycle%timeParams.pOutCycle == 0){
                     NSValue *value = ParticleParams[s];
                     struct ParamForParticle ParticleParam;
                     [value getValue:&ParticleParam];
-                    [ptcl outputPhaseSpace:i withParticleParam:ParticleParam];
+                    [ptcl outputPhaseSpace:cycle withParticleParam:ParticleParam];
                 }
             }
             // 電場の更新
-            [fld solvePoisson];
-            NSLog(@"Frame %d completed", i);
+            if (EqFrags.EMField == 1){
+                [fld solvePoisson];
+            }
+            // 場の出力
+            if (cycle%timeParams.fOutCycle == 0){
+                [fld outputField: cycle];
+            }
+            NSLog(@"Frame %d completed", cycle);
         }
     }
     return 0;
