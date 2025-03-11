@@ -48,7 +48,10 @@ struct SimulationParams {
 @property (nonatomic, strong) id<MTLDevice> device;
 @property (nonatomic, strong) id<MTLCommandQueue> commandQueue;
 @property (nonatomic, strong) id<MTLComputePipelineState> updateParticlesPipeline;
+@property (nonatomic, strong) id<MTLComputePipelineState> integrateChargeDensityPipeline;
 @property (nonatomic, strong) id<MTLBuffer> particleBuffer;
+@property (nonatomic, strong) id<MTLBuffer> integrateTemporaryBuffer;
+@property (nonatomic, strong) id<MTLBuffer> integratePartialBuffer;
 @property (nonatomic, strong) id<MTLBuffer> paramsBuffer;
 @property (nonatomic, strong) id<MTLBuffer> printBuffer;
 // スカラー変数
@@ -60,6 +63,8 @@ struct SimulationParams {
 @property (nonatomic) double ngy;
 @property (nonatomic) double dx;
 @property (nonatomic) double dy;
+@property (nonatomic) uint threadGroupSize;
+@property (nonatomic) uint integrationChunkSize;
 
 // 初期設定
 - (instancetype)initWithDevice:(id<MTLDevice>)device

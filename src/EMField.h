@@ -11,6 +11,9 @@
 
 - (void)solvePoisson;
 
+// 電荷密度へのアクセサ
+- (float*)rho;
+
 // Metal バッファへのアクセサ
 - (id<MTLBuffer>)ExBuffer;
 - (id<MTLBuffer>)EyBuffer;
@@ -22,6 +25,7 @@
 // グリッド情報へのアクセサ
 - (int)ngx;
 - (int)ngy;
+- (int)ngb;
 - (double)dx;
 - (double)dy;
 

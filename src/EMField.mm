@@ -3,8 +3,8 @@
 
 @interface EMField () {
     id<MTLDevice> _device;
-    id<MTLBuffer> _rhoBuffer;    // 電荷密度
-    id<MTLBuffer> _phiBuffer;    // ポテンシャル
+    float* _rho;                 // 電荷密度
+    float* _phi;                 // ポテンシャル
     id<MTLBuffer> _ExBuffer;     // 電場 x成分
     id<MTLBuffer> _EyBuffer;     // 電場 y成分
     id<MTLBuffer> _EzBuffer;     // 電場 z成分
@@ -14,6 +14,7 @@
     
     int _ngx;                    // x方向グリッド数
     int _ngy;                    // y方向グリッド数
+    int _ngb;                    // バッファ領域グリッド数
     double _dx;                  // x方向グリッド幅
     double _dy;                  // y方向グリッド幅
     
@@ -23,7 +24,6 @@
 
 @implementation EMField {
     // プライベートインスタンス変数
-    int _ngb;
     int _ngbrho[2];
     int _ngbphi[2];
     int _ngbEx[2];
@@ -71,6 +71,8 @@
             // Bz
             _ngbBz[0] = 3;
             _ngbBz[0] = 3;
+        } else {
+            _ngb = 0;
         }
 
         // バッファサイズの計算
@@ -78,8 +80,6 @@
         NSUInteger bufferSize = sizeof(float) * gridSize;
         
         // Metal バッファの初期化
-        _rhoBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
-        _phiBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
         _ExBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
         _EyBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
         _EzBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
@@ -88,8 +88,6 @@
         _BzBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
         
         // バッファの初期化
-        float* rho = (float*)_rhoBuffer.contents;
-        float* phi = (float*)_phiBuffer.contents;
         float* Ex = (float*)_ExBuffer.contents;
         float* Ey = (float*)_EyBuffer.contents;
         float* Ez = (float*)_EzBuffer.contents;
@@ -97,10 +95,14 @@
         float* By = (float*)_ByBuffer.contents;
         float* Bz = (float*)_BzBuffer.contents;
         
-        // Uniform
+        // malloc
+        _rho = (float *)malloc(bufferSize);
+        _phi = (float *)malloc(bufferSize);
+        
+        // initialize(Uniform)
         for (NSUInteger i = 0; i < gridSize; i++) {
-            rho[i] = 0.0f;
-            phi[i] = 0.0f;
+            _rho[i] = 0.0f;
+            _phi[i] = 0.0f;
             Ex[i] = fieldParam.ampE[0];
             Ey[i] = fieldParam.ampE[1];
             Ez[i] = fieldParam.ampE[2];
@@ -116,6 +118,9 @@
 
 }
 
+// 電荷密度へのアクセサ
+- (float*)rho { return _rho; }
+
 // 電場バッファへのアクセサ
 - (id<MTLBuffer>)ExBuffer { return _ExBuffer; }
 - (id<MTLBuffer>)EyBuffer { return _EyBuffer; }
@@ -129,6 +134,7 @@
 // グリッド情報へのアクセサ
 - (int)ngx { return _ngx; }
 - (int)ngy { return _ngy; }
+- (int)ngb { return _ngb; }
 - (double)dx { return _dx; }
 - (double)dy { return _dy; }
 
