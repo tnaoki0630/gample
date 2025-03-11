@@ -449,10 +449,6 @@ kernel void integrateChargeDensity(
     SimulationParams* params = (SimulationParams*)_paramsBuffer.contents;
     // 格子情報取得
     int ng = (fld.ngx+fld.ngb)*(fld.ngy+fld.ngb);
-    // 電荷密度の初期化
-    for (int i = 0; i < ng; i++){
-        fld.rho[i] = 0.0f;
-    }
     // constant 引数バッファ
     id<MTLBuffer> chunkSizeBuffer = [_device newBufferWithBytes:&_integrationChunkSize
                                                 length:sizeof(int)
@@ -520,7 +516,7 @@ kernel void integrateChargeDensity(
         i = 10;
         j = 10;
         idx = i + j *(fld.ngy+fld.ngb);
-        NSLog(@"integration: chunk: %d, fld.rho[%d,%d]: %f", chunk, i, j, fld.rho[idx]);
+        // NSLog(@"integration: chunk: %d, fld.rho[%d,%d]: %f", chunk, i, j, fld.rho[idx]);
     }
     // 加算後
     int i,j,idx;

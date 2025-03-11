@@ -62,9 +62,7 @@ int main(int argc, const char * argv[]) {
             }
             // 電場の更新
             [fld solvePoisson];
-            if (i%timeParams.OutputCycle == 0){
-                NSLog(@"Frame %d completed", i);
-            }
+            NSLog(@"Frame %d completed", i);
         }
     }
     return 0;

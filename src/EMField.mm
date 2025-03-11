@@ -115,7 +115,11 @@
 }
 
 - (void)solvePoisson{
-
+    // 電荷密度の初期化
+    int ng = (_ngx + 2*_ngb) * (_ngy + 2*_ngb);
+    for (int i = 0; i < ng; i++){
+        _rho[i] = 0.0f;
+    }
 }
 
 // 電荷密度へのアクセサ
