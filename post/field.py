@@ -36,25 +36,23 @@ x = np.linspace(0, ngx*dx, ngx)
 y = np.linspace(0, ngy*dy, ngy)
 X, Y = np.meshgrid(x, y)
 
-print(dx)
-print(ngx)
-print(rho)
-
 # プロット用の関数
-def plot_field(field, title):
-    plt.figure()
-    # pcolormesh により実スケール (x, y 座標) で描画
-    plt.pcolormesh(X, Y, field, shading='auto')
-    plt.colorbar()
-    plt.xlabel('x (units)')
-    plt.ylabel('y (units)')
-    plt.title(title)
-    plt.tight_layout()
-    plt.show()
+def plot_field(field, title, figname):
+    fig, ax = plt.subplots()
+    im = ax.pcolormesh(X, Y, field, shading='auto')
+    cbar = fig.colorbar(im, ax=ax, fraction=0.025, pad=0.04)
+    cbar.set_label('Field value')
+    ax.set_xlabel('x (units)')
+    ax.set_ylabel('y (units)')
+    ax.set_title(title)
+    ax.set_aspect('equal', adjustable='box')  # 軸のスケールを等しくする
+    fig.tight_layout()
+    fig.savefig(figname)
+    plt.close(fig)
 
 # 各フィールドをプロット
-plot_field(rho_phys, 'Charge Density (rho)')
-# plot_field(phi_phys, 'Potential (phi)')
-# plot_field(Ex_phys,  'Electric Field Ex')
-# plot_field(Ey_phys,  'Electric Field Ey')
-# plot_field(Bz_phys,  'Magnetic Field Bz')
+plot_field(rho_phys, 'Charge Density (rho)', 'fig/rho.png')
+plot_field(phi_phys, 'Potential (phi)', 'fig/phi.png')
+plot_field(Ex_phys,  'Electric Field Ex', 'fig/Ex.png')
+plot_field(Ey_phys,  'Electric Field Ey', 'fig/Ey.png')
+plot_field(Bz_phys,  'Magnetic Field Bz', 'fig/Bz.png')

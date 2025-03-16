@@ -12,7 +12,7 @@ TimeStep        5e-12
 #
 ParamForParticle
 ParticleName            electron
-InitialParticleNumber   20000
+InitialParticleNumber   1
 MaxParticleNumber       200000
 Charge                  -4.803204197e-10
 Mass                    9.10938188e-28
@@ -21,7 +21,7 @@ GenerateType            UniformConstant
 InitialVel              5e8 0 0 
 /
 ParticleName            ion(Xe+)
-InitialParticleNumber   20000
+InitialParticleNumber   1
 MaxParticleNumber       200000
 Charge                  4.803204197e-10
 Mass                    2.1801714e-22

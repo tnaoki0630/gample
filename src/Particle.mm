@@ -511,12 +511,6 @@ kernel void integrateChargeDensity(
                 fld.rho[i] += partialSums[j + i*threadGroupNum];
             }
         }
-        // check
-        int i,j,idx;
-        i = 10;
-        j = 10;
-        idx = i + j *(fld.ngx+2*fld.ngb);
-        // NSLog(@"integration: chunk: %d, fld.rho[%d,%d]: %f", chunk, i, j, fld.rho[idx]);
     }
     // 加算後
     int i,j,idx;
