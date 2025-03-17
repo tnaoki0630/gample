@@ -25,6 +25,7 @@ xcuserdata/
 *.out
 *.app
 PIC
+main
 
 # Metal shader binaries
 *.metallib
@@ -40,8 +41,6 @@ PIC
 *.vti
 *.vtp
 *.bin
-*.mp4
-*.png
 
 # source files
 src.txt

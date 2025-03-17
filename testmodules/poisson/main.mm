@@ -1,6 +1,4 @@
 // main.mm
-#include <vector>
-#include <string>
 #include <amgcl/make_solver.hpp>
 #include <amgcl/solver/bicgstab.hpp>
 #include <amgcl/amg.hpp>
@@ -17,9 +15,9 @@ int main(int argc, const char * argv[]) {
     float dx = 7.8125e-3;
     float dy = 7.8125e-3;
     // 定数係数
-    float Cd = 2*(1.0/dx/dx + 1.0/dy/dy);
-    float Cx = -1.0/dx/dx;
-    float Cy = -1.0/dy/dy;
+    float Cd = -2*(1.0/dx/dx + 1.0/dy/dy);
+    float Cx = 1.0/dx/dx;
+    float Cy = 1.0/dy/dy;
     
     // CSR 行列
     std::vector<int> ptr;
@@ -76,6 +74,53 @@ int main(int argc, const char * argv[]) {
             int k = i + j*nkx;
             int row_entries = 0;
 
+            // Neumann(前進/後進 差分)
+            if (i == 0 && BC_imin == "Neumann"){
+                col.push_back(k);
+                val.push_back(-1.0/dx);
+                row_entries++;
+                col.push_back(k+1);
+                val.push_back(1.0/dx);
+                row_entries++;
+                rhs.push_back(dphidx_imin[j]);
+                // ptr を更新してループを抜ける
+                ptr.push_back(ptr.back() + row_entries);
+                continue;
+            }else if(i == nkx-1 && BC_imax == "Neumann"){
+                col.push_back(k);
+                val.push_back(1.0/dx);
+                row_entries++;
+                col.push_back(k-1);
+                val.push_back(-1.0/dx);
+                row_entries++;
+                rhs.push_back(dphidx_imax[j]);
+                // ptr を更新してループを抜ける
+                ptr.push_back(ptr.back() + row_entries);
+                continue;
+            }else if (j == 0 && BC_jmin == "Neumann"){
+                col.push_back(k);
+                val.push_back(-1.0/dy);
+                row_entries++;
+                col.push_back(k+nkx);
+                val.push_back(1.0/dy);
+                row_entries++;
+                rhs.push_back(dphidy_jmin[i]);
+                // ptr を更新してループを抜ける
+                ptr.push_back(ptr.back() + row_entries);
+                continue;
+            }else if(j == nky-1 && BC_jmax == "Neumann"){
+                col.push_back(k);
+                val.push_back(1.0/dx);
+                row_entries++;
+                col.push_back(k-nkx);
+                val.push_back(-1.0/dx);
+                row_entries++;
+                rhs.push_back(dphidy_jmax[i]);
+                // ptr を更新してループを抜ける
+                ptr.push_back(ptr.back() + row_entries);
+                continue;
+            }
+
             // diagonal
             col.push_back(k);
             val.push_back(Cd);
@@ -87,14 +132,6 @@ int main(int argc, const char * argv[]) {
                 if (BC_imin == "Dirichlet"){
                     // ディリクレ境界に接してるなら b に足す
                     rhs[k] += -Cx*phi_imin[j];
-                }else if (BC_imin == "Neumann"){
-                    // ノイマン境界用に A,b の上書き
-                    val[k] = -1.0/dx;
-                    rhs[k] = dphidx_imin[j];
-                    // 要素の追加
-                    col.push_back(k+1);
-                    val.push_back(1.0/dx);
-                    row_entries++;
                 }else if (BC_imin == "periodic"){
                     // 要素の追加
                     col.push_back(k+(nkx-1));
@@ -112,13 +149,6 @@ int main(int argc, const char * argv[]) {
             if (i == nkx-1){
                 if (BC_imax == "Dirichlet"){
                     rhs[k] += -Cx*phi_imax[j];
-                }else if (BC_imax == "Neumann"){
-                    val[k] = 1.0/dx;
-                    rhs[k] = dphidx_imax[j];
-                    // 要素の追加
-                    col.push_back(k-1);
-                    val.push_back(-1.0/dx);
-                    row_entries++;
                 }else if (BC_imax == "periodic"){
                     // 要素の追加
                     col.push_back(k-(nkx-1));
@@ -135,13 +165,6 @@ int main(int argc, const char * argv[]) {
             if (j == 0){
                 if (BC_jmin == "Dirichlet"){
                     rhs[k] += -Cy*phi_jmin[j];
-                }else if (BC_jmin == "Neumann"){
-                    val[k] = -1.0/dy;
-                    rhs[k] = dphidy_jmin[i];
-                    // 要素の追加
-                    col.push_back(k+nkx);
-                    val.push_back(1.0/dy);
-                    row_entries++;
                 }else if (BC_jmin == "periodic"){
                     // 要素の追加
                     col.push_back(k+(nky-1));
@@ -158,13 +181,6 @@ int main(int argc, const char * argv[]) {
             if (j == nky-1){
                 if (BC_jmax == "Dirichlet"){
                     rhs[k] += -Cy*phi_jmax[i];
-                }else if (BC_jmax == "Neumann"){
-                    val[k] = 1.0/dy;
-                    rhs[k] = dphidy_jmax[i];
-                    // 要素の追加
-                    col.push_back(k-nkx);
-                    val.push_back(-1.0/dy);
-                    row_entries++;
                 }else if (BC_jmax == "periodic"){
                     // 要素の追加
                     col.push_back(k-(nky-1)*nkx);
@@ -188,13 +204,13 @@ int main(int argc, const char * argv[]) {
     // バックエンドとソルバの型定義
     typedef amgcl::backend::builtin<float> Backend;
     typedef amgcl::make_solver<
-    // 前処理器として AMG を使用：
+    // Use AMG as preconditioner:
     amgcl::amg<
         Backend,
         amgcl::coarsening::smoothed_aggregation,
         amgcl::relaxation::spai0
         >,
-    // 反復解法器として BiCGStab を使用：
+    // And BiCGStab as iterative solver:
     amgcl::solver::bicgstab<Backend>
     > Solver;
 

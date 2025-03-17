@@ -312,6 +312,10 @@
             }
         } else if (key == "WeightingOrder") {
             _field.weightOrder = stoi(value);
+        } else if (key == "MaxIterForPoisson") {
+            _field.maxiter = stoi(value);
+        } else if (key == "TolForPoisson") {
+            _field.tolerance = stof(value);
         }
     }
 }

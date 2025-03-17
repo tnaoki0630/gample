@@ -46,6 +46,8 @@ struct ParamForField {
     double ampE[3];
     double ampB[3];
     int weightOrder;
+    int maxiter;
+    float tolerance;
 };
 
 struct BoundaryConditionForField {

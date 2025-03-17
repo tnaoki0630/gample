@@ -45,22 +45,24 @@ BCType      periodic
 /
 #
 ParamForField
-NumberOfGridX     128
-NumberOfGridY     64
-GridSizeOfX       7.8125e-3
-GridSizeOfY       7.8125e-3
-InitializeType    Uniform
-AmplitudeOfE[SI]  4e4 0.0 0.0
-AmplitudeOfB[SI]  0.0 0.0 10e-3
-WeightingOrder    5
+NumberOfGridX       128
+NumberOfGridY       64
+GridSizeOfX         7.8125e-3
+GridSizeOfY         7.8125e-3
+InitializeType      Uniform
+AmplitudeOfE[SI]    4e4 0.0 0.0
+AmplitudeOfB[SI]    0.0 0.0 10e-3
+WeightingOrder      5
+MaxIterForPoisson   200
+TolForPoisson       1e-5
 #
 BoundaryConditionForField
 RegionName  Xmin
-BCType      dirichlet
+BCType      Dirichlet
 0
 /
 RegionName  Xmax
-BCType      dirichlet
+BCType      Dirichlet
 200
 /
 RegionName  Ymin
