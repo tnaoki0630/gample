@@ -5,25 +5,24 @@ filename = f"result.bin"
 
 with open(filename, 'rb') as f:
     # ヘッダ情報の読み込み
-    ngx = np.frombuffer(f.read(4), dtype=np.int32)[0]
-    ngy = np.frombuffer(f.read(4), dtype=np.int32)[0]
+    nx = np.frombuffer(f.read(4), dtype=np.int32)[0]
+    ny = np.frombuffer(f.read(4), dtype=np.int32)[0]
+    nb = np.frombuffer(f.read(4), dtype=np.int32)[0]
     dx = np.frombuffer(f.read(4), dtype=np.float32)[0]
     dy = np.frombuffer(f.read(4), dtype=np.float32)[0]
     
-    # 全グリッドサイズ（境界含む）
-    # ngx = ngx - 2
-    # ngy = ngy - 2
-    ngx = ngx - 2
-    ngy = ngy - 1
-    total_cells = ngx * ngy
-    
-    # 各フィールドのデータ読み込み (float は 4 バイト)
-    phi = np.frombuffer(f.read(total_cells * 4), dtype=np.float32).reshape((ngy, ngx))
-    
-# 物理座標の生成
-x = np.linspace(0, ngx*dx, ngx)
-y = np.linspace(0, ngy*dy, ngy)
-X, Y = np.meshgrid(x, y)
+    # phi の読み込み (float は 4 バイト) 
+    nkx = nx+2*nb+1
+    nky = ny+2*nb+1
+    arrSize = (nkx+1)*(nky+1)
+    phi_raw = np.frombuffer(f.read(arrSize * 4), dtype=np.float32)
+    phi = phi_raw.reshape((nky+1, nkx+1))
+    # Ex, Ey の読み込み (float は 4 バイト) 
+    nkx = nx+2*nb
+    nky = ny+2*nb
+    arrSize = (nkx+1)*(nky+1)
+    Ex = np.frombuffer(f.read(arrSize * 4), dtype=np.float32).reshape((nky+1, nkx+1))
+    Ey = np.frombuffer(f.read(arrSize * 4), dtype=np.float32).reshape((nky+1, nkx+1))
 
 # プロット用の関数
 def plot_field(field, title, figname):
@@ -39,5 +38,18 @@ def plot_field(field, title, figname):
     fig.savefig(figname)
     plt.close(fig)
 
-# 各フィールドをプロット
-plot_field(phi, 'Potential (phi)', 'result.png')
+# プロット
+x = np.linspace(0, (nx+2*nb+1)*dx, nx+2*nb+1)
+y = np.linspace(0, (ny+2*nb+1)*dy, ny+2*nb+1)
+X, Y = np.meshgrid(x, y)
+plot_field(phi[0:ny+2*nb+1,0:nx+2*nb+1], 'Potential (phi)', 'phi.png')
+x = np.linspace(0, (nx+2*nb)*dx, nx+2*nb)
+y = np.linspace(0, (ny+2*nb)*dy, ny+2*nb)
+X, Y = np.meshgrid(x, y)
+plot_field(Ex [0:ny+2*nb,0:nx+2*nb], 'Electric Field (Ex)', 'Ex.png')
+plot_field(Ey [0:ny+2*nb,0:nx+2*nb], 'Electric Field (Ey)', 'Ey.png')
+
+# 標準出力
+np.set_printoptions(threshold=np.inf)
+print(phi_raw[nb+1+(nb+2)*(nx+2*nb+2)])
+print(phi[nb+2, nb+1])

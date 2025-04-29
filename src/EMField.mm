@@ -71,8 +71,7 @@ typedef amgcl::make_solver<
     float _Cd;
     float _Cx;
     float _Cy;
-    float* _phi;
-    std::vector<float> _x;
+    std::vector<float> _phi_sol;
     std::vector<float> _rhs_BC;
     // smart pointer
     std::unique_ptr<Solver> _solver;
@@ -141,7 +140,7 @@ typedef amgcl::make_solver<
         
         // malloc
         _rho = (float *)malloc(bufferSize);
-        _phi = (float *)malloc(bufferSize);
+        _phi = (float *)malloc(sizeof(float) * (_ngx + 2*_ngb + 1)*(_ngy + 2*_ngb + 1) );
         
         // initialize(Uniform)
         for (int i = 0; i < gridSize; i++) {
@@ -368,7 +367,7 @@ typedef amgcl::make_solver<
         }
 
         // 初期解
-        _x.assign(nk, 0.0);
+        _phi_sol.assign(nk, 0.0);
 
         // --- amgcl の設定 ---
         Solver::params prm;
@@ -428,36 +427,104 @@ typedef amgcl::make_solver<
         }
     }
 
-
     // solve
     int iters;
     float error;
-    std::tie(iters, error) = (*_solver)(rhs, _x);
+    std::tie(iters, error) = (*_solver)(rhs, _phi_sol);
 
     // 収束状況
     std::cout << "反復回数: " << iters << std::endl;
     std::cout << "最終誤差: " << error << std::endl;
 
-    // サイズ調整
-    for (int i = _ngb; i < _ngx+_ngb; i++){
-        for (int j = _ngb; j < _ngy+_ngb; j++){
-            int k = i + j*(_ngx+2*_ngb);
-            int kk = i-_ikmin + (j-_jkmin)*nkx;
-            if (i == _ngb and [_BC_Xmin isEqualToString:@"Dirichlet"]){
-                _phi[k] = _phi_Xmin[j-_jkmin];
-            } else if (i == _ngx+_ngb-1 and [_BC_Xmax isEqualToString:@"Dirichlet"]){
-                _phi[k] = _phi_Xmax[j-_jkmin];
-            } else if (i == _ngx+_ngb-1 and [_BC_Xmax isEqualToString:@"periodic"]){
-                _phi[k] = &_x[0 + (j-_jkmin)*nkx];
+    // phi の全セルを走査して埋める
+    for (int i = 0; i < _ngx+2*_ngb+1; ++i) {
+        // Ex11[0:2,0:1]
+        if ([_BC_Xmin isEqualToString:@"Dirichlet"]){
+            bool isLeft = (i < _ngb+2);
+        } else if ([_BC_Xmin isEqualToString:@"Neumann"]){
+            bool isLeft = (i < _ngb+1);
+        } else if ([_BC_Xmin isEqualToString:@"periodic"]){
+            bool isLeft = false;
+            bool isRight = false;
+        }
+        // Ex13[0:1,0:1]
+        if ([_BC_Xmax isEqualToString:@"Dirichlet"]){
+            bool isRight = (i > _ngb+1+_ngx);
+        } else if ([_BC_Xmax isEqualToString:@"Neumann"]){
+            bool isRight = (i > _ngb+1+_ngx);
+        }
+        for (int j = 0; j < _ngy+2*_ngb+; ++j) {
+            // Ey11[0:1,0:2]
+            if ([_BC_Ymin isEqualToString:@"Dirichlet"]){
+                bool isBottom = (j < _ngb+2);
+            } else if ([_BC_Ymin isEqualToString:@"Neumann"]){
+                bool isBottom = (j < _ngb+1);
+            } else if ([_BC_Ymin isEqualToString:@"periodic"]){
+                bool isBottom = false;
+                bool isTop = false;
             }
-            if (j == _ngb and [_BC_Ymin isEqualToString:@"Dirichlet"]){
-                _phi[k] = _phi_Ymin[j-_jkmin];
-            } else if (j == _ngy+_ngb-1 and [_BC_Ymax isEqualToString:@"Dirichlet"]){
-                _phi[k] = _phi_Ymax[j-_jkmin];
-            } else if (j == _ngy+_ngb-1 and [_BC_Ymax isEqualToString:@"periodic"]){
-                _phi[k] = &_x[i-_ikmin];
+            // Ey13[0:1,0:1]
+            if ([_BC_Ymax isEqualToString:@"Dirichlet"]){
+                bool isTop = (j > _ngb+1+_ngy);
+            } else if ([_BC_Ymax isEqualToString:@"Neumann"]){
+                bool isTop = (j > _ngb+1+_ngy);
             }
-            _phi[k] = &_x[kk];
+
+            if (!isLeft && !isRight && !isBottom && !isTop){
+                idx_in = i + j*(_ngx+2*_ngb+1);
+                idx_out = i + j*(_ngx+2*_ngb+1);
+            }
+        }
+    }
+
+
+    // 周期境界は優先的に分配
+    if ([_BC_Xmin isEqualToString:@"periodic"]){
+        for (int j = jkmin; j < jkmax; j++){
+            for (int i = 0; i < _ngx+2*_ngb+1; i++){
+                int k = i + j*(_ngx+2*_ngb+1);
+                int ik = (i + ngx-1 -ngb)%(ngx-1);
+                _phi[k] = _phi_sol[ik + j*nkx];
+            }
+        }
+        for (int j = 0; j < jkmin; j++){
+            for (int i = 0; i < _ngx+2*_ngb+1; i++){
+                int k = i + j*(_ngx+2*_ngb+1);
+                int ik = (i + ngx-1 -ngb)%(ngx-1);
+                _phi[k] = _phi_sol[ik + j*nkx];
+            }
+        }
+        for (int j = jkmax+1; j < _ngy+; j++){
+            for (int i = 0; i < _ngx+2*_ngb+1; i++){
+                int k = i + j*(_ngx+2*_ngb+1);
+                int ik = (i + ngx-1 -ngb)%(ngx-1);
+                _phi[k] = _phi_sol[ik + j*nkx];
+            }
+        }
+    }
+    // phi の分配
+    // 周期境界は優先的に分配
+    if ([_BC_Xmin isEqualToString:@"periodic"]){
+        for (int j = jkmin; j < jkmax; j++){
+            for (int i = 0; i < _ngx+2*_ngb+1; i++){
+                int k = i + j*(_ngx+2*_ngb+1);
+                int ik = (i + ngx-1 -ngb)%(ngx-1);
+                _phi[k] = _phi_sol[ik + j*nkx];
+            }
+        }
+        for (int j = 0; j < jkmin; j++){
+            for (int i = 0; i < _ngx+2*_ngb+1; i++){
+                int k = i + j*(_ngx+2*_ngb+1);
+                int ik = (i + ngx-1 -ngb)%(ngx-1);
+                _phi[k] = _phi_sol[ik + j*nkx];
+            }
+        }
+        for (int j = jkmax+1; j < _ngy+; j++){
+            for (int i = 0; i < _ngx+2*_ngb+1; i++){
+                int k = i + j*(_ngx+2*_ngb+1);
+                int ik = (i + ngx-1 -ngb)%(ngx-1);
+                _phi[k] = _phi_sol[ik + j*nkx];
+            }
         }
     }
 
