@@ -8,13 +8,13 @@
 
 int main(int argc, const char * argv[]) {
     // 格子数
-    int nx = 128;
-    int ny = 64;
+    int nx = 20;
+    int ny = 20;
     int nb = 2; // 5th-order
     int arrSize, nkx, nky;
     // 格子サイズ
-    float dx = 7.8125e-3;
-    float dy = 7.8125e-3;
+    float dx = 5e-3;
+    float dy = 5e-3;
     // 定数係数
     float Cd = -2*(1.0/dx/dx + 1.0/dy/dy);
     float Cx = 1.0/dx/dx;
@@ -31,37 +31,40 @@ int main(int argc, const char * argv[]) {
     std::vector<float> phi_imin(ny+1, 200.0);
     std::vector<float> dphidx_imin(ny+1, 0.0);
     std::string BC_imax = "Dirichlet";
+    // std::string BC_imax = "Neumann";
     std::vector<float> phi_imax(ny+1, 0.0);
     std::vector<float> dphidx_imax(ny+1, 0.0);
     std::string BC_jmin = "Dirichlet";
     // std::string BC_jmin = "Neumann";
+    // std::string BC_jmin = "periodic";
     std::vector<float> phi_jmin(nx+1, 0.0);
     std::vector<float> dphidy_jmin(nx+1, 0.0);
     std::string BC_jmax = "Dirichlet";
     // std::string BC_jmax = "Neumann";
+    // std::string BC_jmax = "periodic";
     std::vector<float> phi_jmax(nx+1, 0.0);
     std::vector<float> dphidy_jmax(nx+1, 0.0);
     
     // とくべき行列サイズ
-    nkx = nx-2; // 両方ディリクレなら自由度が2下がる
-    if (BC_imin == "Neumann"){
-        nkx++;
+    nkx = nx;
+    if (BC_imin == "Dirichlet"){
+        nkx--;
     }
-    if (BC_imax == "Neumann"){
-        nkx++;
+    if (BC_imax == "Dirichlet"){
+        nkx--;
     }
     if (BC_imin == "periodic"){
-        nkx++;
+        nkx--;
     }
-    nky = ny-2;
-    if (BC_jmin == "Neumann"){
-        nky++;
+    nky = ny;
+    if (BC_jmin == "Dirichlet"){
+        nky--;
     }
-    if (BC_jmax == "Neumann"){
-        nky++;
+    if (BC_jmax == "Dirichlet"){
+        nky--;
     }
     if (BC_jmin == "periodic"){
-        nky++;
+        nky--;
     }
     arrSize = (nkx+1)*(nky+1);
 
@@ -87,7 +90,8 @@ int main(int argc, const char * argv[]) {
                 // ptr を更新してループを抜ける
                 ptr.push_back(ptr.back() + row_entries);
                 continue;
-            }else if(i == nkx-1 && BC_imax == "Neumann"){
+            // }else if(i == nkx-1 && BC_imax == "Neumann"){
+            }else if(i == nkx && BC_imax == "Neumann"){
                 col.push_back(k);
                 val.push_back(1.0/dx);
                 row_entries++;
@@ -109,7 +113,8 @@ int main(int argc, const char * argv[]) {
                 // ptr を更新してループを抜ける
                 ptr.push_back(ptr.back() + row_entries);
                 continue;
-            }else if(j == nky-1 && BC_jmax == "Neumann"){
+            // }else if(j == nky-1 && BC_jmax == "Neumann"){
+            }else if(j == nky && BC_jmax == "Neumann"){
                 col.push_back(k);
                 val.push_back(1.0/dx);
                 row_entries++;
@@ -173,13 +178,13 @@ int main(int argc, const char * argv[]) {
                     // 要素の追加
                     // col.push_back(k+(nky-1));
                     col.push_back(k+nky);
-                    val.push_back(Cx);
+                    val.push_back(Cy);
                     row_entries++;
                 }
             }else{
                 // col.push_back(k-nkx);
                 col.push_back(k-(nkx+1));
-                val.push_back(Cx);
+                val.push_back(Cy);
                 row_entries++;
             }
 
@@ -192,14 +197,14 @@ int main(int argc, const char * argv[]) {
                     // 要素の追加
                     // col.push_back(k-(nky-1)*nkx);
                     col.push_back(k-nky*(nkx+1));
-                    val.push_back(Cx);
+                    val.push_back(Cy);
                     row_entries++;
                 }
             }else{
                 // 要素の追加
                 // col.push_back(k+nkx);
                 col.push_back(k+(nkx+1));
-                val.push_back(Cx);
+                val.push_back(Cy);
                 row_entries++;
             }
 
@@ -241,6 +246,13 @@ int main(int argc, const char * argv[]) {
     std::cout << "反復回数: " << iters << std::endl;
     std::cout << "最終誤差: " << error << std::endl;
 
+    // 解を全て標準出力
+    // for (auto item : x)
+    // {
+    //     std::cout << item << ", ";
+    // }
+    // std::cout << std::endl;
+
     // 粒子用 fld 配列
     float *phi = (float *)malloc(sizeof(float)*(nx+2*nb+1+1)*(ny+2*nb+1+1));
     float *Ex = (float *)malloc(sizeof(float)*(nx+2*nb+1)*(ny+2*nb+1));
@@ -265,7 +277,7 @@ int main(int argc, const char * argv[]) {
             // idx を調整するので無効化
             isLeft = false;
             isRight = false;
-            idx_in_i = (i-(nb+1)+(nx+1))%(nx+1);
+            idx_in_i = (i-(nb+2)+nx)%nx;
         }
         // Ex13[0:1,0:1]
         if (BC_imax == "Dirichlet"){
@@ -285,7 +297,7 @@ int main(int argc, const char * argv[]) {
                 // idx を調整するので無効化
                 isBottom = false;
                 isTop = false;
-                idx_in_j = (j-(nb+1)+(ny+1))%(ny+1);
+                idx_in_j = (j-(nb+2)+ny)%ny;
             }
             // Ey13[0:1,0:1]
             if (BC_jmax == "Dirichlet"){
@@ -301,6 +313,16 @@ int main(int argc, const char * argv[]) {
             if (!isLeft && !isRight && !isBottom && !isTop){
                 idx_in = idx_in_i + idx_in_j*(nkx+1);
                 phi[idx_out] = x[idx_in];
+                // indexチェック <- ok
+                // if (i < 5){
+                //     std::cout
+                //     << "i = " << i
+                //     << ", j = " << j
+                //     << ", idx_in = " << idx_in
+                //     << ", idx_in_j = " << idx_in_j
+                //     << ", x[idx_in] = " << x[idx_in]
+                //     << std::endl;
+                // }
             }
             // 境界の値を扇形近似(Left)
             if (isLeft && !isRight && !isBottom && !isTop){
@@ -311,6 +333,13 @@ int main(int argc, const char * argv[]) {
                     dphidx = dphidx_imin[idx_in_j];
                     phi[idx_out] = x[0 + idx_in_j*(nkx+1)] + (i - (nb+1))*dphidx;
                 }
+                // index チェック <- ok
+                // std::cout
+                // << "i = " << i
+                // << ", j = " << j
+                // << ", idx_in_j = " << idx_in_j
+                // << ", dphidx = " << dphidx
+                // << std::endl;
             }
             // 境界の値を扇形近似(Right)
             if (!isLeft && isRight && !isBottom && !isTop){
@@ -342,6 +371,86 @@ int main(int argc, const char * argv[]) {
                     phi[idx_out] = x[idx_in_i + nky*(nkx+1)] + (j - (nb+1+ny))*dphidy;
                 }
             }
+            // 境界の値を扇形近似(LeftBottom)
+            if (isLeft && !isRight && isBottom && !isTop){
+                if (BC_imin == "Dirichlet" && BC_jmin == "Dirichlet"){
+                    dphidx = x[0 + 0*(nkx+1)] - phi_imin[0];
+                    dphidy = x[0 + 0*(nkx+1)] - phi_jmin[0];
+                    phi[idx_out] = phi_imin[0] + (i-(nb+1))*dphidx + (j-(nb+1))*dphidy;
+                } else if (BC_imin == "Neumann" && BC_jmin == "Dirichlet"){
+                    dphidx = dphidx_imin[0];
+                    dphidy = x[0 + 0*(nkx+1)] - phi_jmin[0];
+                    phi[idx_out] = phi_jmin[0] + (i-(nb+1))*dphidx + (j-(nb+1))*dphidy;
+                } else if (BC_imin == "Dirichlet" && BC_jmin == "Neumann"){
+                    dphidx = x[0 + 0*(nkx+1)] - phi_imin[0];
+                    dphidy = dphidy_jmin[0];
+                    phi[idx_out] = phi_imin[0] + (i-(nb+1))*dphidx + (j-(nb+1))*dphidy;
+                } else if (BC_imin == "Neumann" && BC_jmin == "Neumann"){
+                    dphidx = dphidx_imin[0];
+                    dphidy = dphidy_jmin[0];
+                    phi[idx_out] = x[0 + 0*(nkx+1)] + (i-(nb+1))*dphidx + (j-(nb+1))*dphidy;
+                }
+            }
+            // 境界の値を扇形近似(RightBottom)
+            if (!isLeft && isRight && isBottom && !isTop){
+                if (BC_imax == "Dirichlet" && BC_jmin == "Dirichlet"){
+                    dphidx = phi_imax[0] - x[nkx + 0*(nkx+1)];
+                    dphidy = x[nkx + 0*(nkx+1)] - phi_jmin[nkx];
+                    phi[idx_out] = phi_imax[0] + (i-(nb+1+nx))*dphidx + (j-(nb+1))*dphidy;
+                } else if (BC_imax == "Neumann" && BC_jmin == "Dirichlet"){
+                    dphidx = dphidx_imax[0];
+                    dphidy = x[nkx + 0*(nkx+1)] - phi_jmin[nkx];
+                    phi[idx_out] = phi_jmin[0] + (i-(nb+1+nx))*dphidx + (j-(nb+1))*dphidy;
+                } else if (BC_imax == "Dirichlet" && BC_jmin == "Neumann"){
+                    dphidx = phi_imax[0] - x[nkx + 0*(nkx+1)];
+                    dphidy = dphidy_jmin[nkx];
+                    phi[idx_out] = phi_imax[0] + (i-(nb+1+nx))*dphidx + (j-(nb+1))*dphidy;
+                } else if (BC_imax == "Neumann" && BC_jmin == "Neumann"){
+                    dphidx = dphidx_imax[0];
+                    dphidy = dphidy_jmin[nkx];
+                    phi[idx_out] = x[nkx + 0*(nkx+1)] + (i-(nb+1+nx))*dphidx + (j-(nb+1))*dphidy;
+                }
+            }
+            // 境界の値を扇形近似(LeftTop)
+            if (isLeft && !isRight && !isBottom && isTop){
+                if (BC_imin == "Dirichlet" && BC_jmax == "Dirichlet"){
+                    dphidx = phi_imin[nky] - x[0 + nky*(nkx+1)];
+                    dphidy = x[0 + nky*(nkx+1)] - phi_jmax[0];
+                    phi[idx_out] = phi_imin[nky] + (i-(nb+1))*dphidx + (j-(nb+1+ny))*dphidy;
+                } else if (BC_imin == "Neumann" && BC_jmax == "Dirichlet"){
+                    dphidx = dphidx_imin[nky];
+                    dphidy = x[0 + nky*(nkx+1)] - phi_jmax[0];
+                    phi[idx_out] = phi_jmax[nky] + (i-(nb+1))*dphidx + (j-(nb+1+ny))*dphidy;
+                } else if (BC_imin == "Dirichlet" && BC_jmax == "Neumann"){
+                    dphidx = phi_imin[nky] - x[0 + nky*(nkx+1)];
+                    dphidy = dphidy_jmax[0];
+                    phi[idx_out] = phi_imin[nky] + (i-(nb+1))*dphidx + (j-(nb+1+ny))*dphidy;
+                } else if (BC_imin == "Neumann" && BC_jmax == "Neumann"){
+                    dphidx = dphidx_imin[nky];
+                    dphidy = dphidy_jmax[0];
+                    phi[idx_out] = x[0 + nky*(nkx+1)] + (i-(nb+1))*dphidx + (j-(nb+1+ny))*dphidy;
+                }
+            }
+            // 境界の値を扇形近似(RightTop)
+            if (!isLeft && isRight && !isBottom && isTop){
+                if (BC_imax == "Dirichlet" && BC_jmax == "Dirichlet"){
+                    dphidx = phi_imax[nky] - x[nkx + nky*(nkx+1)];
+                    dphidy = x[nkx + nky*(nkx+1)] - phi_jmax[nkx];
+                    phi[idx_out] = phi_imax[nky] + (i-(nb+1+nx))*dphidx + (j-(nb+1+ny))*dphidy;
+                } else if (BC_imax == "Neumann" && BC_jmax == "Dirichlet"){
+                    dphidx = dphidx_imax[nky];
+                    dphidy = x[nkx + nky*(nkx+1)] - phi_jmax[nkx];
+                    phi[idx_out] = phi_jmax[nky] + (i-(nb+1+nx))*dphidx + (j-(nb+1+ny))*dphidy;
+                } else if (BC_imax == "Dirichlet" && BC_jmax == "Neumann"){
+                    dphidx = phi_imax[nky] - x[nkx + nky*(nkx+1)];
+                    dphidy = dphidy_jmax[nkx];
+                    phi[idx_out] = phi_imax[nky] + (i-(nb+1+nx))*dphidx + (j-(nb+1+ny))*dphidy;
+                } else if (BC_imax == "Neumann" && BC_jmax == "Neumann"){
+                    dphidx = dphidx_imax[nky];
+                    dphidy = dphidy_jmax[nkx];
+                    phi[idx_out] = x[nkx + nky*(nkx+1)] + (i-(nb+1+nx))*dphidx + (j-(nb+1+ny))*dphidy;
+                }
+            }
             //// 境界チェック <- ok
             // std::cout
             // << "i = " << i
@@ -351,123 +460,6 @@ int main(int argc, const char * argv[]) {
             // << ", isBottom = " << isBottom
             // << ", isTop = " << isTop
             // << std::endl;
-        }
-    }
-    // phi の全セルを走査して埋める
-    for (int i = 0; i <= nx+2*nb+1; ++i) {
-        // Ex11[0:2,0:1]
-        if (BC_imin == "Dirichlet"){
-            isLeft = (i <= nb+1);
-            idx_in_i = i-(nb+1)-1;
-        } else if (BC_imin == "Neumann"){
-            isLeft = (i < nb+1);
-            idx_in_i = i-(nb+1);
-        } else if (BC_imin == "periodic"){
-            // idx を調整するので無効化
-            isLeft = false;
-            isRight = false;
-            idx_in_i = (i-(nb+1)+(nx+1))%(nx+1);
-        }
-        // Ex13[0:1,0:1]
-        if (BC_imax == "Dirichlet"){
-            isRight = (i >= nb+1+nx);
-        } else if (BC_imax == "Neumann"){
-            isRight = (i > nb+1+nx);
-        }
-        for (int j = 0; j <= ny+2*nb+1; ++j) {
-            // Ey11[0:1,0:2]
-            if (BC_jmin == "Dirichlet"){
-                isBottom = (j <= nb+1);
-                idx_in_j = j-(nb+1)-1;
-            } else if (BC_jmin == "Neumann"){
-                isBottom = (j < nb+1);
-                idx_in_j = j-(nb+1);
-            } else if (BC_jmin == "periodic"){
-                // idx を調整するので無効化
-                isBottom = false;
-                isTop = false;
-                idx_in_j = (j-(nb+1)+(ny+1))%(ny+1);
-            }
-            // Ey13[0:1,0:1]
-            if (BC_jmax == "Dirichlet"){
-                isTop = (j >= nb+1+ny);
-            } else if (BC_jmax == "Neumann"){
-                isTop = (j > nb+1+ny);
-            }
-
-            // 出力先アドレス
-            idx_out = i + j*(nx+2*nb+1+1);
-
-            // 境界の値を扇形近似(LeftBottom)
-            if (isLeft && !isRight && isBottom && !isTop){
-                // if (BC_imin == "Dirichlet"){
-                //     delphi = x[0 + 0*(nkx+1)] - phi_imin[0];
-                //     phi[idx_out] = phi_imin[0] + (i - (nb+1))*delphi;
-                // } else if (BC_imin == "Neumann"){
-                //     delphi = dphidx_imin[0];
-                //     phi[idx_out] = x[0 + 0*(nkx+1)] + (i - (nb+1))*delphi;
-                // }
-                if (BC_imin == "Dirichlet"){
-                    delphi = x[0 + idx_in_j*(nkx+1)] - phi_imin[idx_in_j];
-                    phi[idx_out] = phi_imin[idx_in_j] + (i - (nb+1))*delphi;
-                } else if (BC_imin == "Neumann"){
-                    delphi = dphidx_imin[idx_in_j];
-                    phi[idx_out] = x[0 + idx_in_j*(nkx+1)] + (i - (nb+1))*delphi;
-                }
-                delphi = phi[idx_in];
-                phi[idx_out] = x[0 + idx_in_j*(nkx+1)] + (i - (nb+1))*delphi;
-            }
-            // 境界の値を扇形近似(RightBottom)
-            if (!isLeft && isRight && isBottom && !isTop){
-                // if (BC_jmin == "Dirichlet"){
-                //     delphi = x[nkx + 0*(nkx+1)] - phi_jmin[nkx];
-                //     phi[idx_out] = phi_jmin[nkx] + (j - (nb+1))*delphi;
-                // } else if (BC_jmin == "Neumann"){
-                //     delphi = dphidy_jmin[nkx];
-                //     phi[idx_out] = x[nkx + 0*(nkx+1)] + (j - (nb+1))*delphi;
-                // }
-                if (BC_imax == "Dirichlet"){
-                    delphi = phi_imax[idx_in_j] - x[nkx + idx_in_j*(nkx+1)];
-                    phi[idx_out] = phi_imax[idx_in_j] + (i - (nb+1+nx))*delphi;
-                } else if (BC_imax == "Neumann"){
-                    delphi = dphidx_imax[idx_in_j];
-                    phi[idx_out] = x[nkx + idx_in_j*(nkx+1)] + (i - (nb+1+nx))*delphi;
-                }
-            }
-            // 境界の値を扇形近似(LeftTop)
-            if (isLeft && !isRight && !isBottom && isTop){
-                // if (BC_jmax == "Dirichlet"){
-                //     delphi = phi_jmax[0] - x[0 + nky*(nkx+1)];
-                //     phi[idx_out] = phi_jmax[0] + (j - (nb+1+ny))*delphi;
-                // } else if (BC_jmax == "Neumann"){
-                //     delphi = dphidy_jmax[0];
-                //     phi[idx_out] = x[0 + nky*(nkx+1)] + (j - (nb+1+ny))*delphi;
-                // }
-                if (BC_imax == "Dirichlet"){
-                    delphi = phi_imax[idx_in_j] - x[nkx + idx_in_j*(nkx+1)];
-                    phi[idx_out] = phi_imax[idx_in_j] + (i - (nb+1+nx))*delphi;
-                } else if (BC_imax == "Neumann"){
-                    delphi = dphidx_imax[idx_in_j];
-                    phi[idx_out] = x[nkx + idx_in_j*(nkx+1)] + (i - (nb+1+nx))*delphi;
-                }
-            }
-            // 境界の値を扇形近似(RightTop)
-            if (!isLeft && isRight && !isBottom && isTop){
-                // if (BC_imax == "Dirichlet"){
-                //     delphi = phi_imax[nky] - x[nkx + nky*(nkx+1)];
-                //     phi[idx_out] = phi_imax[nky] + (i - (nb+1+nx))*delphi;
-                // } else if (BC_imax == "Neumann"){
-                //     delphi = dphidx_imax[nky];
-                //     phi[idx_out] = x[nkx + nky*(nkx+1)] + (i - (nb+1+nx))*delphi;
-                // }
-                if (BC_jmax == "Dirichlet"){
-                    delphi = phi_jmax[idx_in_i] - x[idx_in_i + nky*(nkx+1)];
-                    phi[idx_out] = phi_jmax[idx_in_i] + (j - (nb+1+ny))*delphi;
-                } else if (BC_jmax == "Neumann"){
-                    delphi = dphidy_jmax[idx_in_i];
-                    phi[idx_out] = x[idx_in_i + nky*(nkx+1)] + (j - (nb+1+ny))*delphi;
-                }
-            }
         }
     }
 
