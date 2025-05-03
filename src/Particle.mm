@@ -29,10 +29,10 @@ struct EMFieldData {
 
 // シミュレーションパラメータ構造体
 struct SimulationParams {
-    uint particleCount;
-    float charge;
-    float mass;
-    float weight;
+    uint pNum;
+    float q;
+    float m;
+    float w;
     float dt;
     float constE;
     float constB;
@@ -40,12 +40,13 @@ struct SimulationParams {
     float constY;
     int ngx;
     int ngy;
+    int ngb;
 };
 
 // 粒子更新カーネル
 kernel void updateParticles(
-                        device ParticleState* particles     [[ buffer(0) ]],
-                        constant SimulationParams& params   [[ buffer(1) ]],
+                        device ParticleState* ptcl     [[ buffer(0) ]],
+                        constant SimulationParams& prm      [[ buffer(1) ]],
                         device const float* Ex              [[ buffer(2) ]],
                         device const float* Ey              [[ buffer(3) ]],
                         device const float* Ez              [[ buffer(4) ]],
@@ -55,11 +56,11 @@ kernel void updateParticles(
                         device float* print                 [[ buffer(8) ]],
                         uint id                             [[ thread_position_in_grid ]]
                         ) {
-    if (id >= params.particleCount) return;
+    if (id >= prm.pNum) return;
     
-    device ParticleState& p = particles[id];
+    device ParticleState& p = ptcl[id];
 
-    // electro-magnetic field on each particles
+    // electro-magnetic field on each ptcl
     float xh = p.x - 0.5;
     float yh = p.y - 0.5;
     int i1 = int(xh);
@@ -104,25 +105,25 @@ kernel void updateParticles(
         for (int j = 0; j < 6; j++) {
             ii = i1+(i-2);
             jj = j1+(j-2);
-            Epx += sf[i][0][0]*sf[j][0][1]*Ex[ii+jj*params.ngy];
+            Epx += sf[i][0][0]*sf[j][0][1]*Ex[ii+jj*prm.ngy];
             ii = i2+(i-2);
             jj = j2+(j-2);
-            Epy += sf[i][1][0]*sf[j][1][1]*Ey[ii+jj*params.ngy];
+            Epy += sf[i][1][0]*sf[j][1][1]*Ey[ii+jj*prm.ngy];
             ii = i1+(i-2);
             jj = j2+(j-2);
-            Bpz += sf[i][0][0]*sf[j][1][1]*Bz[ii+jj*params.ngy];
+            Bpz += sf[i][0][0]*sf[j][1][1]*Bz[ii+jj*prm.ngy];
         }
     }
     
     // acceleration by electric field
-    float umx = p.vx + params.constE*Epx;
-    float umy = p.vy + params.constE*Epy;
-    float umz = p.vz + params.constE*Epz;
+    float umx = p.vx + prm.constE*Epx;
+    float umy = p.vy + prm.constE*Epy;
+    float umz = p.vz + prm.constE*Epz;
 
     // preparing for rotation
-    float btx = params.constB*Bpx;
-    float bty = params.constB*Bpy;
-    float btz = params.constB*Bpz;
+    float btx = prm.constB*Bpx;
+    float bty = prm.constB*Bpy;
+    float btz = prm.constB*Bpz;
 
     // vector product
     float v0x = umx + umy*btz - umz*bty;
@@ -139,17 +140,17 @@ kernel void updateParticles(
     float upz = umz + v0x*ssy - v0y*ssx;
 
     // acceleration by electric field
-    p.vx = upx + params.constE*Epx;
-    p.vy = upy + params.constE*Epy;
-    p.vz = upz + params.constE*Epz;
+    p.vx = upx + prm.constE*Epx;
+    p.vy = upy + prm.constE*Epy;
+    p.vz = upz + prm.constE*Epz;
 
     // updating position
-    p.x = p.x + p.vx * params.constX;
-    p.y = p.y + p.vy * params.constY;
+    p.x = p.x + p.vx * prm.constX;
+    p.y = p.y + p.vy * prm.constY;
 
     // periodic boundary
-    p.x = fmod(p.x + float(params.ngx) - 2.0, float(params.ngx)) + 2.0;
-    p.y = fmod(p.y + float(params.ngy) - 2.0, float(params.ngy)) + 2.0;
+    p.x = fmod(p.x + float(prm.ngx - prm.ngb), float(prm.ngx)) + float(prm.ngb);
+    p.y = fmod(p.y + float(prm.ngy - prm.ngb), float(prm.ngy)) + float(prm.ngb);
 
     // debug print
     print[id] = Bpz;
@@ -157,8 +158,8 @@ kernel void updateParticles(
 
 // 電荷密度更新カーネル
 kernel void integrateChargeDensity(
-                        device ParticleState* particles             [[ buffer(0) ]],
-                        constant SimulationParams& params           [[ buffer(1) ]],
+                        device ParticleState* ptcl             [[ buffer(0) ]],
+                        constant SimulationParams& prm           [[ buffer(1) ]],
                         device float* temp                          [[ buffer(2) ]],
                         device float* partial                       [[ buffer(3) ]],
                         device float* print                         [[ buffer(4) ]],
@@ -174,7 +175,7 @@ kernel void integrateChargeDensity(
     // 粒子番号
     uint const pid = gid + chunkOffset;
     // dataCount を超えたら積分処理をスキップ
-    if (pid >= params.particleCount) return;
+    if (pid >= prm.pNum) return;
 
     // initialize(各スレッドがアクセスし得る範囲を初期化)
     for (int i = 0; i < arrSize; i++){
@@ -182,9 +183,9 @@ kernel void integrateChargeDensity(
     }
     
     // 粒子を取得
-    device ParticleState& p = particles[pid];
+    device ParticleState& p = ptcl[pid];
 
-    // electro-magnetic field on each particles
+    // electro-magnetic field on each ptcl
     int i1 = int(p.x);
     int j1 = int(p.y);
     float hv[2];
@@ -214,7 +215,7 @@ kernel void integrateChargeDensity(
 
     // accumulation
     int ii, jj;
-    const int ngx = (params.ngx + 2*2);
+    const int ngx = (prm.ngx + 2*2);
     for (int i = 0; i < 6; i++) {
         for (int j = 0; j < 6; j++) {
             ii = i1+(i-2);
@@ -252,6 +253,7 @@ kernel void integrateChargeDensity(
 
 @implementation Particle {
     // プライベートインスタンス変数
+    NSString* _pName;
     id<MTLBuffer> _ExBuffer;
     id<MTLBuffer> _EyBuffer;
     id<MTLBuffer> _EzBuffer;
@@ -269,15 +271,8 @@ kernel void integrateChargeDensity(
         _device = device;
         _commandQueue = [device newCommandQueue];
         
-        // 物理パラメータの設定
-        _pNum = ParticleParam.pNum;
-        _charge = ParticleParam.q;
-        _mass = ParticleParam.m;
-        _weight = ParticleParam.w;
-        _ngx = FieldParam.ngx;
-        _ngy = FieldParam.ngy;
-        _dx = FieldParam.dx;
-        _dy = FieldParam.dy;
+        // 粒子種の格納
+        _pName = ParticleParam.pName;
 
         // 並列計算パラメータ
         _integrationChunkSize = 4096;
@@ -300,31 +295,39 @@ kernel void integrateChargeDensity(
         
         // バッファサイズ
         size_t buffSize;
+        // シミュレーションパラメータバッファ
+        buffSize = sizeof(SimulationParams);
+        _paramsBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
+        SimulationParams* prm = (SimulationParams*)_paramsBuffer.contents;
+        // 定数を初期化
+        prm->pNum = ParticleParam.pNum;
+        prm->q = ParticleParam.q;
+        prm->m = ParticleParam.m;
+        prm->w = ParticleParam.w;
+        prm->ngx = FieldParam.ngx;
+        prm->ngy = FieldParam.ngy;
+        prm->ngb = FieldParam.ngb;
+
         // 粒子バッファ
         buffSize = sizeof(ParticleState)*ParticleParam.pNum;
         _particleBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
+        // 初期粒子分布の設定
+        [self generateParticles:ParticleParam withFieldParam:FieldParam];
+
         // 電磁場バッファ
-        size_t EMbuffSize = sizeof(float)*(FieldParam.ngx+4)*(FieldParam.ngy+4);
-        _ExBuffer = [device newBufferWithLength:EMbuffSize options:MTLResourceStorageModeShared];
-        _EyBuffer = [device newBufferWithLength:EMbuffSize options:MTLResourceStorageModeShared];
-        _EzBuffer = [device newBufferWithLength:EMbuffSize options:MTLResourceStorageModeShared];
-        _BxBuffer = [device newBufferWithLength:EMbuffSize options:MTLResourceStorageModeShared];
-        _ByBuffer = [device newBufferWithLength:EMbuffSize options:MTLResourceStorageModeShared];
-        _BzBuffer = [device newBufferWithLength:EMbuffSize options:MTLResourceStorageModeShared];
+        int nx = FieldParam.ngx + 2*FieldParam.ngb;
+        int ny = FieldParam.ngy + 2*FieldParam.ngb;
+        size_t EMbuffSize = sizeof(float)*(nx+1)*(ny+1);
+        
         // 電荷密度用バッファ
         buffSize = EMbuffSize*_integrationChunkSize;
         _integrateTemporaryBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
         buffSize = EMbuffSize*(_integrationChunkSize/_threadGroupSize);
         _integratePartialBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
-        // シミュレーションパラメータバッファ
-        buffSize = sizeof(SimulationParams);
-        _paramsBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
+
         // デバッグ出力用バッファ
         buffSize = sizeof(float)*ParticleParam.pNum;
         _printBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
-
-        // 初期粒子分布の設定
-        [self generateParticles:ParticleParam withFieldParam:FieldParam];
 
     }
     return self;
@@ -341,35 +344,35 @@ kernel void integrateChargeDensity(
     float vth_epi  = sqrt(2*kb*ParticleParam.initT/ParticleParam.m);
     std::normal_distribution<> norm_dist(0.0, vth_epi);
     // 粒子の初期化
-    ParticleState *particles = (ParticleState *)self.particleBuffer.contents;
+    ParticleState *ptcl = (ParticleState *)self.particleBuffer.contents;
     for (int i = 0; i < ParticleParam.pNum; i++) {
         if ([ParticleParam.GenerateType isEqualToString:@"UniformGaussian"]){
             // uniform distribution for position
-            particles[i].x = (float)unif_dist(engine)*Lx;
-            particles[i].y = (float)unif_dist(engine)*Ly;
+            ptcl[i].x = (float)unif_dist(engine)*Lx;
+            ptcl[i].y = (float)unif_dist(engine)*Ly;
             // Maxwellian for velocity 
-            particles[i].vx = (float)norm_dist(engine);
-            particles[i].vy = (float)norm_dist(engine);
-            particles[i].vz = (float)norm_dist(engine);
+            ptcl[i].vx = (float)norm_dist(engine);
+            ptcl[i].vy = (float)norm_dist(engine);
+            ptcl[i].vz = (float)norm_dist(engine);
         } else if ([ParticleParam.GenerateType isEqualToString:@"UniformConstant"]){
             // uniform distribution for position
-            particles[i].x = (float)unif_dist(engine)*Lx;
-            particles[i].y = (float)unif_dist(engine)*Ly;
+            ptcl[i].x = (float)unif_dist(engine)*Lx;
+            ptcl[i].y = (float)unif_dist(engine)*Ly;
             // constant for velosity
-            particles[i].vx = (float)ParticleParam.initU[0];
-            particles[i].vy = (float)ParticleParam.initU[1];
-            particles[i].vz = (float)ParticleParam.initU[2];
+            ptcl[i].vx = (float)ParticleParam.initU[0];
+            ptcl[i].vy = (float)ParticleParam.initU[1];
+            ptcl[i].vz = (float)ParticleParam.initU[2];
         }
         // shift from real coordinate to integer coodinate
-        particles[i].x = particles[i].x/FieldParam.dx;
-        particles[i].y = particles[i].y/FieldParam.dy;
+        ptcl[i].x = ptcl[i].x/FieldParam.dx;
+        ptcl[i].y = ptcl[i].y/FieldParam.dy;
         // shift origin for high-order weighting
         if (FieldParam.weightOrder == 5){
-            particles[i].x = particles[i].x + 2.0;
-            particles[i].y = particles[i].y + 2.0;
+            ptcl[i].x = ptcl[i].x + 2.0;
+            ptcl[i].y = ptcl[i].y + 2.0;
         }
         // check
-        // NSLog(@"initial x[%d]: %f", i, particles[i].x);
+        // NSLog(@"initial x[%d]: %f", i, ptcl[i].x);
     }
 }
 
@@ -377,15 +380,12 @@ kernel void integrateChargeDensity(
 // 時間更新
 - (void)update:(double)dt withEMField:(EMField*)fld {
     // シミュレーションパラメータの更新
-    SimulationParams* params = (SimulationParams*)_paramsBuffer.contents;
-    params->particleCount = _pNum;
-    params->dt = dt;
-    params->constE = 0.5*_charge*dt/_mass;
-    params->constB = 0.5*_charge*dt/_mass/c;
-    params->constX = dt/_dx;
-    params->constY = dt/_dy;
-    params->ngx = _ngx;
-    params->ngy = _ngy;
+    SimulationParams* prm = (SimulationParams*)_paramsBuffer.contents;
+    prm->dt = dt;
+    prm->constE = 0.5*prm->q*dt/prm->m;
+    prm->constB = 0.5*prm->q*dt/prm->m/c;
+    prm->constX = dt/fld.dx;
+    prm->constY = dt/fld.dy;
     
     // EMFieldのバッファを直接使用
     id<MTLBuffer> ExBuffer = [fld ExBuffer];
@@ -412,7 +412,7 @@ kernel void integrateChargeDensity(
     [computeEncoder setBuffer:_printBuffer      offset:0 atIndex:8];
     
     // グリッドとスレッドグループのサイズ設定
-    uint gridSize = params->particleCount;
+    uint gridSize = prm->pNum;
     uint threadGroupNum = (gridSize + _threadGroupSize - 1) / _threadGroupSize;
     MTLSize threadGroupSize = MTLSizeMake(_threadGroupSize, 1, 1);
     MTLSize gridSizeMetalStyle = MTLSizeMake(threadGroupNum, 1, 1);
@@ -422,10 +422,10 @@ kernel void integrateChargeDensity(
                             threadsPerThreadgroup:threadGroupSize];
     
     // 粒子状態取得
-    ParticleState* p = (ParticleState*)[_particleBuffer contents];
-    for (int idx = 0; idx < 1; idx++){
-        NSLog(@"before update: p.x[%d]: %f", idx, p[idx].x);
-    }
+    // ParticleState* p = (ParticleState*)[_particleBuffer contents];
+    // for (int idx = 0; idx < 1; idx++){
+    //     NSLog(@"before update: p.x[%d]: %f", idx, p[idx].x);
+    // }
 
     // エンコーディングと実行
     [computeEncoder endEncoding];
@@ -433,22 +433,24 @@ kernel void integrateChargeDensity(
     [commandBuffer waitUntilCompleted];
 
     // 粒子状態取得
-    p = (ParticleState*)[_particleBuffer contents];
-    for (int idx = 0; idx < 1; idx++){
-        NSLog(@"after update: p.x[%d]: %f", idx, p[idx].x);
-    }
+    // p = (ParticleState*)[_particleBuffer contents];
+    // for (int idx = 0; idx < 1; idx++){
+    //     NSLog(@"after update: p.x[%d]: %f", idx, p[idx].x);
+    // }
     // デバッグ出力
-    float* prt = (float*)_printBuffer.contents;
-    for (int idx = 0; idx < 1; idx++){
-        NSLog(@"debug print: val[%d]: %f", idx, prt[idx]);
-    }
+    // float* prt = (float*)_printBuffer.contents;
+    // for (int idx = 0; idx < 1; idx++){
+    //     NSLog(@"debug print: val[%d]: %f", idx, prt[idx]);
+    // }
 }
 
 - (void)integrateChargeDensity:(EMField*)fld{
-    // 粒子情報取得
-    SimulationParams* params = (SimulationParams*)_paramsBuffer.contents;
-    // 格子情報取得
-    int ng = (fld.ngx+2*fld.ngb)*(fld.ngy+2*fld.ngb);
+    // prepare
+    SimulationParams* prm = (SimulationParams*)_paramsBuffer.contents;
+    int ng = (fld.nx+1)*(fld.ny+1);
+    id<MTLBuffer> rhoBuffer = [fld rhoBuffer];
+    float* rho = (float*)rhoBuffer.contents;
+
     // constant 引数バッファ
     id<MTLBuffer> chunkSizeBuffer = [_device newBufferWithBytes:&_integrationChunkSize
                                                 length:sizeof(int)
@@ -460,12 +462,12 @@ kernel void integrateChargeDensity(
                                                 length:sizeof(int)
                                                 options:MTLResourceStorageModeShared];
     // constant for rho
-    float constRho = _charge * _weight / (_dx * _dy);
+    float constRho = prm->q * prm->m / (fld.dx * fld.dx);
     id<MTLBuffer> constRhoBuffer = [_device newBufferWithBytes:&constRho
                                                 length:sizeof(int)
                                                 options:MTLResourceStorageModeShared];
     // 分割して積分
-    uint chunkNum = (params->particleCount + _integrationChunkSize - 1) / _integrationChunkSize;
+    uint chunkNum = (prm->pNum + _integrationChunkSize - 1) / _integrationChunkSize;
     for (int chunk = 0; chunk < chunkNum; chunk++){
         // インデックスのオフセット計算
         uint chunkOffset = chunk * _integrationChunkSize;
@@ -508,7 +510,7 @@ kernel void integrateChargeDensity(
         float* partialSums = (float*)_integratePartialBuffer.contents;
         for (int i = 0; i < ng; i++){
             for (int j = 0; j < threadGroupNum; j++){
-                fld.rho[i] += partialSums[j + i*threadGroupNum];
+                rho[i] += partialSums[j + i*threadGroupNum];
             }
         }
     }
@@ -517,20 +519,19 @@ kernel void integrateChargeDensity(
     i = 10;
     j = 10;
     idx = i + j *(fld.ngy+fld.ngb);
-    NSLog(@"after integration: fld.rho[%d,%d]: %f", i, j, fld.rho[idx]);
+    // NSLog(@"after integration: rho[%d,%d]: %f", i, j, fld.rho[idx]);
 };
 
-- (void)outputPhaseSpace:(int)cycle withParticleParam:(ParamForParticle)ParticleParam{
-    // 粒子状態の内容にアクセス
+- (void)outputPhaseSpace:(int)cycle withEMField:(EMField*)fld{
+    // prepare
     ParticleState *p = (ParticleState*)[_particleBuffer contents];
-    // dx, dy の取得用にパラメータ取得
-    SimulationParams *params = (SimulationParams*)_paramsBuffer.contents;
+    SimulationParams *prm = (SimulationParams*)_paramsBuffer.contents;
 
     // 位置を格納する変数
     float x,y;
     // 各粒子についてバイナリファイルに出力する 
     for (int idx = 0; idx < 20; idx++) {
-        NSString *filePath = [NSString stringWithFormat:@"bin/PhaseSpace_%@_%d.bin", ParticleParam.pName, idx];
+        NSString *filePath = [NSString stringWithFormat:@"bin/PhaseSpace_%@_%d.bin", _pName, idx];
         // バイナリ書き出し
         std::ofstream ofs([filePath UTF8String], std::ios::binary | std::ios::app);
         if (!ofs) {
@@ -539,8 +540,8 @@ kernel void integrateChargeDensity(
         }
 
         // 位置を物理次元に戻す
-        x = (p[idx].x - 2.0)*_dx;
-        y = (p[idx].y - 2.0)*_dy;
+        x = (p[idx].x - float(prm->ngb))*fld.dx;
+        y = (p[idx].y - float(prm->ngb))*fld.dy;
         
         // phasespace を出力
         ofs.write(reinterpret_cast<const char*>(&cycle), sizeof(int));

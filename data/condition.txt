@@ -13,7 +13,7 @@ TimeStep        5e-12
 ParamForParticle
 ParticleName            electron
 InitialParticleNumber   1
-MaxParticleNumber       200000
+MaxParticleNumber       2000
 Charge                  -4.803204197e-10
 Mass                    9.10938188e-28
 Weight                  2.5e9
@@ -22,7 +22,7 @@ InitialVel              5e8 0 0
 /
 ParticleName            ion(Xe+)
 InitialParticleNumber   1
-MaxParticleNumber       200000
+MaxParticleNumber       2000
 Charge                  4.803204197e-10
 Mass                    2.1801714e-22
 Weight                  2.5e9
@@ -45,10 +45,12 @@ BCType      periodic
 /
 #
 ParamForField
-NumberOfGridX       128
-NumberOfGridY       64
-GridSizeOfX         7.8125e-3
-GridSizeOfY         7.8125e-3
+NumberOfGridX       32
+NumberOfGridY       32
+c GridSizeOfX         7.8125e-3
+c GridSizeOfY         7.8125e-3
+GridSizeOfX         1e-1
+GridSizeOfY         1e-1
 InitializeType      Uniform
 AmplitudeOfE[SI]    4e4 0.0 0.0
 AmplitudeOfB[SI]    0.0 0.0 10e-3

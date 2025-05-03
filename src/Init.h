@@ -40,6 +40,7 @@ struct BoundaryConditionForParticle {
 struct ParamForField {
     int ngx;
     int ngy;
+    int ngb;
     double dx;
     double dy;
     NSString* InitType;

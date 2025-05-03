@@ -22,7 +22,8 @@ typedef amgcl::make_solver<
 
 @interface EMField () {
     id<MTLDevice> _device;
-    float* _rho;                 // 電荷密度
+    id<MTLBuffer> _rhoBuffer;    // 電荷密度
+    float* _phi;                 // 電位
     id<MTLBuffer> _ExBuffer;     // 電場 x成分
     id<MTLBuffer> _EyBuffer;     // 電場 y成分
     id<MTLBuffer> _EzBuffer;     // 電場 z成分
@@ -33,6 +34,8 @@ typedef amgcl::make_solver<
     int _ngx;                    // x方向グリッド数
     int _ngy;                    // y方向グリッド数
     int _ngb;                    // バッファ領域グリッド数
+    int _nx;                    // x方向グリッド数（バッファ込み）
+    int _ny;                    // y方向グリッド数（バッファ込み）
     float _dx;                  // x方向グリッド幅
     float _dy;                  // y方向グリッド幅
     
@@ -42,15 +45,6 @@ typedef amgcl::make_solver<
 
 // プライベートインスタンス変数
 @implementation EMField {
-    // number of grid for buffer
-    int _ngbrho[2];
-    int _ngbphi[2];
-    int _ngbEx[2];
-    int _ngbEy[2];
-    int _ngbEz[2];
-    int _ngbBx[2];
-    int _ngbBy[2];
-    int _ngbBz[2];
     // BoundaryCoditions
     NSString* _BC_Xmin;
     NSString* _BC_Xmax;
@@ -64,10 +58,10 @@ typedef amgcl::make_solver<
     std::vector<float> _dphidx_Xmax;
     std::vector<float> _dphidy_Ymin;
     std::vector<float> _dphidy_Ymax;
+    int _nkx;
     int _ikmin;
-    int _ikmax;
+    int _nky;
     int _jkmin;
-    int _jkmax;
     float _Cd;
     float _Cx;
     float _Cy;
@@ -86,51 +80,27 @@ typedef amgcl::make_solver<
         struct ParamForField fieldParam = [initParam getParamForField];
         _ngx = fieldParam.ngx;
         _ngy = fieldParam.ngy;
+        _ngb = fieldParam.ngb;
         _dx = fieldParam.dx;
         _dy = fieldParam.dy;
         _weightOrder = fieldParam.weightOrder;
 
-        // 小行列の配列サイズ（A[1][1] が解析領域で、それ以外は領域境界）
-        if (_weightOrder == 5){
-            // general
-            _ngb = 2;
-            // rho,phi,Ez
-            _ngbrho[0] = 2;
-            _ngbphi[0] = 3;
-            _ngbEz[0] = 2;
-            _ngbrho[1] = 2;
-            _ngbphi[1] = 3;
-            _ngbEz[1] = 2;
-            // Ex, By
-            _ngbEx[0] = 3;
-            _ngbBy[0] = 3;
-            _ngbEx[1] = 2;
-            _ngbBy[1] = 2;
-            // Ey, Bx
-            _ngbEy[0] = 2;
-            _ngbBx[0] = 2;
-            _ngbEy[1] = 3;
-            _ngbBx[1] = 3;
-            // Bz
-            _ngbBz[0] = 3;
-            _ngbBz[1] = 3;
-        } else {
-            _ngb = 0;
-        }
-
-        // バッファサイズの計算
-        NSUInteger gridSize = (_ngx + 2*_ngb) * (_ngy + 2*_ngb) ;
-        NSUInteger bufferSize = sizeof(float) * gridSize;
+        // 配列サイズの計算(rho,Ex,Ey)
+        _nx = _ngx + 2*_ngb;
+        _ny = _ngy + 2*_ngb;
+        NSUInteger arrSize = (_nx+1)*(_ny+1);
+        NSUInteger bufferSize = sizeof(float) * arrSize;
         
-        // Metal バッファの初期化
+        // Metal バッファの作成
+        _rhoBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
         _ExBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
         _EyBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
         _EzBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
         _BxBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
         _ByBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
         _BzBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
-        
-        // バッファの初期化
+        // 中身の初期化
+        float* rho = (float*)_rhoBuffer.contents;
         float* Ex = (float*)_ExBuffer.contents;
         float* Ey = (float*)_EyBuffer.contents;
         float* Ez = (float*)_EzBuffer.contents;
@@ -139,12 +109,11 @@ typedef amgcl::make_solver<
         float* Bz = (float*)_BzBuffer.contents;
         
         // malloc
-        _rho = (float *)malloc(bufferSize);
-        _phi = (float *)malloc(sizeof(float) * (_ngx + 2*_ngb + 1)*(_ngy + 2*_ngb + 1) );
+        _phi = (float *)malloc(sizeof(float) * (_nx+2)*(_ny+2) );
         
         // initialize(Uniform)
-        for (int i = 0; i < gridSize; i++) {
-            _rho[i] = 0.0f;
+        for (int i = 0; i < arrSize; i++) {
+            rho[i] = 0.0f;
             Ex[i] = fieldParam.ampE[0];
             Ey[i] = fieldParam.ampE[1];
             Ez[i] = fieldParam.ampE[2];
@@ -200,44 +169,38 @@ typedef amgcl::make_solver<
         std::vector<int> col;
         std::vector<float> val;
 
-        // 解くべき行列サイズ
+        // 解くべき行列サイズ(境界条件に依存)
+        _nkx = _ngx;
+        _ikmin = _ngb;
         if ([_BC_Xmin isEqualToString:@"Dirichlet"]){
-            _ikmin = _ngb+1;
-        }else if ([_BC_Xmin isEqualToString:@"Neumann"]){
-            _ikmin = _ngb;
-        }else if ([_BC_Xmin isEqualToString:@"periodic"]){
-            _ikmin = _ngb;
+            _nkx--;
+            _ikmin++;
         }
         if ([_BC_Xmax isEqualToString:@"Dirichlet"]){
-            _ikmax = _ngb+_ngx-2;
-        }else if ([_BC_Xmax isEqualToString:@"Neumann"]){
-            _ikmax = _ngb+_ngx-1;
-        }else if ([_BC_Xmax isEqualToString:@"periodic"]){
-            _ikmax = _ngb+_ngx-2;
+            _nkx--;
         }
+        if ([_BC_Xmin isEqualToString:@"periodic"]){
+            _nkx--;
+        }
+        _nky = _ngy;
+        _jkmin = _ngb;
         if ([_BC_Ymin isEqualToString:@"Dirichlet"]){
-            _jkmin = _ngb+1;
-        }else if ([_BC_Ymin isEqualToString:@"Neumann"]){
-            _jkmin = _ngb;
-        }else if ([_BC_Ymin isEqualToString:@"periodic"]){
-            _jkmin = _ngb;
+            _nky--;
+            _jkmin++;
         }
         if ([_BC_Ymax isEqualToString:@"Dirichlet"]){
-            _jkmax = _ngb+_ngy-2;
-        }else if ([_BC_Ymax isEqualToString:@"Neumann"]){
-            _jkmax = _ngb+_ngy-1;
-        }else if ([_BC_Ymax isEqualToString:@"periodic"]){
-            _jkmax = _ngb+_ngy-2;
+            _nky--;
         }
-        int nkx = _ikmax-_ikmin+1;
-        int nky = _jkmax-_jkmin+1;
-        int nk = nkx*nky;
+        if ([_BC_Ymin isEqualToString:@"periodic"]){
+            _nky--;
+        }
+        arrSize = (_nkx+1)*(_nky+1);
 
         // construct CSR matrix
         ptr.push_back(0);
-        for (int j = 0; j < nky; ++j) {
-            for (int i = 0; i < nkx; ++i) {
-                int k = i + j*nkx;
+        for (int j = 0; j <= _nky; ++j) {
+            for (int i = 0; i <= _nkx; ++i) {
+                int k = i + j*(_nkx+1);
                 int row_entries = 0;
 
                 // Neumann(前進/後進 差分)
@@ -253,7 +216,7 @@ typedef amgcl::make_solver<
                     // ptr を更新してループを抜ける
                     ptr.push_back(ptr.back() + row_entries);
                     continue;
-                }else if(i == nkx-1 && [_BC_Xmax isEqualToString:@"Neumann"]){
+                }else if(i == _nkx && [_BC_Xmax isEqualToString:@"Neumann"]){
                     col.push_back(k);
                     val.push_back(1.0/_dx);
                     row_entries++;
@@ -268,18 +231,18 @@ typedef amgcl::make_solver<
                     col.push_back(k);
                     val.push_back(-1.0/_dy);
                     row_entries++;
-                    col.push_back(k+nkx);
+                    col.push_back(k+(_nkx+1));
                     val.push_back(1.0/_dy);
                     row_entries++;
                     _rhs_BC.push_back(_dphidy_Ymin[i]);
                     // ptr を更新してループを抜ける
                     ptr.push_back(ptr.back() + row_entries);
                     continue;
-                }else if(j == nky-1 && [_BC_Ymax isEqualToString:@"Neumann"]){
+                }else if(j == _nky && [_BC_Ymax isEqualToString:@"Neumann"]){
                     col.push_back(k);
                     val.push_back(1.0/_dx);
                     row_entries++;
-                    col.push_back(k-nkx);
+                    col.push_back(k-(_nkx+1));
                     val.push_back(-1.0/_dx);
                     row_entries++;
                     _rhs_BC.push_back(_dphidy_Ymax[i]);
@@ -301,7 +264,7 @@ typedef amgcl::make_solver<
                         _rhs_BC[k] += -_Cx*_phi_Xmin[j];
                     }else if ([_BC_Xmin isEqualToString:@"periodic"]){
                         // 要素の追加
-                        col.push_back(k+(nkx-1));
+                        col.push_back(k+_nkx);
                         val.push_back(_Cx);
                         row_entries++;
                     }
@@ -313,12 +276,12 @@ typedef amgcl::make_solver<
                 }
 
                 // imax側
-                if (i == nkx-1){
+                if (i == _nkx){
                     if ([_BC_Xmax isEqualToString:@"Dirichlet"]){
                         _rhs_BC[k] += -_Cx*_phi_Xmax[j];
                     }else if ([_BC_Xmax isEqualToString:@"periodic"]){
                         // 要素の追加
-                        col.push_back(k-(nkx-1));
+                        col.push_back(k-_nkx);
                         val.push_back(_Cx);
                         row_entries++;
                     }
@@ -334,29 +297,29 @@ typedef amgcl::make_solver<
                         _rhs_BC[k] += -_Cy*_phi_Ymin[j];
                     }else if ([_BC_Ymin isEqualToString:@"periodic"]){
                         // 要素の追加
-                        col.push_back(k+(nky-1));
+                        col.push_back(k+_nky);
                         val.push_back(_Cy);
                         row_entries++;
                     }
                 }else{
-                    col.push_back(k-nkx);
+                    col.push_back(k-(_nkx+1));
                     val.push_back(_Cy);
                     row_entries++;
                 }
 
                 // jmax側
-                if (j == nky-1){
+                if (j == _nky){
                     if ([_BC_Ymax isEqualToString:@"Dirichlet"]){
                         _rhs_BC[k] += -_Cy*_phi_Ymax[i];
                     }else if ([_BC_Ymax isEqualToString:@"periodic"]){
                         // 要素の追加
-                        col.push_back(k-(nky-1)*nkx);
+                        col.push_back(k-_nky*(_nkx+1));
                         val.push_back(_Cy);
                         row_entries++;
                     }
                 }else{
                     // 要素の追加
-                    col.push_back(k+nkx);
+                    col.push_back(k+(_nkx+1));
                     val.push_back(_Cy);
                     row_entries++;
                 }
@@ -367,7 +330,31 @@ typedef amgcl::make_solver<
         }
 
         // 初期解
-        _phi_sol.assign(nk, 0.0);
+        _phi_sol.assign(arrSize, 0.0);
+
+        std::cout << "nkx, nky: " << _nkx << ", " << _nky << std::endl;
+        std::cout << "Cd, Cx, Cy: " << _Cd << ", " << _Cx << ", " << _Cy << std::endl;
+        std::cout << "ptr.size(): " << ptr.size() << std::endl;
+        std::cout << "col.size(): " << col.size() << std::endl;
+        std::cout << "val.size(): " << val.size() << std::endl;
+        std::cout << "ptr:" << std::endl;
+        for (auto item : ptr)
+        {
+            std::cout << item << ", ";
+        }
+        std::cout << std::endl;
+        std::cout << "col:" << std::endl;
+        for (auto item : col)
+        {
+            std::cout << item << ", ";
+        }
+        std::cout << std::endl;
+        std::cout << "val:" << std::endl;
+        for (auto item : val)
+        {
+            std::cout << item << ", ";
+        }
+        std::cout << std::endl;
 
         // --- amgcl の設定 ---
         Solver::params prm;
@@ -375,182 +362,279 @@ typedef amgcl::make_solver<
         prm.solver.tol = fieldParam.tolerance;
         // _solver を生成してインスタンス変数として確保
         _solver = std::unique_ptr<Solver>(
-            new Solver( std::tie(nk, ptr, col, val), prm )
+            new Solver( std::tie(arrSize, ptr, col, val), prm )
         );
     }
     return self;
 }
 
 - (void)solvePoisson{
+    // 電荷密度の取得
+    float* rho = (float*)_rhoBuffer.contents;
     // 周期境界の処理
     int idx_in, idx_out;
     if ([_BC_Xmin isEqualToString:@"periodic"]){
-        for (int j = 0; j < _ngy+2*_ngb; j++){
+        for (int j = 0; j <= _ny+1; j++){
             for (int i = 0; i < _ngb; i++){
-                idx_in = i + j*(_ngx+2*_ngb);
-                idx_out = _ngx+i + j*(_ngx+2*_ngb); // _ngb+_ngx-_ngb+i のように、オフセット分が打ち消しあう
-                _rho[idx_out] += _rho[idx_in];
+                idx_in = i + j*(_nx+2);
+                idx_out = _ngx+i + j*(_nx+2); // _ngb+_ngx-_ngb+i のように、オフセット分が打ち消しあう
+                rho[idx_out] += rho[idx_in];
             }
             for (int i = 0; i < _ngb+1; i++){
-                idx_in = _ngb+_ngx-1+i + j*(_ngx+2*_ngb);
-                idx_out = _ngb+i + j*(_ngx+2*_ngb);
-                _rho[idx_out] += _rho[idx_in];
+                idx_in = _ngb+_ngx+i + j*(_nx+2);
+                idx_out = _ngb+i + j*(_nx+2);
+                rho[idx_out] += rho[idx_in];
             }
         }
     }
     if ([_BC_Ymin isEqualToString:@"periodic"]){
-        for (int i = 0; i < _ngx+2*_ngb; i++){
+        for (int i = 0; i <= _nx+1; i++){
             for (int j = 0; j < _ngb; j++){
-                idx_in = i + j*(_ngx+2*_ngb);
-                idx_out = i + (_ngy+j)*(_ngx+2*_ngb);
-                _rho[idx_out] += _rho[idx_in];
+                idx_in = i + j*(_nx+2);
+                idx_out = i + (_ngy+2+j)*(_nx+2);
+                rho[idx_out] += rho[idx_in];
             }
-            for (int j = 0; j < _ngb+1; j++){
-                idx_in = i + (_ngb+_ngy-1+j)*(_ngx+2*_ngb);
-                idx_out = i + (_ngb+j)*(_ngx+2*_ngb);
-                _rho[idx_out] += _rho[idx_in];
+            for (int j = 0; j < _ngb+1; j++){ // なんで非対称？？わからん。
+                idx_in = i + (_ngb+_ngy+j)*(_nx+2);
+                idx_out = i + (_ngb+1+j)*(_nx+2);
+                rho[idx_out] += rho[idx_in];
             }
         }
     }
     // Derichlet, Neumann の時は領域端の電荷密度を参照しないので無視。
-    // 電荷密度保存を考えると、領域内に足し込んだ方がいいのかもしれない。
+    // 電荷密度保存を考えると領域内に足し込んだ方がいいのかもしれないが、いったん放置。
 
     // 右辺ベクトルの更新
-    int nkx = _ikmax-_ikmin+1;
-    int nky = _jkmax-_jkmin+1;
-    int nk = nkx*nky;
+    int arrSize = (_nkx+1)*(_nky+1);
     std::vector<float> rhs;
-    for (int i = 0; i < nkx; i++){
-        for (int j = 0; j < nky; j++){
-            int k = i + j*nkx;
-            rhs.push_back(_rhs_BC[k] -4*PI*_rho[(i+_ikmin)+(j+_jkmin)*(_ngx+2*_ngb)]);
+    for (int i = 0; i <= _nkx; i++){
+        for (int j = 0; j <= _nky; j++){
+            int k = i + j*(_nkx+1);
+            std::cout
+            << "i,j = " << i << ", " << j
+            << ", rhs_BC = " << _rhs_BC[k]
+            << ", rho = " << rho[(i+_ikmin)+(j+_jkmin)*(_nx+1)]
+            << std::endl;
+            rhs.push_back(_rhs_BC[k] -4*PI*rho[(i+_ikmin)+(j+_jkmin)*(_nx+1)]);
         }
     }
 
     // solve
     int iters;
     float error;
-    std::tie(iters, error) = (*_solver)(rhs, _phi_sol);
+    std::tie(iters, error) = (*_solver)(rhs, _phi_sol); // solver, phi_sol は使い回す
 
     // 収束状況
     std::cout << "反復回数: " << iters << std::endl;
     std::cout << "最終誤差: " << error << std::endl;
 
+    // index
+    bool isLeft, isRight, isBottom, isTop;
+    int idx_in_i, idx_in_j;
+    float dphidx, dphidy;
+
     // phi の全セルを走査して埋める
-    for (int i = 0; i < _ngx+2*_ngb+1; ++i) {
+    for (int i = 0; i <= _nx+1; ++i) {
         // Ex11[0:2,0:1]
         if ([_BC_Xmin isEqualToString:@"Dirichlet"]){
-            bool isLeft = (i < _ngb+2);
+            isLeft = (i <= _ngb+1);
+            idx_in_i = i-(_ngb+1)-1;
         } else if ([_BC_Xmin isEqualToString:@"Neumann"]){
-            bool isLeft = (i < _ngb+1);
+            isLeft = (i < _ngb+1);
+            idx_in_i = i-(_ngb+1);
         } else if ([_BC_Xmin isEqualToString:@"periodic"]){
-            bool isLeft = false;
-            bool isRight = false;
+            // idx を調整するので無効化
+            isLeft = false;
+            isRight = false;
+            idx_in_i = (i-(_ngb+2)+_ngx)%_ngx;
         }
         // Ex13[0:1,0:1]
         if ([_BC_Xmax isEqualToString:@"Dirichlet"]){
-            bool isRight = (i > _ngb+1+_ngx);
+            isRight = (i >= _ngb+1+_ngx);
         } else if ([_BC_Xmax isEqualToString:@"Neumann"]){
-            bool isRight = (i > _ngb+1+_ngx);
+            isRight = (i > _ngb+1+_ngx);
         }
-        for (int j = 0; j < _ngy+2*_ngb+; ++j) {
+        for (int j = 0; j <= _ny+1; ++j) {
             // Ey11[0:1,0:2]
             if ([_BC_Ymin isEqualToString:@"Dirichlet"]){
-                bool isBottom = (j < _ngb+2);
+                isBottom = (j <= _ngb+1);
+                idx_in_j = j-(_ngb+1)-1;
             } else if ([_BC_Ymin isEqualToString:@"Neumann"]){
-                bool isBottom = (j < _ngb+1);
+                isBottom = (j < _ngb+1);
+                idx_in_j = j-(_ngb+1);
             } else if ([_BC_Ymin isEqualToString:@"periodic"]){
-                bool isBottom = false;
-                bool isTop = false;
+                isBottom = false;
+                isTop = false;
+                idx_in_j = (j-(_ngb+2)+_ngy)%_ngy;
             }
             // Ey13[0:1,0:1]
             if ([_BC_Ymax isEqualToString:@"Dirichlet"]){
-                bool isTop = (j > _ngb+1+_ngy);
+                isTop = (j >= _ngb+1+_ngy);
             } else if ([_BC_Ymax isEqualToString:@"Neumann"]){
-                bool isTop = (j > _ngb+1+_ngy);
+                isTop = (j > _ngb+1+_ngy);
             }
 
+            // 出力先アドレス
+            idx_out = i + j*(_nx+2);
+            // 領域内の値をコピー
             if (!isLeft && !isRight && !isBottom && !isTop){
-                idx_in = i + j*(_ngx+2*_ngb+1);
-                idx_out = i + j*(_ngx+2*_ngb+1);
+                idx_in = idx_in_i + idx_in_j*(_nkx+1);
+                _phi[idx_out] = _phi_sol[idx_in];
+            }
+            // 境界の値を線形近似(Left)
+            if (isLeft && !isRight && !isBottom && !isTop){
+                if ([_BC_Xmin isEqualToString:@"Dirichlet"]){
+                    dphidx = _phi_sol[0 + idx_in_j*(_nkx+1)] - _phi_Xmin[idx_in_j];
+                    _phi[idx_out] = _phi_Xmin[idx_in_j] + (i - (_ngb+1))*dphidx;
+                } else if ([_BC_Xmin isEqualToString:@"Neumann"]){
+                    dphidx = _dphidx_Xmin[idx_in_j];
+                    _phi[idx_out] = _phi_sol[0 + idx_in_j*(_nkx+1)] + (i - (_ngb+1))*dphidx;
+                }
+            }// 境界の値を線形近似(Right)
+            if (!isLeft && isRight && !isBottom && !isTop){
+                if ([_BC_Xmax isEqualToString:@"Dirichlet"]){
+                    dphidx = _phi_Xmax[idx_in_j] - _phi_sol[_nkx + idx_in_j*(_nkx+1)];
+                    _phi[idx_out] = _phi_Xmax[idx_in_j] + (i - (_ngb+1+_ngx))*dphidx;
+                } else if ([_BC_Xmax isEqualToString:@"Neumann"]){
+                    dphidx = _dphidx_Xmax[idx_in_j];
+                    _phi[idx_out] = _phi_sol[_nkx + idx_in_j*(_nkx+1)] + (i - (_ngb+1+_ngx))*dphidx;
+                }
+            }
+            // 境界の値を線形近似(Bottom)
+            if (!isLeft && !isRight && isBottom && !isTop){
+                if ([_BC_Ymin isEqualToString:@"Dirichlet"]){
+                    dphidy = _phi_sol[idx_in_i + 0*(_nkx+1)] - _phi_Ymin[idx_in_i];
+                    _phi[idx_out] = _phi_Ymin[idx_in_i] + (j - (_ngb+1))*dphidy;
+                } else if ([_BC_Ymin isEqualToString:@"Neumann"]){
+                    dphidy = _dphidy_Ymin[idx_in_i];
+                    _phi[idx_out] = _phi_sol[idx_in_i + 0*(_nkx+1)] + (j - (_ngb+1))*dphidy;
+                }
+            }
+            // 境界の値を線形近似(Top)
+            if (!isLeft && !isRight && !isBottom && isTop){
+                if ([_BC_Ymax isEqualToString:@"Dirichlet"]){
+                    dphidy = _phi_Ymax[idx_in_i] - _phi_sol[idx_in_i + _nky*(_nkx+1)];
+                    _phi[idx_out] = _phi_Ymax[idx_in_i] + (j-(_ngb+1+_ngy))*dphidy;
+                } else if ([_BC_Ymax isEqualToString:@"Neumann"]){
+                    dphidy = _dphidy_Ymax[idx_in_i];
+                    _phi[idx_out] = _phi_sol[idx_in_i + _nky*(_nkx+1)] + (j-(_ngb+1+_ngy))*dphidy;
+                }
+            }
+            // 境界の値を線形近似(LeftBottom)
+            if (isLeft && !isRight && isBottom && !isTop){
+                if ([_BC_Xmin isEqualToString:@"Dirichlet"] && [_BC_Ymin isEqualToString:@"Dirichlet"]){
+                    dphidx = _phi_sol[0 + 0*(_nkx+1)] - _phi_Xmin[0];
+                    dphidy = _phi_sol[0 + 0*(_nkx+1)] - _phi_Ymin[0];
+                    _phi[idx_out] = _phi_Xmin[0] + (i-(_ngb+1))*dphidx + (j-(_ngb+1))*dphidy;
+                } else if ([_BC_Xmin isEqualToString:@"Neumann"] && [_BC_Ymin isEqualToString:@"Dirichlet"]){
+                    dphidx = _dphidx_Xmin[0];
+                    dphidy = _phi_sol[0 + 0*(_nkx+1)] - _phi_Ymin[0];
+                    _phi[idx_out] = _phi_Ymin[0] + (i-(_ngb+1))*dphidx + (j-(_ngb+1))*dphidy;
+                } else if ([_BC_Xmin isEqualToString:@"Dirichlet"] && [_BC_Ymin isEqualToString:@"Neumann"]){
+                    dphidx = _phi_sol[0 + 0*(_nkx+1)] - _phi_Xmin[0];
+                    dphidy = _dphidy_Ymin[0];
+                    _phi[idx_out] = _phi_Xmin[0] + (i-(_ngb+1))*dphidx + (j-(_ngb+1))*dphidy;
+                } else if ([_BC_Xmin isEqualToString:@"Neumann"] && [_BC_Ymin isEqualToString:@"Neumann"]){
+                    dphidx = _dphidx_Xmin[0];
+                    dphidy = _dphidy_Ymin[0];
+                    _phi[idx_out] = _phi_sol[0 + 0*(_nkx+1)] + (i-(_ngb+1))*dphidx + (j-(_ngb+1))*dphidy;
+                }
+            }
+            // 境界の値を線形近似(RightBottom)
+            if (!isLeft && isRight && isBottom && !isTop){
+                if ([_BC_Xmax isEqualToString:@"Dirichlet"] && [_BC_Ymin isEqualToString:@"Dirichlet"]){
+                    dphidx = _phi_Xmax[0] - _phi_sol[_nkx + 0*(_nkx+1)];
+                    dphidy = _phi_sol[_nkx + 0*(_nkx+1)] - _phi_Ymin[_nkx];
+                    _phi[idx_out] = _phi_Xmax[0] + (i-(_ngb+1+_ngx))*dphidx + (j-(_ngb+1))*dphidy;
+                } else if ([_BC_Xmax isEqualToString:@"Neumann"] && [_BC_Ymin isEqualToString:@"Dirichlet"]){
+                    dphidx = _dphidx_Xmax[0];
+                    dphidy = _phi_sol[_nkx + 0*(_nkx+1)] - _phi_Ymin[_nkx];
+                    _phi[idx_out] = _phi_Ymin[0] + (i-(_ngb+1+_ngx))*dphidx + (j-(_ngb+1))*dphidy;
+                } else if ([_BC_Xmax isEqualToString:@"Dirichlet"] && [_BC_Ymin isEqualToString:@"Neumann"]){
+                    dphidx = _phi_Xmax[0] - _phi_sol[_nkx + 0*(_nkx+1)];
+                    dphidy = _dphidy_Ymin[_nkx];
+                    _phi[idx_out] = _phi_Xmax[0] + (i-(_ngb+1+_ngx))*dphidx + (j-(_ngb+1))*dphidy;
+                } else if ([_BC_Xmax isEqualToString:@"Neumann"] && [_BC_Ymin isEqualToString:@"Neumann"]){
+                    dphidx = _dphidx_Xmax[0];
+                    dphidy = _dphidy_Ymin[_nkx];
+                    _phi[idx_out] = _phi_sol[_nkx + 0*(_nkx+1)] + (i-(_ngb+1+_ngx))*dphidx + (j-(_ngb+1))*dphidy;
+                }
+            }
+            // 境界の値を線形近似(LeftTop)
+            if (isLeft && !isRight && !isBottom && isTop){
+                if ([_BC_Xmin isEqualToString:@"Dirichlet"] && [_BC_Ymax isEqualToString:@"Dirichlet"]){
+                    dphidx = _phi_Xmin[_nky] - _phi_sol[0 + _nky*(_nkx+1)];
+                    dphidy = _phi_sol[0 + _nky*(_nkx+1)] - _phi_Ymax[0];
+                    _phi[idx_out] = _phi_Xmin[_nky] + (i-(_ngb+1))*dphidx + (j-(_ngb+1+_ngy))*dphidy;
+                } else if ([_BC_Xmin isEqualToString:@"Neumann"] && [_BC_Ymax isEqualToString:@"Dirichlet"]){
+                    dphidx = _dphidx_Xmin[_nky];
+                    dphidy = _phi_sol[0 + _nky*(_nkx+1)] - _phi_Ymax[0];
+                    _phi[idx_out] = _phi_Ymax[_nky] + (i-(_ngb+1))*dphidx + (j-(_ngb+1+_ngy))*dphidy;
+                } else if ([_BC_Xmin isEqualToString:@"Dirichlet"] && [_BC_Ymax isEqualToString:@"Neumann"]){
+                    dphidx = _phi_Xmin[_nky] - _phi_sol[0 + _nky*(_nkx+1)];
+                    dphidy = _dphidy_Ymax[0];
+                    _phi[idx_out] = _phi_Xmin[_nky] + (i-(_ngb+1))*dphidx + (j-(_ngb+1+_ngy))*dphidy;
+                } else if ([_BC_Xmin isEqualToString:@"Neumann"] && [_BC_Ymax isEqualToString:@"Neumann"]){
+                    dphidx = _dphidx_Xmin[_nky];
+                    dphidy = _dphidy_Ymax[0];
+                    _phi[idx_out] = _phi_sol[0 + _nky*(_nkx+1)] + (i-(_ngb+1))*dphidx + (j-(_ngb+1+_ngy))*dphidy;
+                }
+            }
+            // 境界の値を線形近似(RightTop)
+            if (!isLeft && isRight && !isBottom && isTop){
+                if ([_BC_Xmax isEqualToString:@"Dirichlet"] && [_BC_Ymax isEqualToString:@"Dirichlet"]){
+                    dphidx = _phi_Xmax[_nky] - _phi_sol[_nkx + _nky*(_nkx+1)];
+                    dphidy = _phi_sol[_nkx + _nky*(_nkx+1)] - _phi_Ymax[_nkx];
+                    _phi[idx_out] = _phi_Xmax[_nky] + (i-(_ngb+1+_ngx))*dphidx + (j-(_ngb+1+_ngy))*dphidy;
+                } else if ([_BC_Xmax isEqualToString:@"Neumann"] && [_BC_Ymax isEqualToString:@"Dirichlet"]){
+                    dphidx = _dphidx_Xmax[_nky];
+                    dphidy = _phi_sol[_nkx + _nky*(_nkx+1)] - _phi_Ymax[_nkx];
+                    _phi[idx_out] = _phi_Ymax[_nky] + (i-(_ngb+1+_ngx))*dphidx + (j-(_ngb+1+_ngy))*dphidy;
+                } else if ([_BC_Xmax isEqualToString:@"Dirichlet"] && [_BC_Ymax isEqualToString:@"Neumann"]){
+                    dphidx = _phi_Xmax[_nky] - _phi_sol[_nkx + _nky*(_nkx+1)];
+                    dphidy = _dphidy_Ymax[_nkx];
+                    _phi[idx_out] = _phi_Xmax[_nky] + (i-(_ngb+1+_ngx))*dphidx + (j-(_ngb+1+_ngy))*dphidy;
+                } else if ([_BC_Xmax isEqualToString:@"Neumann"] && [_BC_Ymax isEqualToString:@"Neumann"]){
+                    dphidx = _dphidx_Xmax[_nky];
+                    dphidy = _dphidy_Ymax[_nkx];
+                    _phi[idx_out] = _phi_sol[_nkx + _nky*(_nkx+1)] + (i-(_ngb+1+_ngx))*dphidx + (j-(_ngb+1+_ngy))*dphidy;
+                }
             }
         }
     }
 
-
-    // 周期境界は優先的に分配
-    if ([_BC_Xmin isEqualToString:@"periodic"]){
-        for (int j = jkmin; j < jkmax; j++){
-            for (int i = 0; i < _ngx+2*_ngb+1; i++){
-                int k = i + j*(_ngx+2*_ngb+1);
-                int ik = (i + ngx-1 -ngb)%(ngx-1);
-                _phi[k] = _phi_sol[ik + j*nkx];
-            }
-        }
-        for (int j = 0; j < jkmin; j++){
-            for (int i = 0; i < _ngx+2*_ngb+1; i++){
-                int k = i + j*(_ngx+2*_ngb+1);
-                int ik = (i + ngx-1 -ngb)%(ngx-1);
-                _phi[k] = _phi_sol[ik + j*nkx];
-            }
-        }
-        for (int j = jkmax+1; j < _ngy+; j++){
-            for (int i = 0; i < _ngx+2*_ngb+1; i++){
-                int k = i + j*(_ngx+2*_ngb+1);
-                int ik = (i + ngx-1 -ngb)%(ngx-1);
-                _phi[k] = _phi_sol[ik + j*nkx];
-            }
+    // metalバッファの取得
+    float* Ex = (float*)_ExBuffer.contents;
+    float* Ey = (float*)_EyBuffer.contents;
+    // 勾配計算
+    for (int i = 0; i <= _nx; ++i) {
+        for (int j = 0; j <= _ny; ++j) {
+            Ex[i + j*(_nx+1)] = (_phi[i+1 + (j+1)*(_nx+2)] - _phi[i   + (j+1)*(_nx+2)])/_dx;
+            Ey[i + j*(_nx+1)] = (_phi[i+1 + (j+1)*(_nx+2)] - _phi[i+1 + (j  )*(_nx+2)])/_dy;
         }
     }
-    // phi の分配
-    // 周期境界は優先的に分配
-    if ([_BC_Xmin isEqualToString:@"periodic"]){
-        for (int j = jkmin; j < jkmax; j++){
-            for (int i = 0; i < _ngx+2*_ngb+1; i++){
-                int k = i + j*(_ngx+2*_ngb+1);
-                int ik = (i + ngx-1 -ngb)%(ngx-1);
-                _phi[k] = _phi_sol[ik + j*nkx];
-            }
-        }
-        for (int j = 0; j < jkmin; j++){
-            for (int i = 0; i < _ngx+2*_ngb+1; i++){
-                int k = i + j*(_ngx+2*_ngb+1);
-                int ik = (i + ngx-1 -ngb)%(ngx-1);
-                _phi[k] = _phi_sol[ik + j*nkx];
-            }
-        }
-        for (int j = jkmax+1; j < _ngy+; j++){
-            for (int i = 0; i < _ngx+2*_ngb+1; i++){
-                int k = i + j*(_ngx+2*_ngb+1);
-                int ik = (i + ngx-1 -ngb)%(ngx-1);
-                _phi[k] = _phi_sol[ik + j*nkx];
-            }
-        }
-    }
-
-    // Ex
-    for (int i = 0; i < _ngx; i++){
-        for (int j = 0; j < _ngy; j++){
-            if (i == 0 and [_BC_Xmin isEqualToString:@"Dirichlet"]){
-
-            }
-        }
-    }
-
     
 }
 
 - (void)resetChargeDensity{
+    // 電荷密度の取得
+    float* rho = (float*)_rhoBuffer.contents;
     // 電荷密度の初期化
-    int ng = (_ngx + 2*_ngb) * (_ngy + 2*_ngb);
-    for (int i = 0; i < ng; i++){
-        _rho[i] = 0.0f;
+    int arrSize = (_nx+1) * (_ny+1);
+    for (int i = 0; i < arrSize; i++){
+        rho[i] = 0.0f;
     }
 }
 
 - (void)outputField:(int)cycle{
     NSString *fileName = [NSString stringWithFormat:@"bin/field_%08d.bin", cycle];
     const char *filePath = [fileName UTF8String];
+
+    // metalバッファの内容を取得
+    float* rho = (float *)_rhoBuffer.contents;
+    float* Ex = (float *)_ExBuffer.contents;
+    float* Ey = (float *)_EyBuffer.contents;
+    float* Bz = (float *)_BzBuffer.contents;
     
     FILE *fp = fopen(filePath, "wb");
     if (!fp) {
@@ -565,27 +649,33 @@ typedef amgcl::make_solver<
     fwrite(&_dx, sizeof(float), 1, fp);
     fwrite(&_dy, sizeof(float), 1, fp);
     
-    // 全グリッドサイズ (境界含む) の計算
-    int ng = (_ngx + 2 * _ngb) * (_ngy + 2 * _ngb);
-    
-    // 順にフィールドデータを書き出す: _rho, _phi, Ex, Ey, Bz
-    fwrite(_rho, sizeof(float), ng, fp);
-    fwrite(_phi, sizeof(float), ng, fp);
-    
-    float *Ex = (float *)_ExBuffer.contents;
-    float *Ey = (float *)_EyBuffer.contents;
-    float *Bz = (float *)_BzBuffer.contents;
-    
-    fwrite(Ex, sizeof(float), ng, fp);
-    fwrite(Ey, sizeof(float), ng, fp);
-    fwrite(Bz, sizeof(float), ng, fp);
+    // フィールドデータを書き出す: name,type,array
+    writeField(fp, "rho", 0, rho, (_nx+1)*(_ny+1));
+    writeField(fp, "phi", 4, _phi, (_nx+2)*(_ny+2));    
+    writeField(fp, "Ex", 1, Ex, (_nx+1)*(_ny+1));
+    writeField(fp, "Ey", 2, Ey, (_nx+1)*(_ny+1));
+    writeField(fp, "Bz", 3, Bz, (_nx+1)*(_ny+1));
     
     fclose(fp);
     NSLog(@"Field data successfully written to %s", filePath);
 }
 
+static void writeField(FILE* fp, const char* name, int type_id, float* array, int arrSize) {
+    // 変数名（固定長32文字）
+    char name_buf[32] = {};
+    strncpy(name_buf, name, sizeof(name_buf) - 1); // 末尾NULL保護
+    fwrite(name_buf, sizeof(char), 32, fp);
+    // タイプID（int）
+    // 0: node-center value,    1: left-shifted value
+    // 2: bottom-shifted value, 3: left&bottom-shifted value
+    // 4: potential
+    fwrite(&type_id, sizeof(int), 1, fp);
+    // 配列本体
+    fwrite(array, sizeof(float), arrSize, fp);
+}
+
 // 電荷密度へのアクセサ
-- (float*)rho { return _rho; }
+- (id<MTLBuffer>)rhoBuffer { return _rhoBuffer; }
 
 // 電場バッファへのアクセサ
 - (id<MTLBuffer>)ExBuffer { return _ExBuffer; }
@@ -600,6 +690,8 @@ typedef amgcl::make_solver<
 // グリッド情報へのアクセサ
 - (int)ngx { return _ngx; }
 - (int)ngy { return _ngy; }
+- (int)nx { return _nx; }
+- (int)ny { return _ny; }
 - (int)ngb { return _ngb; }
 - (double)dx { return _dx; }
 - (double)dy { return _dy; }

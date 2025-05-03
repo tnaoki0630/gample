@@ -312,6 +312,7 @@
             }
         } else if (key == "WeightingOrder") {
             _field.weightOrder = stoi(value);
+            _field.ngb = stoi(value)/2; // 5th-order -> ngb = 2
         } else if (key == "MaxIterForPoisson") {
             _field.maxiter = stoi(value);
         } else if (key == "TolForPoisson") {

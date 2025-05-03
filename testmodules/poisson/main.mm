@@ -324,7 +324,7 @@ int main(int argc, const char * argv[]) {
                 //     << std::endl;
                 // }
             }
-            // 境界の値を扇形近似(Left)
+            // 境界の値を線形近似(Left)
             if (isLeft && !isRight && !isBottom && !isTop){
                 if (BC_imin == "Dirichlet"){
                     dphidx = x[0 + idx_in_j*(nkx+1)] - phi_imin[idx_in_j];
@@ -341,7 +341,7 @@ int main(int argc, const char * argv[]) {
                 // << ", dphidx = " << dphidx
                 // << std::endl;
             }
-            // 境界の値を扇形近似(Right)
+            // 境界の値を線形近似(Right)
             if (!isLeft && isRight && !isBottom && !isTop){
                 if (BC_imax == "Dirichlet"){
                     dphidx = phi_imax[idx_in_j] - x[nkx + idx_in_j*(nkx+1)];
@@ -351,7 +351,7 @@ int main(int argc, const char * argv[]) {
                     phi[idx_out] = x[nkx + idx_in_j*(nkx+1)] + (i - (nb+1+nx))*dphidx;
                 }
             }
-            // 境界の値を扇形近似(Bottom)
+            // 境界の値を線形近似(Bottom)
             if (!isLeft && !isRight && isBottom && !isTop){
                 if (BC_jmin == "Dirichlet"){
                     dphidy = x[idx_in_i + 0*(nkx+1)] - phi_jmin[idx_in_i];
@@ -361,7 +361,7 @@ int main(int argc, const char * argv[]) {
                     phi[idx_out] = x[idx_in_i + 0*(nkx+1)] + (j - (nb+1))*dphidy;
                 }
             }
-            // 境界の値を扇形近似(Top)
+            // 境界の値を線形近似(Top)
             if (!isLeft && !isRight && !isBottom && isTop){
                 if (BC_jmax == "Dirichlet"){
                     dphidy = phi_jmax[idx_in_i] - x[idx_in_i + nky*(nkx+1)];
@@ -371,7 +371,7 @@ int main(int argc, const char * argv[]) {
                     phi[idx_out] = x[idx_in_i + nky*(nkx+1)] + (j - (nb+1+ny))*dphidy;
                 }
             }
-            // 境界の値を扇形近似(LeftBottom)
+            // 境界の値を線形近似(LeftBottom)
             if (isLeft && !isRight && isBottom && !isTop){
                 if (BC_imin == "Dirichlet" && BC_jmin == "Dirichlet"){
                     dphidx = x[0 + 0*(nkx+1)] - phi_imin[0];
@@ -391,7 +391,7 @@ int main(int argc, const char * argv[]) {
                     phi[idx_out] = x[0 + 0*(nkx+1)] + (i-(nb+1))*dphidx + (j-(nb+1))*dphidy;
                 }
             }
-            // 境界の値を扇形近似(RightBottom)
+            // 境界の値を線形近似(RightBottom)
             if (!isLeft && isRight && isBottom && !isTop){
                 if (BC_imax == "Dirichlet" && BC_jmin == "Dirichlet"){
                     dphidx = phi_imax[0] - x[nkx + 0*(nkx+1)];
@@ -411,7 +411,7 @@ int main(int argc, const char * argv[]) {
                     phi[idx_out] = x[nkx + 0*(nkx+1)] + (i-(nb+1+nx))*dphidx + (j-(nb+1))*dphidy;
                 }
             }
-            // 境界の値を扇形近似(LeftTop)
+            // 境界の値を線形近似(LeftTop)
             if (isLeft && !isRight && !isBottom && isTop){
                 if (BC_imin == "Dirichlet" && BC_jmax == "Dirichlet"){
                     dphidx = phi_imin[nky] - x[0 + nky*(nkx+1)];
@@ -431,7 +431,7 @@ int main(int argc, const char * argv[]) {
                     phi[idx_out] = x[0 + nky*(nkx+1)] + (i-(nb+1))*dphidx + (j-(nb+1+ny))*dphidy;
                 }
             }
-            // 境界の値を扇形近似(RightTop)
+            // 境界の値を線形近似(RightTop)
             if (!isLeft && isRight && !isBottom && isTop){
                 if (BC_imax == "Dirichlet" && BC_jmax == "Dirichlet"){
                     dphidx = phi_imax[nky] - x[nkx + nky*(nkx+1)];

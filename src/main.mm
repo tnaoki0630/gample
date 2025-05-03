@@ -36,6 +36,7 @@ int main(int argc, const char * argv[]) {
                                                 withFieldParam:FieldParam];
             [ptclArr addObject:ptcl];
         }
+
         // 場の初期化
         EMField *fld = [[EMField alloc] initWithDevice:device withParam:init];
         // モーメント量の初期化
@@ -65,7 +66,7 @@ int main(int argc, const char * argv[]) {
                     NSValue *value = ParticleParams[s];
                     struct ParamForParticle ParticleParam;
                     [value getValue:&ParticleParam];
-                    [ptcl outputPhaseSpace:cycle withParticleParam:ParticleParam];
+                    [ptcl outputPhaseSpace:cycle withEMField:fld];
                 }
             }
             // 電場の更新

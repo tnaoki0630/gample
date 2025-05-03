@@ -11,10 +11,8 @@
 - (void)resetChargeDensity;
 - (void)outputField:(int)cycle;
 
-// 電荷密度へのアクセサ
-- (float*)rho;
-
 // Metal バッファへのアクセサ
+- (id<MTLBuffer>)rhoBuffer;
 - (id<MTLBuffer>)ExBuffer;
 - (id<MTLBuffer>)EyBuffer;
 - (id<MTLBuffer>)EzBuffer;
@@ -24,6 +22,9 @@
 
 // グリッド情報へのアクセサ
 - (int)ngx;
+- (int)ngy;
+- (int)nx;
+- (int)ny;
 - (int)ngy;
 - (int)ngb;
 - (double)dx;

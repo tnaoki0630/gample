@@ -29,10 +29,10 @@ struct EMFieldData {
 
 // シミュレーションパラメータ構造体
 struct SimulationParams {
-        uint particleCount;
-        float charge;
-        float mass;
-        float weight;
+        uint pNum;
+        float q;
+        float m;
+        float w;
         float dt;
         float constE;
         float constB;
@@ -40,6 +40,7 @@ struct SimulationParams {
         float constY;
         int ngx;
         int ngy;
+        int ngb;
 };
 
 @interface Particle : NSObject
@@ -55,14 +56,6 @@ struct SimulationParams {
 @property (nonatomic, strong) id<MTLBuffer> paramsBuffer;
 @property (nonatomic, strong) id<MTLBuffer> printBuffer;
 // スカラー変数
-@property (nonatomic) uint pNum;
-@property (nonatomic) double charge;
-@property (nonatomic) double mass;
-@property (nonatomic) double weight;
-@property (nonatomic) double ngx;
-@property (nonatomic) double ngy;
-@property (nonatomic) double dx;
-@property (nonatomic) double dy;
 @property (nonatomic) uint threadGroupSize;
 @property (nonatomic) uint integrationChunkSize;
 
@@ -78,5 +71,5 @@ struct SimulationParams {
 // 電荷密度更新
 - (void)integrateChargeDensity:(EMField*)fld;
 // 粒子軌道出力
-- (void)outputPhaseSpace:(int)cycle withParticleParam:(ParamForParticle)ParticleParam;
+- (void)outputPhaseSpace:(int)cycle withEMField:(EMField*)fld;
 @end
