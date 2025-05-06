@@ -12,8 +12,8 @@ struct FragForEquation {
 
 struct ParamForTimeIntegration {
     int EndCycle;
-    int pOutCycle;
-    int fOutCycle;
+    int ptclOutCycle;
+    int fldOutCycle;
     double dt;
 };
 

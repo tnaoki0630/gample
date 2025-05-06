@@ -126,10 +126,17 @@
     
     if (iss >> key >> value) {
         if (key == "Particle") {
+            // number of specimens
             _fragEquation.Particle = value;
         } else if (key == "EMField") {
+            // (developing)0: invariant EMField
+            // 1: Electro-static field w/ poisson eq.
+            // (developing)2: Electro-Magnetic field w/ FDTD
             _fragEquation.EMField = value;
         } else if (key == "MCCollision") {
+            // 0: collisionless
+            // (developing)1: MCC-collision
+            // (developing)2: null-collision
             _fragEquation.MCCollision = value;
         }
     }
@@ -144,9 +151,9 @@
         if (key == "End") {
             _timeIntegration.EndCycle = (int)value;
         } else if (key == "ParticleOutput") {
-            _timeIntegration.pOutCycle = (int)value;
+            _timeIntegration.ptclOutCycle = (int)value;
         } else if (key == "FieldOutput") {
-            _timeIntegration.fOutCycle = (int)value;
+            _timeIntegration.fldOutCycle = (int)value;
         } else if (key == "TimeStep") {
             _timeIntegration.dt = value;
         }

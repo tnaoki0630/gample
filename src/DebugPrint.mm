@@ -18,8 +18,8 @@ void printInitContents(Init* init) {
     struct ParamForTimeIntegration timeParams = [init getParamForTimeIntegration];
     NSLog(@"--- ParamForTimeIntegration ---");
     NSLog(@"EndCycle: %d", timeParams.EndCycle);
-    NSLog(@"pOutCycle: %d", timeParams.pOutCycle);
-    NSLog(@"fOutCycle: %d", timeParams.fOutCycle);
+    NSLog(@"ptclOutCycle: %d", timeParams.ptclOutCycle);
+    NSLog(@"fldOutCycle: %d", timeParams.fldOutCycle);
     NSLog(@"dt: %e", timeParams.dt);
     
     // ParamForParticle の出力

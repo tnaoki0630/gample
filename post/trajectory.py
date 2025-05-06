@@ -53,4 +53,4 @@ def update(frame):
 ani = animation.FuncAnimation(fig, update, frames=num_frames, interval=100, blit=True)
 
 # 動画として保存（ffmpegがインストールされている必要があります）
-ani.save("particle_trajectories.mp4", writer="ffmpeg", fps=60)
+ani.save("particle_trajectories.mp4", writer="ffmpeg", fps=5)

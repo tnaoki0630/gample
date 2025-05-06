@@ -16,24 +16,30 @@ int main(int argc, const char * argv[]) {
         
         // 初期化用クラスの設定
         NSString *inputFilePath = @"data/condition.txt";
-        Init *init = [[Init alloc]
-                            parseInputFile:inputFilePath];
+        Init *init = [[Init alloc] parseInputFile:inputFilePath];
 
         // パース結果の出力(debugprint.mm)
         printInitContents(init);
 
+        // // 粒子の初期化
+        // NSArray *ParticleParams = [init getParamForParticle];
+        // NSMutableArray *ptclArr = [NSMutableArray arrayWithCapacity:ParticleParams.count];
+        // struct ParamForField FieldParam = [init getParamForField];
+        // for (int s = 0; s < ParticleParams.count; s++) {
+        //     NSValue *value = ParticleParams[s];
+        //     struct ParamForParticle ParticleParam;
+        //     [value getValue:&ParticleParam];
+        //     NSLog(@"initParticles: %@", ParticleParam.pName);
+        //     Particle *ptcl = [[Particle alloc] initWithDevice:device withParam:init specimen:s];
+        //     [ptclArr addObject:ptcl];
+        // }
+
+        struct FragForEquation EqFrags = [init getFragForEquation];
+        
         // 粒子の初期化
-        NSArray *ParticleParams = [init getParamForParticle];
-        NSMutableArray *ptclArr = [NSMutableArray arrayWithCapacity:ParticleParams.count];
-        struct ParamForField FieldParam = [init getParamForField];
-        for (int s = 0; s < ParticleParams.count; s++) {
-            NSValue *value = ParticleParams[s];
-            struct ParamForParticle ParticleParam;
-            [value getValue:&ParticleParam];
-            NSLog(@"initParticles: %@", ParticleParam.pName);
-            Particle *ptcl = [[Particle alloc] initWithDevice:device
-                                                withParticleParam:ParticleParam
-                                                withFieldParam:FieldParam];
+        NSMutableArray *ptclArr = [NSMutableArray arrayWithCapacity:EqFrags.Particle];
+        for (int s = 0; s < EqFrags.Particle; s++) {
+            Particle *ptcl = [[Particle alloc] initWithDevice:device withParam:init specimen:s];
             [ptclArr addObject:ptcl];
         }
 
@@ -45,38 +51,32 @@ int main(int argc, const char * argv[]) {
 
         // 時間更新ループ
         struct ParamForTimeIntegration timeParams = [init getParamForTimeIntegration];
-        struct FragForEquation EqFrags = [init getFragForEquation];
         int StartCycle = 1; // リスタート時は最終サイクルを引き継ぎたい
         double dt = timeParams.dt; // そのうち dt の更新が必要になるかも
         for (int cycle = StartCycle; cycle <= timeParams.EndCycle; cycle++) {
             // 電荷密度の初期化
             [fld resetChargeDensity];
             // 粒子ループ
-            for (int s = 0; s < ParticleParams.count; s++) {
+            for (int s = 0; s < EqFrags.Particle; s++) {
                 Particle *ptcl = [ptclArr objectAtIndex:s];
                 // 粒子の時間更新
-                if (EqFrags.Particle == 1){
-                    [ptcl update:dt withEMField:fld];
-                }
+                [ptcl update:dt withEMField:fld];
                 // 電荷密度の更新
                 if (EqFrags.EMField == 1){
                     [ptcl integrateChargeDensity:fld];
                 }
                 // 粒子軌道の出力
-                if (cycle%timeParams.pOutCycle == 0){
-                    NSValue *value = ParticleParams[s];
-                    struct ParamForParticle ParticleParam;
-                    [value getValue:&ParticleParam];
+                if (timeParams.ptclOutCycle != 0 && cycle%timeParams.ptclOutCycle == 0){
                     [ptcl outputPhaseSpace:cycle withEMField:fld];
                 }
             }
             // 電場の更新
             if (EqFrags.EMField == 1){
                 [fld solvePoisson];
-            }
-            // 場の出力
-            if (cycle%timeParams.fOutCycle == 0){
-                [fld outputField: cycle];
+                // 場の出力
+                if (timeParams.fldOutCycle != 0 && cycle%timeParams.fldOutCycle == 0){
+                    [fld outputField: cycle];
+                }
             }
             NSLog(@"Frame %d completed", cycle);
         }

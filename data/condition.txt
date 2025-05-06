@@ -1,41 +1,41 @@
 FlagForEquation
-Particle    1
-EMField     1
+Particle    2
+EMField     0
 MCCollision 0
 #
 ParamForTimeIntegration
 Start           1
 End             20
-ParticleOutput  20
-FieldOutput     20
+ParticleOutput  200
+FieldOutput     0
 TimeStep        5e-12
 #
 ParamForParticle
 ParticleName            electron
-InitialParticleNumber   100000
+InitialParticleNumber   1000
 MaxParticleNumber       200000
 Charge                  -4.803204197e-10
 Mass                    9.10938188e-28
 Weight                  2.5e9
 GenerateType            UniformConstant
-InitialVel              5e8 0 0 
+InitialVel              0 0 0 
 /
 ParticleName            ion(Xe+)
-InitialParticleNumber   100000
+InitialParticleNumber   1000
 MaxParticleNumber       200000
 Charge                  4.803204197e-10
 Mass                    2.1801714e-22
 Weight                  2.5e9
 GenerateType            UniformConstant
-InitialVel              5e8 0 0 
+InitialVel              0 0 0 
 /
 #
 BoundaryConditionForParticle
 RegionName  Xmin
-BCType      periodic
+BCType      Delete
 /
 RegionName  Xmax
-BCType      periodic
+BCType      Delete
 /
 RegionName  Ymin
 BCType      periodic
@@ -50,8 +50,8 @@ NumberOfGridY       200
 GridSizeOfX         1e-2
 GridSizeOfY         1e-2
 InitializeType      Uniform
-AmplitudeOfE[SI]    4e4 0.0 0.0
-AmplitudeOfB[SI]    0.0 0.0 10e-3
+AmplitudeOfE[SI]    0.0 0.0 0.0
+AmplitudeOfB[SI]    0.0 0.0 0.0
 WeightingOrder      5
 MaxIterForPoisson   200
 TolForPoisson       1e-7

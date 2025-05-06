@@ -38,7 +38,10 @@ struct SimulationParams {
         int ngx;
         int ngy;
         int ngb;
-        int BCtype;
+        int BC_Xmin;
+        int BC_Xmax;
+        int BC_Ymin;
+        int BC_Ymax;
 };
 
 @interface Particle : NSObject
@@ -58,12 +61,9 @@ struct SimulationParams {
 @property (nonatomic) uint integrationChunkSize;
 
 // 初期設定
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-                withParticleParam:(ParamForParticle)ParticleParam
-                withFieldParam:(ParamForField)FieldParam;
+- (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam specimen:(int)s;
 // 粒子生成
-- (void)generateParticles:(ParamForParticle)ParticleParam
-                withFieldParam:(ParamForField)FieldParam;
+- (void)generateParticles:(ParamForParticle)ParticleParam withFieldParam:(ParamForField)FieldParam;
 // 時間更新
 - (void)update:(double)dt withEMField:(EMField*)fld;
 // 電荷密度更新
