@@ -29,10 +29,16 @@ def plot_field(field, title, figname, type_id, bool_buff):
 
     # プロット
     fig, ax = plt.subplots()
-    if bool_buff:
-        im = ax.scatter(X[0:nx+buff+ngb+1, 0:ny+buff+ngb+1], Y[0:nx+buff+ngb+1, 0:ny+buff+ngb+1], c=field[0:nx+buff+ngb+1, 0:ny+buff+ngb+1], s=20)
+    if (nx < 50 or ny < 50):
+        if bool_buff:
+            im = ax.scatter(X[0:nx+1, 0:ny+1], Y[0:nx+1, 0:ny+1], c=field[0:nx+1, 0:ny+1], s=20)
+        else:
+            im = ax.scatter(X[buff:ngx+buff+1, buff:ngy+buff+1], Y[buff:ngx+buff+1, buff:ngy+buff+1], c=field[buff:ngx+buff+1, buff:ngy+buff+1], s=20)
     else:
-        im = ax.scatter(X[buff:nx+buff+1, buff:ny+buff+1], Y[buff:nx+buff+1, buff:ny+buff+1], c=field[buff:nx+buff+1, buff:ny+buff+1], s=20)
+        if bool_buff:
+            im = ax.pcolormesh(X[0:nx+1, 0:ny+1], Y[0:nx+1, 0:ny+1], field[0:nx+1, 0:ny+1], shading='auto')
+        else:
+            im = ax.pcolormesh(X[buff:ngx+buff+1, buff:ngy+buff+1], Y[buff:ngx+buff+1, buff:ngy+buff+1], field[buff:ngx+buff+1, buff:ngy+buff+1], shading='auto')
     cbar = fig.colorbar(im, ax=ax, fraction=0.025, pad=0.04)
     cbar.set_label('Field value')
     ax.set_xlabel('x (units)')
@@ -42,10 +48,11 @@ def plot_field(field, title, figname, type_id, bool_buff):
     ax.set_title(title)
     ax.set_aspect('equal', adjustable='box')  # 軸のスケールを等しくする
     # メッシュの描画
-    for i in range(nx+1):
-        ax.axvline(i*dx, color='gray', linestyle=':', linewidth=0.5)
-    for j in range(ny+1):
-        ax.axhline(j*dy, color='gray', linestyle=':', linewidth=0.5)
+    if (nx < 50 or ny < 50):
+        for i in range(ngx+1):
+            ax.axvline(i*dx, color='gray', linestyle=':', linewidth=0.5)
+        for j in range(ngy+1):
+            ax.axhline(j*dy, color='gray', linestyle=':', linewidth=0.5)
     fig.tight_layout()
     fig.savefig(figname)
     plt.close(fig)
@@ -95,4 +102,5 @@ if __name__ == '__main__':
     # プロット
     for name, type_id, arr in fields:
         print(f"{name} (type_id={type_id}) shape={arr.shape}")
-        plot_field(arr, name, f"fig/{name}.png" , type_id , False)
+        plot_field(arr, name, f"fig/{name}.png" , type_id , True)
+        plot_field(arr, name, f"fig/{name}_woBuff.png" , type_id , False)

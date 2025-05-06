@@ -350,7 +350,7 @@
         std::istringstream valueIss(valueLine);
         double val;
         if (valueIss >> val) {
-            boundary.val = val;
+            boundary.val = val*VtosV;
         }
         // Skip the next line if it's a '/'
         std::string nextLine;

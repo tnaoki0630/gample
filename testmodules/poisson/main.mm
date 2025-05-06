@@ -13,8 +13,8 @@ int main(int argc, const char * argv[]) {
     int nb = 2; // 5th-order
     int arrSize, nkx, nky;
     // 格子サイズ
-    float dx = 5e-3;
-    float dy = 5e-3;
+    float dx = 1e-2;
+    float dy = 1e-2;
     // 定数係数
     float Cd = -2*(1.0/dx/dx + 1.0/dy/dy);
     float Cx = 1.0/dx/dx;
@@ -213,6 +213,26 @@ int main(int argc, const char * argv[]) {
 
         }
     }
+
+    // 疎行列の中身を出力
+    std::cout << "ptr:" << std::endl;
+    for (auto item : ptr)
+    {
+        std::cout << item << ", ";
+    }
+    std::cout << std::endl;
+    std::cout << "col:" << std::endl;
+    for (auto item : col)
+    {
+        std::cout << item << ", ";
+    }
+    std::cout << std::endl;
+    std::cout << "val:" << std::endl;
+    for (auto item : val)
+    {
+        std::cout << item << ", ";
+    }
+    std::cout << std::endl;
 
     // --- amgcl の設定 ---
     // バックエンドとソルバの型定義

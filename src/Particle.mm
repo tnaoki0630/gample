@@ -15,6 +15,7 @@ struct ParticleState {
     float vx;
     float vy;
     float vz;
+    int piflag;
 };
 
 // 電場データ構造体
@@ -30,10 +31,6 @@ struct EMFieldData {
 // シミュレーションパラメータ構造体
 struct SimulationParams {
     uint pNum;
-    float q;
-    float m;
-    float w;
-    float dt;
     float constE;
     float constB;
     float constX;
@@ -41,6 +38,10 @@ struct SimulationParams {
     int ngx;
     int ngy;
     int ngb;
+    int BC_Xmin;
+    int BC_Xmax;
+    int BC_Ymin;
+    int BC_Ymax;
 };
 
 // 粒子更新カーネル
@@ -215,12 +216,12 @@ kernel void integrateChargeDensity(
 
     // accumulation
     int ii, jj;
-    const int ngx = (prm.ngx + 2*2);
+    const int nx = (prm.ngx + 2*prm.ngb);
     for (int i = 0; i < 6; i++) {
         for (int j = 0; j < 6; j++) {
-            ii = i1+(i-2);
-            jj = j1+(j-2);
-            idx_out = gid + (ii+jj*ngx)*chunkSize;
+            ii = i1+(i-prm.ngb);
+            jj = j1+(j-prm.ngb);
+            idx_out = gid + (ii+jj*(nx+1))*chunkSize;
             temp[idx_out] = sf[i][0]*sf[j][1]*constRho;
         }
     }
@@ -263,16 +264,19 @@ kernel void integrateChargeDensity(
 }
 
 // 初期設定
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-                withParticleParam:(ParamForParticle)ParticleParam
-                withFieldParam:(ParamForField)FieldParam {
+- (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam {
     self = [super init];
     if (self) {
         _device = device;
         _commandQueue = [device newCommandQueue];
+
+        // パラメータ取得
+        struct ParamForParticle particleParam = [initParam getParamForParticle];
+        struct ParamForField fieldParam = [initParam getParamForField];
+        
         
         // 粒子種の格納
-        _pName = ParticleParam.pName;
+        _pName = particleParam.pName;
 
         // 並列計算パラメータ
         _integrationChunkSize = 4096;
@@ -299,20 +303,61 @@ kernel void integrateChargeDensity(
         buffSize = sizeof(SimulationParams);
         _paramsBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
         SimulationParams* prm = (SimulationParams*)_paramsBuffer.contents;
-        // 定数を初期化
-        prm->pNum = ParticleParam.pNum;
-        prm->q = ParticleParam.q;
-        prm->m = ParticleParam.m;
-        prm->w = ParticleParam.w;
+        // パラメータ格納
+        prm->pNum = particleParam.pNum;
         prm->ngx = FieldParam.ngx;
         prm->ngy = FieldParam.ngy;
         prm->ngb = FieldParam.ngb;
 
+        NSArray* particleBCs = [initParam getParticleBoundaries];
+        for (int pos = 0; pos < particleBCs.count; pos++){
+            NSValue* value = particleBCs[pos];
+            struct BoundaryConditionForParticle BC;
+            [value getValue:&BC];
+            if ([BC.position isEqualToString:@"Xmin"]){
+                if ([BC.type isEqualToString:@"periodic"]){
+                    prm->BC_Xmin = 0;
+                }else if ([BC.type isEqualToString:@"Delete"]){
+                    prm->BC_Xmin = 1;
+                }else{
+                    NSLog(@"This type of particle boundary is not supported: %@", BC.type);
+                    return nil;
+                }
+            }else if ([BC.position isEqualToString:@"Xmax"]){
+                if ([BC.type isEqualToString:@"periodic"]){
+                    prm->BC_Xmax = 0;
+                }else if ([BC.type isEqualToString:@"Delete"]){
+                    prm->BC_Xmax = 1;
+                }else{
+                    NSLog(@"This type of particle boundary is not supported: %@", BC.type);
+                    return nil;
+                }
+            }else if ([BC.position isEqualToString:@"Ymin"]){
+                if ([BC.type isEqualToString:@"periodic"]){
+                    prm->BC_Ymin = 0;
+                }else if ([BC.type isEqualToString:@"Delete"]){
+                    prm->BC_Ymin = 1;
+                }else{
+                    NSLog(@"This type of particle boundary is not supported: %@", BC.type);
+                    return nil;
+                }
+            }else if ([BC.position isEqualToString:@"Ymax"]){
+                if ([BC.type isEqualToString:@"periodic"]){
+                    prm->BC_Ymax = 0;
+                }else if ([BC.type isEqualToString:@"Delete"]){
+                    prm->BC_Ymax = 1;
+                }else{
+                    NSLog(@"This type of particle boundary is not supported: %@", BC.type);
+                    return nil;
+                }
+            }
+        }
+
         // 粒子バッファ
-        buffSize = sizeof(ParticleState)*ParticleParam.pNum;
+        buffSize = sizeof(ParticleState)*particleParam.pNum;
         _particleBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
         // 初期粒子分布の設定
-        [self generateParticles:ParticleParam withFieldParam:FieldParam];
+        [self generateParticles:particleParam withFieldParam:FieldParam];
 
         // 電磁場バッファ
         int nx = FieldParam.ngx + 2*FieldParam.ngb;
@@ -326,14 +371,14 @@ kernel void integrateChargeDensity(
         _integratePartialBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
 
         // デバッグ出力用バッファ
-        buffSize = sizeof(float)*ParticleParam.pNum;
+        buffSize = sizeof(float)*particleParam.pNum;
         _printBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
 
     }
     return self;
 }
 
-- (void)generateParticles:(ParamForParticle)ParticleParam
+- (void)generateParticles:(ParamForParticle)particleParam
             withFieldParam:(ParamForField)FieldParam{
     // 乱数生成器
     std::random_device seed_gen;
@@ -341,12 +386,12 @@ kernel void integrateChargeDensity(
     float Lx = FieldParam.dx * FieldParam.ngx;
     float Ly = FieldParam.dy * FieldParam.ngy;
     std::uniform_real_distribution<> unif_dist(0.0, 1.0);
-    float vth_epi  = sqrt(2*kb*ParticleParam.initT/ParticleParam.m);
+    float vth_epi  = sqrt(2*kb*particleParam.initT/particleParam.m);
     std::normal_distribution<> norm_dist(0.0, vth_epi);
     // 粒子の初期化
     ParticleState *ptcl = (ParticleState *)self.particleBuffer.contents;
-    for (int i = 0; i < ParticleParam.pNum; i++) {
-        if ([ParticleParam.GenerateType isEqualToString:@"UniformGaussian"]){
+    for (int i = 0; i < particleParam.pNum; i++) {
+        if ([particleParam.GenerateType isEqualToString:@"UniformGaussian"]){
             // uniform distribution for position
             ptcl[i].x = (float)unif_dist(engine)*Lx;
             ptcl[i].y = (float)unif_dist(engine)*Ly;
@@ -354,14 +399,14 @@ kernel void integrateChargeDensity(
             ptcl[i].vx = (float)norm_dist(engine);
             ptcl[i].vy = (float)norm_dist(engine);
             ptcl[i].vz = (float)norm_dist(engine);
-        } else if ([ParticleParam.GenerateType isEqualToString:@"UniformConstant"]){
+        } else if ([particleParam.GenerateType isEqualToString:@"UniformConstant"]){
             // uniform distribution for position
             ptcl[i].x = (float)unif_dist(engine)*Lx;
             ptcl[i].y = (float)unif_dist(engine)*Ly;
             // constant for velosity
-            ptcl[i].vx = (float)ParticleParam.initU[0];
-            ptcl[i].vy = (float)ParticleParam.initU[1];
-            ptcl[i].vz = (float)ParticleParam.initU[2];
+            ptcl[i].vx = (float)particleParam.initU[0];
+            ptcl[i].vy = (float)particleParam.initU[1];
+            ptcl[i].vz = (float)particleParam.initU[2];
         }
         // shift from real coordinate to integer coodinate
         ptcl[i].x = ptcl[i].x/FieldParam.dx;
@@ -461,8 +506,8 @@ kernel void integrateChargeDensity(
     id<MTLBuffer> threadGroupSizeBuffer = [_device newBufferWithBytes:&_threadGroupSize
                                                 length:sizeof(int)
                                                 options:MTLResourceStorageModeShared];
-    // constant for rho
-    float constRho = prm->q * prm->m / (fld.dx * fld.dx);
+    // constant
+    float constRho = prm->q * prm->w * prm->m / (fld.dx * fld.dx);
     id<MTLBuffer> constRhoBuffer = [_device newBufferWithBytes:&constRho
                                                 length:sizeof(int)
                                                 options:MTLResourceStorageModeShared];
@@ -515,10 +560,10 @@ kernel void integrateChargeDensity(
         }
     }
     // 加算後
-    int i,j,idx;
-    i = 10;
-    j = 10;
-    idx = i + j *(fld.ngy+fld.ngb);
+    // int i,j,idx;
+    // i = 10;
+    // j = 10;
+    // idx = i + j *(fld.ngy+fld.ngb);
     // NSLog(@"after integration: rho[%d,%d]: %f", i, j, fld.rho[idx]);
 };
 

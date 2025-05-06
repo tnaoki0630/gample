@@ -39,6 +39,7 @@ int main(int argc, const char * argv[]) {
 
         // 場の初期化
         EMField *fld = [[EMField alloc] initWithDevice:device withParam:init];
+
         // モーメント量の初期化
         Moment *mom = [[Moment alloc] initialize];
 

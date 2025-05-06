@@ -14,6 +14,7 @@ struct ParticleState {
         float vx;
         float vy;
         float vz;
+        int piflag;
 };
 
 // 電場データ構造体
@@ -30,10 +31,6 @@ struct EMFieldData {
 // シミュレーションパラメータ構造体
 struct SimulationParams {
         uint pNum;
-        float q;
-        float m;
-        float w;
-        float dt;
         float constE;
         float constB;
         float constX;
@@ -41,6 +38,7 @@ struct SimulationParams {
         int ngx;
         int ngy;
         int ngb;
+        int BCtype;
 };
 
 @interface Particle : NSObject
