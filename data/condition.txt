@@ -1,11 +1,11 @@
 FlagForEquation
 Particle    2
-EMField     0
+EMField     1
 MCCollision 0
 #
 ParamForTimeIntegration
 Start           1
-End             100
+End             10
 ParticleOutput  0
 FieldOutput     0
 TimeStep        5e-12
@@ -17,8 +17,11 @@ MaxParticleNumber       200000
 Charge                  -4.803204197e-10
 Mass                    9.10938188e-28
 Weight                  2.5e9
-GenerateType            UniformConstant
+GenerateType            uniform-Gaussian
+InitialPosX             auto
+InitialPosY             auto
 InitialVel              0 0 0 
+InitialTemp[eV]         0
 /
 ParticleName            ion(Xe+)
 InitialParticleNumber   1000
@@ -26,8 +29,11 @@ MaxParticleNumber       200000
 Charge                  4.803204197e-10
 Mass                    2.1801714e-22
 Weight                  2.5e9
-GenerateType            UniformConstant
+GenerateType            uniform-Gaussian
+InitialPosX             auto
+InitialPosY             auto
 InitialVel              0 0 0 
+InitialTemp[eV]         0
 /
 #
 BoundaryConditionForParticle
@@ -44,9 +50,31 @@ RegionName  Ymax
 BCType      periodic
 /
 #
+SourceForParticle
+ParticleName            electron
+GenerateType            sinusoidal-Gaussian
+SourceValue             100
+GeneratePosX            0.5 1.5
+GeneratePosY            auto
+GenerateTemp[eV]        10
+/
+ParticleName            ion(Xe+)
+GenerateType            sinusoidal-Gaussian
+SourceValue             100
+GeneratePosX            0.5 1.5
+GeneratePosY            auto
+GenerateTemp[eV]        0.1
+/
+ParticleName            electron
+GenerateType            hollow-cathode
+GeneratePosX            1.8 1.8
+GeneratePosY            auto
+GenerateTemp[eV]        10
+/
+#
 ParamForField
 NumberOfGridX       200
-NumberOfGridY       200
+NumberOfGridY       100
 GridSizeOfX         1e-2
 GridSizeOfY         1e-2
 InitializeType      Uniform

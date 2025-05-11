@@ -24,17 +24,27 @@ struct ParamForParticle {
     double q;
     double m;
     double w;
-    NSString* GenerateType;
-    double initX[2];
-    double initY[2];
-    double initU[3];
-    double initT;
+    NSString* genType;
+    double genX[2];
+    double genY[2];
+    double genU[3];
+    double genT;
 };
 
 struct BoundaryConditionForParticle {
     NSString* position;
     NSString* type;
     double val;
+};
+
+struct SourceForParticle {
+    NSString* pName;
+    NSString* genType;
+    double src;
+    double genX[2];
+    double genY[2];
+    double genU[3];
+    double genT;
 };
 
 struct ParamForField {
@@ -63,12 +73,14 @@ struct BoundaryConditionForField {
 - (void)parseParamForTimeIntegration:(const std::string&)line;
 - (void)parseParamForParticle:(const std::string&)line inputFile:(std::ifstream&)inputFile;
 - (void)parseBoundaryConditionForParticle:(const std::string&)line inputFile:(std::ifstream&)inputFile;
+- (void)parseSourceForParticle:(const std::string&)line inputFile:(std::ifstream&)inputFile;
 - (void)parseParamForField:(const std::string&)line;
 - (void)parseBoundaryConditionForField:(const std::string&)line inputFile:(std::ifstream&)inputFile;
 - (struct FragForEquation)getFragForEquation;
 - (struct ParamForTimeIntegration)getParamForTimeIntegration;
 - (NSArray*)getParamForParticle;
 - (NSArray*)getParticleBoundaries;
+- (NSArray*)getParticleSources;
 - (struct ParamForField)getParamForField;
 - (NSArray*)getFieldBoundaries;
 

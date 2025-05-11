@@ -37,11 +37,11 @@ void printInitContents(Init* init) {
         NSLog(@"  Charge: %e", particle.q);
         NSLog(@"  Mass: %e", particle.m);
         NSLog(@"  Weight: %e", particle.w);
-        NSLog(@"  Weight: %@", particle.GenerateType);
-        NSLog(@"  initialU: %e", particle.initU[0]);
-        NSLog(@"  initialV: %e", particle.initU[1]);
-        NSLog(@"  initialW: %e", particle.initU[2]);
-        NSLog(@"  initialT: %e", particle.initT);
+        NSLog(@"  genType: %@", particle.genType);
+        NSLog(@"  initialU: %e", particle.genU[0]);
+        NSLog(@"  initialV: %e", particle.genU[1]);
+        NSLog(@"  initialW: %e", particle.genU[2]);
+        NSLog(@"  initialT: %e", particle.genT);
     }
     
     // BoundaryConditionForParticle の出力
@@ -56,6 +56,28 @@ void printInitContents(Init* init) {
         NSLog(@"  Position: %@", boundary.position);
         NSLog(@"  Type: %@", boundary.type);
         NSLog(@"  Value: %e", boundary.val);
+    }
+    
+    // SourceForParticle の出力
+    NSArray *particleSources = [init getParticleSources];
+    NSLog(@"--- SourceForParticle (%lu entries) ---", (unsigned long)particleSources.count);
+    for (NSUInteger i = 0; i < particleSources.count; i++) {
+        NSValue *value = particleSources[i];
+        struct SourceForParticle source;
+        [value getValue:&source];
+        
+        NSLog(@"[Boundary %lu]", (unsigned long)i + 1);
+        NSLog(@"  pName: %@", source.pName);
+        NSLog(@"  genType: %@", source.genType);
+        NSLog(@"  src: %e", source.src);
+        NSLog(@"  genXmin: %e", source.genX[0]);
+        NSLog(@"  genXmax: %e", source.genX[1]);
+        NSLog(@"  genYmin: %e", source.genY[0]);
+        NSLog(@"  genYmax: %e", source.genY[1]);
+        NSLog(@"  genU: %e", source.genU[0]);
+        NSLog(@"  genV: %e", source.genU[1]);
+        NSLog(@"  genW: %e", source.genU[2]);
+        NSLog(@"  genT: %e", source.genT);
     }
     
     // ParamForField の出力

@@ -13,6 +13,7 @@
     struct ParamForTimeIntegration _timeIntegration;
     std::vector<struct ParamForParticle> _particles;
     std::vector<struct BoundaryConditionForParticle> _particleBoundaries;
+    std::vector<struct SourceForParticle> _particleSources;
     struct ParamForField _field;
     std::vector<struct BoundaryConditionForField> _fieldBoundaries;
 }
@@ -31,6 +32,7 @@
         // Initialize vectors
         _particles = std::vector<struct ParamForParticle>();
         _particleBoundaries = std::vector<struct BoundaryConditionForParticle>();
+        _particleSources = std::vector<struct SourceForParticle>();
         _fieldBoundaries = std::vector<struct BoundaryConditionForField>();
         
         // Convert NSString to std::string for C++ file handling
@@ -77,6 +79,9 @@
         } else if (line == "BoundaryConditionForParticle") {
             currentSection = line;
             continue;
+        } else if (line == "SourceForParticle") {
+            currentSection = line;
+            continue;
         } else if (line == "ParamForField") {
             currentSection = line;
             continue;
@@ -105,6 +110,12 @@
                 continue;
             }
             [self parseBoundaryConditionForParticle:line inputFile:inputFile];
+        } else if (currentSection == "SourceForParticle") {
+            if (line == "/") {
+                // End of a source condition
+                continue;
+            }
+            [self parseSourceForParticle:line inputFile:inputFile];
         } else if (currentSection == "ParamForField") {
             [self parseParamForField:line];
         } else if (currentSection == "BoundaryConditionForField") {
@@ -170,15 +181,15 @@
     particle.q = 0.0;
     particle.m = 0.0;
     particle.w = 0.0;
-    particle.GenerateType = NULL;
-    particle.initX[0] = 0.0;
-    particle.initX[1] = 0.0;
-    particle.initY[0] = 0.0;
-    particle.initY[1] = 0.0;
-    particle.initU[0] = 0.0;
-    particle.initU[1] = 0.0;
-    particle.initU[2] = 0.0;
-    particle.initT = 0.0;
+    particle.genType = NULL;
+    particle.genX[0] = 0.0;
+    particle.genX[1] = 0.0;
+    particle.genY[0] = 0.0;
+    particle.genY[1] = 0.0;
+    particle.genU[0] = 0.0;
+    particle.genU[1] = 0.0;
+    particle.genU[2] = 0.0;
+    particle.genT = 0.0;
     
     std::istringstream iss(line);
     std::string key;
@@ -186,26 +197,24 @@
     if (iss >> key >> value) {
         if (key == "ParticleName") {
             particle.pName = [NSString stringWithUTF8String:value.c_str()];
-            NSLog(@"value: %@", [NSString stringWithUTF8String:value.c_str()]);
-            NSLog(@"pName: %@", particle.pName);
         }
     }
     
     // Parse subsequent lines for this particle until we hit a '/' line
-    std::string particleLine;
-    while (std::getline(inputFile, particleLine)) {
-        if (particleLine == "/") {
+    std::string valueLine;
+    while (std::getline(inputFile, valueLine)) {
+        if (valueLine == "/") {
             // End of particle definition
             break;
         }
         
-        std::istringstream lineIss(particleLine);
+        std::istringstream lineIss(valueLine);
         std::string paramKey;
         std::string paramValue;
         std::string val1;
         std::string val2;
         
-        // NSLog(@"ParamValue: %@", [NSString stringWithUTF8String:particleLine.c_str()]);
+        // NSLog(@"ParamValue: %@", [NSString stringWithUTF8String:line.c_str()]);
         if (lineIss >> paramKey >> paramValue) {
             if (paramKey == "InitialParticleNumber") {
                 particle.pNum = std::stoi(paramValue);
@@ -218,29 +227,39 @@
             } else if (paramKey == "Weight") {
                 particle.w = std::stod(paramValue);
             } else if (paramKey == "GenerateType") {
-                particle.GenerateType = [NSString stringWithUTF8String:paramValue.c_str()];
+                particle.genType = [NSString stringWithUTF8String:paramValue.c_str()];
             } else if (paramKey == "InitialPosX") {
-                particle.initX[0] = std::stod(paramValue);
-                if (lineIss >> val1) {
-                particle.initX[1] = std::stod(val1);
+                if (paramValue == "auto"){
+                    particle.genX[0] = -1.0;
+                    particle.genX[1] = -1.0;
+                }else{
+                    particle.genX[0] = std::stod(paramValue);
+                    if (lineIss >> val1) {
+                        particle.genX[1] = std::stod(val1);
+                    }
                 }
             } else if (paramKey == "InitialPosY") {
-                particle.initY[0] = std::stod(paramValue);
-                if (lineIss >> val1) {
-                particle.initY[1] = std::stod(val1);
+                if (paramValue == "auto"){
+                    particle.genY[0] = -1.0;
+                    particle.genY[1] = -1.0;
+                }else{
+                    particle.genY[0] = std::stod(paramValue);
+                    if (lineIss >> val1) {
+                        particle.genY[1] = std::stod(val1);
+                    }
                 }
             } else if (paramKey == "InitialVel") {
-                particle.initU[0] = std::stod(paramValue);
+                particle.genU[0] = std::stod(paramValue);
                 if (lineIss >> val1 >> val2) {
-                particle.initU[1] = std::stod(val1);
-                particle.initU[2] = std::stod(val2);
+                    particle.genU[1] = std::stod(val1);
+                    particle.genU[2] = std::stod(val2);
                 }
             } else if (paramKey == "InitialTemp[eV]") {
-                particle.initT = std::stod(paramValue)*evtok;
+                particle.genT = std::stod(paramValue)*evtok;
             }
         }
     }    
-    // Add the completed particle to our vector
+    // Add the completed particle to vector
     _particles.push_back(particle);
 }
 
@@ -259,16 +278,15 @@
     }
     
     // Parse the type line
-    std::string typeLine;
-    if (std::getline(inputFile, typeLine)) {
-        std::istringstream typeIss(typeLine);
+    std::string valueLine;
+    if (std::getline(inputFile, valueLine)) {
+        std::istringstream typeIss(valueLine);
         if (typeIss >> key >> value && key == "BCType") {
             boundary.type = [NSString stringWithUTF8String:value.c_str()];;
         }
     }
     
     // Parse optional value line (if any before the '/' delimiter)
-    std::string valueLine;
     if (std::getline(inputFile, valueLine) && valueLine != "/") {
         std::istringstream valueIss(valueLine);
         double val;
@@ -283,8 +301,86 @@
         }
     }
     
-    // Add the boundary to our vector
+    // Add the boundary to vector
     _particleBoundaries.push_back(boundary);
+}
+
+- (void)parseSourceForParticle:(const std::string&)line inputFile:(std::ifstream&)inputFile {
+    struct SourceForParticle source;
+    // Initialize fields to default values
+    source.pName = NULL;
+    source.genType = NULL;
+    source.src = 0.0;
+    source.genX[0] = 0.0;
+    source.genX[1] = 0.0;
+    source.genY[0] = 0.0;
+    source.genY[1] = 0.0;
+    source.genU[0] = 0.0;
+    source.genU[1] = 0.0;
+    source.genU[2] = 0.0;
+    source.genT = 0.0;
+   
+    std::istringstream iss(line);
+    std::string key;
+    std::string value;
+    if (iss >> key >> value) {
+        if (key == "ParticleName") {
+            source.pName = [NSString stringWithUTF8String:value.c_str()];
+        }
+    }
+
+    std::string valueLine;
+    while (std::getline(inputFile, valueLine)) {
+        if (valueLine == "/") {
+            // End of particle definition
+            break;
+        }
+        
+        std::istringstream lineIss(valueLine);
+        std::string paramKey;
+        std::string paramValue;
+        std::string val1;
+        std::string val2;
+        
+        // NSLog(@"ParamValue: %@", [NSString stringWithUTF8String:line.c_str()]);
+        if (lineIss >> paramKey >> paramValue) {
+            if (paramKey == "GenerateType") {
+                source.genType = [NSString stringWithUTF8String:paramValue.c_str()];
+            } else if (paramKey == "SourceValue") {
+                source.src = std::stod(paramValue);
+            } else if (paramKey == "GeneratePosX") {
+                if (paramValue == "auto"){
+                    source.genX[0] = -1.0;
+                    source.genX[1] = -1.0;
+                }else{
+                    source.genX[0] = std::stod(paramValue);
+                    if (lineIss >> val1) {
+                        source.genX[1] = std::stod(val1);
+                    }
+                }
+            } else if (paramKey == "GeneratePosY") {
+                if (paramValue == "auto"){
+                    source.genY[0] = -1.0;
+                    source.genY[1] = -1.0;
+                }else{
+                    source.genY[0] = std::stod(paramValue);
+                    if (lineIss >> val1) {
+                        source.genY[1] = std::stod(val1);
+                    }
+                }
+            } else if (paramKey == "GenerateVel") {
+                source.genU[0] = std::stod(paramValue);
+                if (lineIss >> val1 >> val2) {
+                    source.genU[1] = std::stod(val1);
+                    source.genU[2] = std::stod(val2);
+                }
+            } else if (paramKey == "GenerateTemp[eV]") {
+                source.genT = std::stod(paramValue)*evtok;
+            }
+        }
+    }    
+    // Add the completed source to vector
+    _particleSources.push_back(source);
 }
 
 - (void)parseParamForField:(const std::string&)line {
@@ -343,16 +439,15 @@
     }
     
     // Parse the type line
-    std::string typeLine;
-    if (std::getline(inputFile, typeLine)) {
-        std::istringstream typeIss(typeLine);
+    std::string valueLine;
+    if (std::getline(inputFile, valueLine)) {
+        std::istringstream typeIss(valueLine);
         if (typeIss >> key >> value && key == "BCType") {
             boundary.type = [NSString stringWithUTF8String:value.c_str()];
         }
     }
     
     // Parse optional value line (if any before the '/' delimiter)
-    std::string valueLine;
     if (std::getline(inputFile, valueLine) && valueLine != "/") {
         std::istringstream valueIss(valueLine);
         double val;
@@ -367,7 +462,7 @@
         }
     }
     
-    // Add the boundary to our vector
+    // Add the boundary to vector
     _fieldBoundaries.push_back(boundary);
 }
 
@@ -396,6 +491,16 @@
         // Create a copy to return
         struct BoundaryConditionForParticle copy = boundary;
         [result addObject:[NSValue value:&copy withObjCType:@encode(struct BoundaryConditionForParticle)]];
+    }
+    return result;
+}
+
+- (NSArray*)getParticleSources {
+    NSMutableArray *result = [NSMutableArray array];
+    for (const auto& source : _particleSources) {
+        // Create a copy to return
+        struct SourceForParticle copy = source;
+        [result addObject:[NSValue value:&copy withObjCType:@encode(struct SourceForParticle)]];
     }
     return result;
 }

@@ -72,4 +72,6 @@ struct SimulationParams {
 - (void)integrateChargeDensity:(EMField*)fld;
 // 粒子軌道出力
 - (void)outputPhaseSpace:(int)cycle withEMField:(EMField*)fld;
+// 粒子注入
+- (void)injection:(double)dt withParam:(Init*)initParam;
 @end
