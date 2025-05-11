@@ -160,19 +160,15 @@ kernel void updateParticles(
     // delete boundary
     if (prm.BC_Xmin == 1 && p.x - prm.ngb < 0.0f){
         p.piflag = 1;
-        p.x += 1.0f; // for check
     }
     if (prm.BC_Xmax == 1 && p.x - prm.ngb > float(prm.ngx)){
         p.piflag = 1;
-        p.x -= 1.0f; // for check
     }
     if (prm.BC_Ymin == 1 && p.y - prm.ngb < 0.0f){
         p.piflag = 1;
-        p.y += 1.0f; // for check
     }
     if (prm.BC_Ymax == 1 && p.y - prm.ngb > float(prm.ngy)){
         p.piflag = 1;
-        p.y -= 1.0f; // for check
     }
 
     // debug print
@@ -334,7 +330,7 @@ kernel void integrateChargeDensity(
         // シミュレーションパラメータバッファ
         buffSize = sizeof(SimulationParams);
         _paramsBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
-        SimulationParams* prm = (SimulationParams*)_paramsBuffer.contents;        
+        SimulationParams* prm = (SimulationParams*)[_paramsBuffer contents];
         // パラメータ格納
         prm->pNum = particleParam.pNum;
         prm->ngx = fieldParam.ngx;
@@ -440,20 +436,15 @@ kernel void integrateChargeDensity(
         ptcl[i].x = ptcl[i].x/fieldParam.dx;
         ptcl[i].y = ptcl[i].y/fieldParam.dy;
         // shift origin for high-order weighting
-        if (fieldParam.weightOrder == 5){
-            ptcl[i].x = ptcl[i].x + 2.0;
-            ptcl[i].y = ptcl[i].y + 2.0;
-        }
-        // check
-        // NSLog(@"initial x[%d]: %f", i, ptcl[i].x);
+        ptcl[i].x = ptcl[i].x + (float)fieldParam.ngb;
+        ptcl[i].y = ptcl[i].y + (float)fieldParam.ngb;
     }
 }
-
 
 // 時間更新
 - (void)update:(double)dt withEMField:(EMField*)fld {
     // シミュレーションパラメータの更新
-    SimulationParams* prm = (SimulationParams*)_paramsBuffer.contents;
+    SimulationParams* prm = (SimulationParams*)[_paramsBuffer contents];
     prm->constE = 0.5*_q*dt/_m;
     prm->constB = 0.5*_q*dt/_m/c;
     prm->constX = dt/fld.dx;
@@ -504,24 +495,62 @@ kernel void integrateChargeDensity(
     [commandBuffer commit];
     [commandBuffer waitUntilCompleted];
 
-    //// 粒子状態取得
-    ParticleState* p = (ParticleState*)[_particleBuffer contents];
-    for (int idx = 0; idx < prm->pNum; idx++){
-        if (p[idx].piflag == 1){
-            NSLog(@"flowout: idx = %d, p.x[idx] = %f, p.y[idx] = %f, p.vx[idx] = %f", idx, p[idx].x, p[idx].y, p[idx].vx);
-            p[idx].piflag = 0;
-        }
-    }
+    // 粒子状態取得
+    // ParticleState* p = (ParticleState*)[_particleBuffer contents];
+    // for (int idx = 0; idx < 1; idx++){
+    //     NSLog(@"before update: p.x[%d]: %f", idx, p[idx].x);
+    // }
+
     // // デバッグ出力
     // float* prt = (float*)_printBuffer.contents;
     // for (int idx = 0; idx < 10; idx++){
     //     NSLog(@"debug print: val[%d]: %f", idx, prt[idx]);
     // }
+
+}
+
+- (void)reduce{
+    // obtain objects
+    SimulationParams* prm = (SimulationParams*)[_paramsBuffer contents];
+    ParticleState* p = (ParticleState*)[_particleBuffer contents];
+
+    // reduce
+    int kmax, kend, pulln;
+    kmax = prm->pNum;
+    pulln = 0;
+    for (int k1 = 0; k1 < prm->pNum; k1++){
+        // reached max
+        if (k1 == kmax){
+            if (p[k1].piflag == 1){
+                pulln++;
+            }
+            break;
+        }
+        // delete
+        if (p[k1].piflag == 1){
+            kend = kmax;
+            // NSLog(@"flowout(before): idx = %d, p.x[idx] = %f, p.y[idx] = %f", k1, p[k1].x, p[k1].y);
+            for (int k2 = kend; k2 > k1; k2--){
+                kmax--;
+                pulln++;
+                // copy
+                if (p[k2].piflag == 0){
+                    p[k1] = p[k2];
+                    // NSLog(@"flowout(after): k1 = %d, p.x[k1] = %f, p.y[k1] = %f", k1, p[k1].x, p[k1].y);
+                    // NSLog(@"flowout(after): k2 = %d, p.x[k2] = %f, p.y[k2] = %f", k2, p[k2].x, p[k2].y);
+                    break;
+                }
+            }
+        }
+    }
+    // update
+    prm->pNum -= pulln;
+    NSLog(@"flowout(%@): pulln = %d, pNum = %d", _pName, pulln, prm->pNum);
 }
 
 - (void)integrateChargeDensity:(EMField*)fld{
     // prepare
-    SimulationParams* prm = (SimulationParams*)_paramsBuffer.contents;
+    SimulationParams* prm = (SimulationParams*)[_paramsBuffer contents];
     int ng = (fld.nx+1)*(fld.ny+1);
     id<MTLBuffer> rhoBuffer = [fld rhoBuffer];
     float* rho = (float*)rhoBuffer.contents;
@@ -537,7 +566,7 @@ kernel void integrateChargeDensity(
                                                 length:sizeof(int)
                                                 options:MTLResourceStorageModeShared];
     // constant
-    float constRho = _q * _w * _m / (fld.dx * fld.dx);
+    float constRho = _q * _w * _m / (fld.dx * fld.dy);
     id<MTLBuffer> constRhoBuffer = [_device newBufferWithBytes:&constRho
                                                 length:sizeof(int)
                                                 options:MTLResourceStorageModeShared];
@@ -600,7 +629,7 @@ kernel void integrateChargeDensity(
 - (void)outputPhaseSpace:(int)cycle withEMField:(EMField*)fld{
     // prepare
     ParticleState *p = (ParticleState*)[_particleBuffer contents];
-    SimulationParams *prm = (SimulationParams*)_paramsBuffer.contents;
+    SimulationParams *prm = (SimulationParams*)[_paramsBuffer contents];
 
     // 位置を格納する変数
     float x,y;

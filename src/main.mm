@@ -61,6 +61,8 @@ int main(int argc, const char * argv[]) {
                 Particle *ptcl = [ptclArr objectAtIndex:s];
                 // 粒子の時間更新
                 [ptcl update:dt withEMField:fld];
+                // 流出粒子の処理
+                [ptcl reduce];
                 // 電荷密度の更新
                 if (EqFrags.EMField == 1){
                     [ptcl integrateChargeDensity:fld];

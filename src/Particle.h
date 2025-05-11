@@ -66,6 +66,8 @@ struct SimulationParams {
 - (void)generateParticles:(ParamForParticle)ParticleParam withFieldParam:(ParamForField)FieldParam;
 // 時間更新
 - (void)update:(double)dt withEMField:(EMField*)fld;
+// 粒子境界処理
+- (void)reduce;
 // 電荷密度更新
 - (void)integrateChargeDensity:(EMField*)fld;
 // 粒子軌道出力

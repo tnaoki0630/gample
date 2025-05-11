@@ -5,8 +5,8 @@ MCCollision 0
 #
 ParamForTimeIntegration
 Start           1
-End             20
-ParticleOutput  200
+End             100
+ParticleOutput  0
 FieldOutput     0
 TimeStep        5e-12
 #
@@ -50,7 +50,7 @@ NumberOfGridY       200
 GridSizeOfX         1e-2
 GridSizeOfY         1e-2
 InitializeType      Uniform
-AmplitudeOfE[SI]    0.0 0.0 0.0
+AmplitudeOfE[SI]    1e4 0.0 0.0
 AmplitudeOfB[SI]    0.0 0.0 0.0
 WeightingOrder      5
 MaxIterForPoisson   200
