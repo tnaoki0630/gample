@@ -17,6 +17,12 @@ int main(int argc, const char * argv[]) {
         // 初期化用クラスの設定
         NSString *inputFilePath = @"data/condition.txt";
         Init *init = [[Init alloc] parseInputFile:inputFilePath];
+        // 入力チェック、変数演算
+        bool check = [init checkInput];
+        if (!check){
+            NSLog(@"invalid condition.");
+            return 1;
+        }
 
         // パース結果の出力(debugprint.mm)
         printInitContents(init);
@@ -38,16 +44,20 @@ int main(int argc, const char * argv[]) {
         struct ParamForTimeIntegration timeParams = [init getParamForTimeIntegration];
         int StartCycle = 1; // リスタート時は最終サイクルを引き継ぎたい
         double dt = timeParams.dt;
+        int int_current;
         for (int cycle = StartCycle; cycle <= timeParams.EndCycle; cycle++) {
             // 電荷密度の初期化
             [fld resetChargeDensity];
             // 粒子ループ
+            int_current = 0;
             for (int s = 0; s < EqFrags.Particle; s++) {
                 Particle *ptcl = [ptclArr objectAtIndex:s];
                 // 粒子の時間更新
                 [ptcl update:dt withEMField:fld];
                 // 流出粒子の処理
                 [ptcl reduce];
+                int_current += ptcl.pinum_Xmin;
+                NSLog(@"flowout(#%d), Xmin = %d, Xmax = %d", s, ptcl.pinum_Xmin, ptcl.pinum_Xmax);
                 // 電荷密度の更新
                 if (EqFrags.EMField == 1){
                     [ptcl integrateChargeDensity:fld];
@@ -66,9 +76,11 @@ int main(int argc, const char * argv[]) {
                 }
             }
             // 粒子生成
+            NSLog(@"int_current = %d", int_current);
+            std::vector<int> ret(EqFrags.Particle);
             for (int s = 0; s < EqFrags.Particle; s++) {
                 Particle *ptcl = [ptclArr objectAtIndex:s];
-                [ptcl injection:dt withParam:init];
+                ret.push_back([ptcl injection:dt withParam:init withCurrent:int_current]);
             }
 
             NSLog(@"Frame %d completed", cycle);

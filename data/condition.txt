@@ -5,18 +5,18 @@ MCCollision 0
 #
 ParamForTimeIntegration
 Start           1
-End             10
+End             20000
 ParticleOutput  0
-FieldOutput     0
+FieldOutput     20
 TimeStep        5e-12
 #
 ParamForParticle
 ParticleName            electron
-InitialParticleNumber   1000
-MaxParticleNumber       200000
+InitPtclNumPerCell      10
+MaxParticleNumber       2000000
 Charge                  -4.803204197e-10
 Mass                    9.10938188e-28
-Weight                  2.5e9
+WeightFromDens[1/cm3]   5e10
 GenerateType            uniform-Gaussian
 InitialPosX             auto
 InitialPosY             auto
@@ -24,11 +24,11 @@ InitialVel              0 0 0
 InitialTemp[eV]         0
 /
 ParticleName            ion(Xe+)
-InitialParticleNumber   1000
-MaxParticleNumber       200000
+InitPtclNumPerCell      10
+MaxParticleNumber       2000000
 Charge                  4.803204197e-10
 Mass                    2.1801714e-22
-Weight                  2.5e9
+WeightFromDens[1/cm3]   5e10
 GenerateType            uniform-Gaussian
 InitialPosX             auto
 InitialPosY             auto
@@ -52,15 +52,15 @@ BCType      periodic
 #
 SourceForParticle
 ParticleName            electron
-GenerateType            sinusoidal-Gaussian
-SourceValue             100
+GenerateType            Xsinusoidal-Gaussian
+SourceValue[A/m2]       400
 GeneratePosX            0.5 1.5
 GeneratePosY            auto
 GenerateTemp[eV]        10
 /
 ParticleName            ion(Xe+)
-GenerateType            sinusoidal-Gaussian
-SourceValue             100
+GenerateType            Xsinusoidal-Gaussian
+SourceValue[A/m2]       400
 GeneratePosX            0.5 1.5
 GeneratePosY            auto
 GenerateTemp[eV]        0.1
@@ -73,13 +73,13 @@ GenerateTemp[eV]        10
 /
 #
 ParamForField
-NumberOfGridX       200
-NumberOfGridY       100
+NumberOfGridX       250
+NumberOfGridY       125
 GridSizeOfX         1e-2
 GridSizeOfY         1e-2
 InitializeType      Uniform
-AmplitudeOfE[SI]    1e4 0.0 0.0
-AmplitudeOfB[SI]    0.0 0.0 0.0
+AmplitudeOfE[V/m]   1e4 0.0 0.0
+AmplitudeOfB[V/m]   0.0 0.0 0.0
 WeightingOrder      5
 MaxIterForPoisson   200
 TolForPoisson       1e-7

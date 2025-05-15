@@ -400,8 +400,8 @@ typedef amgcl::make_solver<
     std::tie(iters, error) = (*_solver)(rhs, _phi_sol); // solver, phi_sol は使い回す
 
     // 収束状況
-    std::cout << "反復回数: " << iters << std::endl;
-    std::cout << "最終誤差: " << error << std::endl;
+    NSLog(@"poisson: 反復回数 = %d", iters);
+    NSLog(@"poisson: 最終誤差 = %e", error);
 
     // index
     bool isLeft, isRight, isBottom, isTop;

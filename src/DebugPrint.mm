@@ -66,7 +66,7 @@ void printInitContents(Init* init) {
         struct SourceForParticle source;
         [value getValue:&source];
         
-        NSLog(@"[Boundary %lu]", (unsigned long)i + 1);
+        NSLog(@"[Source %lu]", (unsigned long)i + 1);
         NSLog(@"  pName: %@", source.pName);
         NSLog(@"  genType: %@", source.genType);
         NSLog(@"  src: %e", source.src);

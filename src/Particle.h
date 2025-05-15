@@ -30,7 +30,7 @@ struct EMFieldData {
 
 // シミュレーションパラメータ構造体
 struct SimulationParams {
-        uint pNum;
+        int pNum;
         float constE;
         float constB;
         float constX;
@@ -73,5 +73,10 @@ struct SimulationParams {
 // 粒子軌道出力
 - (void)outputPhaseSpace:(int)cycle withEMField:(EMField*)fld;
 // 粒子注入
-- (void)injection:(double)dt withParam:(Init*)initParam;
+- (int)injection:(double)dt withParam:(Init*)initParam withCurrent:(int)current;
+// アクセサ
+- (int)pinum_Xmin;
+- (int)pinum_Xmax;
+- (int)pinum_Ymin;
+- (int)pinum_Ymax;
 @end

@@ -69,6 +69,7 @@ struct BoundaryConditionForField {
 
 - (instancetype)parseInputFile:(NSString*)inputFilePath;
 - (BOOL)parseFile:(std::ifstream&) inputFile;
+- (BOOL)checkInput;
 - (void)parseFlagForEquation:(const std::string&)line;
 - (void)parseParamForTimeIntegration:(const std::string&)line;
 - (void)parseParamForParticle:(const std::string&)line inputFile:(std::ifstream&)inputFile;
