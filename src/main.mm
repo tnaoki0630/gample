@@ -1,9 +1,19 @@
+#include <chrono>
 #import <Foundation/Foundation.h>
 #import "Init.h"
 #import "Particle.h"
 #import "Moment.h"
 #import "EMField.h"
 #import "DebugPrint.h"
+
+#define MEASURE(name, code)                                       \
+    do {                                                           \
+        auto _start = std::chrono::high_resolution_clock::now();  \
+        code;                                                     \
+        auto _end = std::chrono::high_resolution_clock::now();    \
+        auto _us = std::chrono::duration_cast<std::chrono::microseconds>(_end - _start).count(); \
+        NSLog(@"%s: %lld us", name, _us);                           \
+    } while (0)
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
@@ -47,20 +57,21 @@ int main(int argc, const char * argv[]) {
         int int_current;
         for (int cycle = StartCycle; cycle <= timeParams.EndCycle; cycle++) {
             // 電荷密度の初期化
-            [fld resetChargeDensity];
+            MEASURE("resetChargeDensity", [fld resetChargeDensity]);
+            
             // 粒子ループ
             int_current = 0;
             for (int s = 0; s < EqFrags.Particle; s++) {
                 Particle *ptcl = [ptclArr objectAtIndex:s];
                 // 粒子の時間更新
-                [ptcl update:dt withEMField:fld];
+                MEASURE("update", [ptcl update:dt withEMField:fld]);
                 // 流出粒子の処理
-                [ptcl reduce];
+                MEASURE("reduce", [ptcl reduce]);
                 int_current += ptcl.pinum_Xmin;
                 NSLog(@"flowout(#%d), Xmin = %d, Xmax = %d", s, ptcl.pinum_Xmin, ptcl.pinum_Xmax);
                 // 電荷密度の更新
                 if (EqFrags.EMField == 1){
-                    [ptcl integrateChargeDensity:fld];
+                    MEASURE("integrateChargeDensity", [ptcl integrateChargeDensity:fld]);
                 }
                 // 粒子軌道の出力
                 if (timeParams.ptclOutCycle != 0 && cycle%timeParams.ptclOutCycle == 0){
@@ -69,7 +80,7 @@ int main(int argc, const char * argv[]) {
             }
             // 電場の更新
             if (EqFrags.EMField == 1){
-                [fld solvePoisson];
+                MEASURE("solvePoisson", [fld solvePoisson]);
                 // 場の出力
                 if (timeParams.fldOutCycle != 0 && cycle%timeParams.fldOutCycle == 0){
                     [fld outputField: cycle];
@@ -80,7 +91,7 @@ int main(int argc, const char * argv[]) {
             std::vector<int> ret(EqFrags.Particle);
             for (int s = 0; s < EqFrags.Particle; s++) {
                 Particle *ptcl = [ptclArr objectAtIndex:s];
-                ret.push_back([ptcl injection:dt withParam:init withCurrent:int_current]);
+                MEASURE("injection", ret.push_back([ptcl injection:dt withParam:init withCurrent:int_current]));
             }
 
             NSLog(@"Frame %d completed", cycle);
