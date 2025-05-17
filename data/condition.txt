@@ -5,7 +5,7 @@ MCCollision 0
 #
 ParamForTimeIntegration
 Start           1
-End             20000
+End             20
 ParticleOutput  0
 FieldOutput     20
 TimeStep        5e-12

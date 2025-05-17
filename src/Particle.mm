@@ -186,74 +186,79 @@ kernel void integrateChargeDensity(
                         device float* print                 [[ buffer(4) ]],
                         device int &arrSize                 [[ buffer(5) ]],
                         device int &chunkSize               [[ buffer(6) ]],
-                        device int &chunkOffset             [[ buffer(7) ]],
+                        device int &pNumPerThread           [[ buffer(7) ]],
                         device int &threadGroupSize         [[ buffer(8) ]],
                         device float &constRho              [[ buffer(9) ]],
                         uint gid                            [[ thread_position_in_grid ]],
                         uint tid                            [[ thread_index_in_threadgroup ]],
                         uint groupID                        [[ threadgroup_position_in_grid ]]
                         ) {
-    // 粒子番号
-    uint const pid = gid + chunkOffset;
-    // dataCount を超えたら積分処理をスキップ
-    if (pid >= prm.pNum) return;
-
     // initialize(各スレッドがアクセスし得る範囲を初期化)
     for (int i = 0; i < arrSize; i++){
         temp[gid + i*chunkSize] = 0.0f;
     }
-    
-    // 粒子を取得
-    device ParticleState& p = ptcl[pid];
 
-    // electro-magnetic field on each ptcl
-    int i1 = int(p.x);
-    int j1 = int(p.y);
-    float hv[2];
-    hv[0] = p.x - float(i1);
-    hv[1] = p.y - float(j1);
-    
-    // 5th-order weighting
-    float sc;
-    float sf[6][2];
-    for (int i = 0; i < 2; i++) {
-        sc = 2.0 + hv[i];
-        sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
-        sc = 1.0 + hv[i];
-        sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-        sc = hv[i];
-        sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-        sc = 1.0 - hv[i];
-        sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-        sc = 2.0 - hv[i];
-        sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-        sc = 3.0 - hv[i];
-        sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
-    }
-    
-    // index
-    int idx_in, idx_out, offset;
-
-    // accumulation
-    int ii, jj;
-    const int nx = (prm.ngx + 2*prm.ngb);
-    for (int i = 0; i < 6; i++) {
-        for (int j = 0; j < 6; j++) {
-            ii = i1+(i-prm.ngb);
-            jj = j1+(j-prm.ngb);
-            idx_out = gid + (ii+jj*(nx+1))*chunkSize;
-            temp[idx_out] = sf[i][0]*sf[j][1]*constRho;
+    // 積分ループ
+    for (int i = 0; i < pNumPerThread; i++){
+        
+        uint pid = i + pNumPerThread*gid;
+        if (pid > prm.pNum) {
+            // pNum を超えたら積分処理をスキップ
+            break;
         }
+
+        // 粒子を取得
+        device ParticleState& p = ptcl[pid];
+
+        // electro-magnetic field on each ptcl
+        int i1 = int(p.x);
+        int j1 = int(p.y);
+        float hv[2];
+        hv[0] = p.x - float(i1);
+        hv[1] = p.y - float(j1);
+        
+        // 5th-order weighting
+        float sc;
+        float sf[6][2];
+        for (int i = 0; i < 2; i++) {
+            sc = 2.0 + hv[i];
+            sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
+            sc = 1.0 + hv[i];
+            sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+            sc = hv[i];
+            sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+            sc = 1.0 - hv[i];
+            sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+            sc = 2.0 - hv[i];
+            sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+            sc = 3.0 - hv[i];
+            sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
+        }
+
+        // accumulation
+        int ii, jj;
+        const int nx = (prm.ngx + 2*prm.ngb);
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
+                ii = i1+(i-prm.ngb);
+                jj = j1+(j-prm.ngb);
+                int idx_out = gid + (ii+jj*(nx+1))*chunkSize;
+                temp[idx_out] += sf[i][0]*sf[j][1]*constRho;
+            }
+        }
+    
     }
+
+    // スレッドグループ内で同期
     threadgroup_barrier(mem_flags::mem_threadgroup);
 
     // reduction
     for (int i = 0; i < arrSize; i++){
         for (uint stride = threadGroupSize / 2; stride > 0; stride /= 2) {
             if (tid < stride) {
-                offset = groupID*threadGroupSize + i*chunkSize;
-                idx_in = tid + stride + offset;
-                idx_out = tid + offset;
+                uint offset = groupID*threadGroupSize + i*chunkSize;
+                int idx_in = tid + stride + offset;
+                int idx_out = tid + offset;
                 temp[idx_out] += temp[idx_in];
             }
             threadgroup_barrier(mem_flags::mem_threadgroup);
@@ -263,8 +268,8 @@ kernel void integrateChargeDensity(
     // output partialSum
     if (tid == 0) {
         for (int i = 0; i < arrSize; i++){
-            idx_in = 0 + groupID*threadGroupSize + i*chunkSize;
-            idx_out = groupID + i*chunkSize/threadGroupSize;
+            int idx_in = 0 + groupID*threadGroupSize + i*chunkSize;
+            int idx_out = groupID + i*chunkSize/threadGroupSize;
             partial[idx_out] = temp[idx_in];
         }
     }
@@ -584,6 +589,11 @@ kernel void integrateChargeDensity(
     int ng = (fld.nx+1)*(fld.ny+1);
     id<MTLBuffer> rhoBuffer = [fld rhoBuffer];
     float* rho = (float*)rhoBuffer.contents;
+    
+    // 電荷密度の初期化
+    for (int i = 0; i < ng; i++){
+        rho[i] = 0.0f;
+    }
 
     // constant 引数バッファ
     id<MTLBuffer> chunkSizeBuffer = [_device newBufferWithBytes:&_integrationChunkSize
@@ -601,51 +611,47 @@ kernel void integrateChargeDensity(
                                                 length:sizeof(int)
                                                 options:MTLResourceStorageModeShared];
     // 分割して積分
-    uint chunkNum = (prm->pNum + _integrationChunkSize - 1) / _integrationChunkSize;
-    for (int chunk = 0; chunk < chunkNum; chunk++){
-        // インデックスのオフセット計算
-        uint chunkOffset = chunk * _integrationChunkSize;
-        id<MTLBuffer> chunkOffsetBuffer = [_device newBufferWithBytes:&chunkOffset
-                                                length:sizeof(uint)
-                                                options:MTLResourceStorageModeShared];
+    uint pNumPerThread = (prm->pNum + _integrationChunkSize - 1) / _integrationChunkSize;
+    id<MTLBuffer> pNumPerThreadBuffer = [_device newBufferWithBytes:&pNumPerThread
+                                            length:sizeof(uint)
+                                            options:MTLResourceStorageModeShared];
 
-        // コマンドバッファとエンコーダの作成
-        id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
-        id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
-        
-        // パイプラインとバッファの設定
-        [computeEncoder setComputePipelineState:_integrateChargeDensityPipeline];
-        [computeEncoder setBuffer:_particleBuffer           offset:0 atIndex:0];
-        [computeEncoder setBuffer:_paramsBuffer             offset:0 atIndex:1];
-        [computeEncoder setBuffer:_integrateTemporaryBuffer offset:0 atIndex:2];
-        [computeEncoder setBuffer:_integratePartialBuffer   offset:0 atIndex:3];
-        [computeEncoder setBuffer:_printBuffer              offset:0 atIndex:4];
-        [computeEncoder setBuffer:arrSizeBuffer             offset:0 atIndex:5];
-        [computeEncoder setBuffer:chunkSizeBuffer           offset:0 atIndex:6];
-        [computeEncoder setBuffer:chunkOffsetBuffer         offset:0 atIndex:7];
-        [computeEncoder setBuffer:threadGroupSizeBuffer     offset:0 atIndex:8];
-        [computeEncoder setBuffer:constRhoBuffer            offset:0 atIndex:9];
+    // コマンドバッファとエンコーダの作成
+    id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
+    id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
+    
+    // パイプラインとバッファの設定
+    [computeEncoder setComputePipelineState:_integrateChargeDensityPipeline];
+    [computeEncoder setBuffer:_particleBuffer           offset:0 atIndex:0];
+    [computeEncoder setBuffer:_paramsBuffer             offset:0 atIndex:1];
+    [computeEncoder setBuffer:_integrateTemporaryBuffer offset:0 atIndex:2];
+    [computeEncoder setBuffer:_integratePartialBuffer   offset:0 atIndex:3];
+    [computeEncoder setBuffer:_printBuffer              offset:0 atIndex:4];
+    [computeEncoder setBuffer:arrSizeBuffer             offset:0 atIndex:5];
+    [computeEncoder setBuffer:chunkSizeBuffer           offset:0 atIndex:6];
+    [computeEncoder setBuffer:pNumPerThreadBuffer       offset:0 atIndex:7];
+    [computeEncoder setBuffer:threadGroupSizeBuffer     offset:0 atIndex:8];
+    [computeEncoder setBuffer:constRhoBuffer            offset:0 atIndex:9];
 
-        // グリッドとスレッドグループのサイズ設定
-        uint threadGroupNum = _integrationChunkSize/_threadGroupSize;
-        MTLSize gridSizeMetalStyle = MTLSizeMake(threadGroupNum, 1, 1);
-        MTLSize threadGroupSize = MTLSizeMake(_threadGroupSize, 1, 1);
+    // グリッドとスレッドグループのサイズ設定
+    uint threadGroupNum = _integrationChunkSize/_threadGroupSize;
+    MTLSize gridSizeMetalStyle = MTLSizeMake(threadGroupNum, 1, 1);
+    MTLSize threadGroupSize = MTLSizeMake(_threadGroupSize, 1, 1);
 
-        // ディスパッチ
-        [computeEncoder dispatchThreadgroups:gridSizeMetalStyle
-                                threadsPerThreadgroup:threadGroupSize];
+    // ディスパッチ
+    [computeEncoder dispatchThreadgroups:gridSizeMetalStyle
+                            threadsPerThreadgroup:threadGroupSize];
 
-        // エンコーディングと実行
-        [computeEncoder endEncoding];
-        [commandBuffer commit];
-        [commandBuffer waitUntilCompleted];
+    // エンコーディングと実行
+    [computeEncoder endEncoding];
+    [commandBuffer commit];
+    [commandBuffer waitUntilCompleted];
 
-        // スレッドグループごとの部分和を加算
-        float* partialSums = (float*)_integratePartialBuffer.contents;
-        for (int i = 0; i < ng; i++){
-            for (int j = 0; j < threadGroupNum; j++){
-                rho[i] += partialSums[j + i*threadGroupNum];
-            }
+    // スレッドグループごとの部分和を加算
+    float* partialSums = (float*)_integratePartialBuffer.contents;
+    for (int i = 0; i < ng; i++){
+        for (int j = 0; j < threadGroupNum; j++){
+            rho[i] += partialSums[j + i*threadGroupNum];
         }
     }
 };

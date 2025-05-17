@@ -11,8 +11,8 @@
         auto _start = std::chrono::high_resolution_clock::now();  \
         code;                                                     \
         auto _end = std::chrono::high_resolution_clock::now();    \
-        auto _us = std::chrono::duration_cast<std::chrono::microseconds>(_end - _start).count(); \
-        NSLog(@"%s: %lld us", name, _us);                           \
+        auto _time = std::chrono::duration_cast<std::chrono::microseconds>(_end - _start).count(); \
+        NSLog(@"%s: %lld us", name, _time);                           \
     } while (0)
 
 int main(int argc, const char * argv[]) {
@@ -56,9 +56,6 @@ int main(int argc, const char * argv[]) {
         double dt = timeParams.dt;
         int int_current;
         for (int cycle = StartCycle; cycle <= timeParams.EndCycle; cycle++) {
-            // 電荷密度の初期化
-            MEASURE("resetChargeDensity", [fld resetChargeDensity]);
-            
             // 粒子ループ
             int_current = 0;
             for (int s = 0; s < EqFrags.Particle; s++) {
