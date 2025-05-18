@@ -10,6 +10,8 @@
 - (void)solvePoisson;
 - (void)resetChargeDensity;
 - (void)outputField:(int)cycle;
+- (bool)load1dField:(std::vector<float>&)field withFilePath:(NSString*)filePath;
+- (bool)load2dField:(std::vector<float>&)field withFilePath:(NSString*)filePath;
 
 // Metal バッファへのアクセサ
 - (id<MTLBuffer>)rhoBuffer;

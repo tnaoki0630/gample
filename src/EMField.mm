@@ -100,28 +100,47 @@ typedef amgcl::make_solver<
         _BxBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
         _ByBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
         _BzBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
-        // 中身の初期化
-        float* rho = (float*)_rhoBuffer.contents;
-        float* Ex = (float*)_ExBuffer.contents;
-        float* Ey = (float*)_EyBuffer.contents;
-        float* Ez = (float*)_EzBuffer.contents;
-        float* Bx = (float*)_BxBuffer.contents;
-        float* By = (float*)_ByBuffer.contents;
-        float* Bz = (float*)_BzBuffer.contents;
         
         // malloc
         _phi = (float *)malloc(sizeof(float) * (_nx+2)*(_ny+2) );
         
-        // initialize(Uniform)
-        for (int i = 0; i < arrSize; i++) {
-            rho[i] = 0.0f;
-            Ex[i] = fieldParam.ampE[0];
-            Ey[i] = fieldParam.ampE[1];
-            Ez[i] = fieldParam.ampE[2];
-            Bx[i] = fieldParam.ampB[0];
-            By[i] = fieldParam.ampB[1];
-            Bz[i] = fieldParam.ampB[2];
+        // initialize E
+        float* Ex = (float*)_ExBuffer.contents;
+        float* Ey = (float*)_EyBuffer.contents;
+        float* Ez = (float*)_EzBuffer.contents;
+        if ([fieldParam.InitTypeE isEqualToString:@"Uniform"]){
+            for (int i = 0; i < arrSize; i++) {
+                Ex[i] = fieldParam.ampE[0];
+                Ey[i] = fieldParam.ampE[1];
+                Ez[i] = fieldParam.ampE[2];
+            }
         }
+        // initialize B
+        float* Bx = (float*)_BxBuffer.contents;
+        float* By = (float*)_ByBuffer.contents;
+        float* Bz = (float*)_BzBuffer.contents;
+        if ([fieldParam.InitTypeB isEqualToString:@"Uniform"]){
+            for (int i = 0; i < arrSize; i++) {
+                Bx[i] = fieldParam.ampB[0];
+                By[i] = fieldParam.ampB[1];
+                Bz[i] = fieldParam.ampB[2];
+            }
+        }else if ([fieldParam.InitTypeB isEqualToString:@"From1dXFile"]){
+            std::vector<float> Bx_input;
+            std::vector<float> By_input;
+            std::vector<float> Bz_input;
+            [self load1dField:Bx_input withFilePath:fieldParam.FilePathBx];
+            [self load1dField:By_input withFilePath:fieldParam.FilePathBy];
+            [self load1dField:Bz_input withFilePath:fieldParam.FilePathBz];
+            for (int i = 0; i <= _nx; i++) {
+                for (int j = 0; j <= _ny; j++) {
+                    Bx[i+j*(_nx+1)] = Bx_input[i]*TtoG;
+                    By[i+j*(_nx+1)] = By_input[i]*TtoG;
+                    Bz[i+j*(_nx+1)] = Bz_input[i]*TtoG;
+                }
+            }
+        }
+        
 
         // construct Poisson solver
         float val_Xmin, val_Xmax, val_Ymin, val_Ymax;
@@ -345,6 +364,70 @@ typedef amgcl::make_solver<
         );
     }
     return self;
+}
+
+- (bool)load1dField:(std::vector<float>&)field withFilePath:(NSString*)filePath{
+    FILE* fp = std::fopen([filePath UTF8String], "rb");
+    if (!fp) {
+        NSLog(@"Error: Unable to open file %@ for reading", filePath);
+        return false;
+    }
+
+    // ヘッダ読み込み
+    int n;
+    float d;
+    if (std::fread(&n,  sizeof(int),   1, fp) != 1 ||
+        std::fread(&d,  sizeof(float), 1, fp) != 1)
+    {
+        NSLog(@"Error: Unable to open file %@ for reading", filePath);
+        std::fclose(fp);
+        return false;
+    }
+
+    // データ本体を読み込み
+    int arrSize = n+1;
+    field.resize(arrSize);
+    if (std::fread(field.data(), sizeof(float), arrSize, fp) != arrSize) {
+        NSLog(@"Error: Unable to open file %@ for reading", filePath);
+        std::fclose(fp);
+        return false;
+    }
+
+    std::fclose(fp);
+    return true;
+}
+
+- (bool)load2dField:(std::vector<float>&)field withFilePath:(NSString*)filePath{
+    FILE* fp = std::fopen([filePath UTF8String], "rb");
+    if (!fp) {
+        NSLog(@"Error: Unable to open file %@ for reading", filePath);
+        return false;
+    }
+
+    // ヘッダ読み込み
+    int nx,ny;
+    float dx,dy;
+    if (std::fread(&nx,  sizeof(int),   1, fp) != 1 ||
+        std::fread(&ny,  sizeof(int),   1, fp) != 1 ||
+        std::fread(&dx,  sizeof(float), 1, fp) != 1 ||
+        std::fread(&dy,  sizeof(float), 1, fp) != 1)
+    {
+        NSLog(@"Error: Unable to open file %@ for reading", filePath);
+        std::fclose(fp);
+        return false;
+    }
+
+    // データ本体を読み込み
+    int arrSize = (nx+1)*(ny+1);
+    field.resize(arrSize);
+    if (std::fread(field.data(), sizeof(float), arrSize, fp) != arrSize) {
+        std::cerr << "Error: Failed to read field data\n";
+        std::fclose(fp);
+        return false;
+    }
+
+    std::fclose(fp);
+    return true;
 }
 
 - (void)solvePoisson{
@@ -650,7 +733,7 @@ typedef amgcl::make_solver<
     writeField(fp, "phi", 4, _phi, (_nx+2)*(_ny+2), sVtoV);
     writeField(fp, "Ex", 1, Ex, (_nx+1)*(_ny+1), GtoV);
     writeField(fp, "Ey", 2, Ey, (_nx+1)*(_ny+1), GtoV);
-    writeField(fp, "Bz", 3, Bz, (_nx+1)*(_ny+1), GtoV);
+    writeField(fp, "Bz", 3, Bz, (_nx+1)*(_ny+1), GtoT);
     
     fclose(fp);
     NSLog(@"Field data successfully written to %s", filePath);

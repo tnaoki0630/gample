@@ -53,9 +53,16 @@ struct ParamForField {
     int ngb;
     double dx;
     double dy;
-    NSString* InitType;
+    NSString* InitTypeE;
+    NSString* InitTypeB;
     double ampE[3];
     double ampB[3];
+    NSString* FilePathEx;
+    NSString* FilePathEy;
+    NSString* FilePathEz;
+    NSString* FilePathBx;
+    NSString* FilePathBy;
+    NSString* FilePathBz;
     int weightOrder;
     int maxiter;
     float tolerance;

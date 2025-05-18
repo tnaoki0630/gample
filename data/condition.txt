@@ -12,7 +12,7 @@ TimeStep        5e-12
 #
 ParamForParticle
 ParticleName            electron
-InitPtclNumPerCell      10
+InitPtclNumPerCell      20
 MaxParticleNumber       2000000
 Charge                  -4.803204197e-10
 Mass                    9.10938188e-28
@@ -24,7 +24,7 @@ InitialVel              0 0 0
 InitialTemp[eV]         0
 /
 ParticleName            ion(Xe+)
-InitPtclNumPerCell      10
+InitPtclNumPerCell      20
 MaxParticleNumber       2000000
 Charge                  4.803204197e-10
 Mass                    2.1801714e-22
@@ -77,9 +77,12 @@ NumberOfGridX       250
 NumberOfGridY       125
 GridSizeOfX         1e-2
 GridSizeOfY         1e-2
-InitializeType      Uniform
-AmplitudeOfE[V/m]   1e4 0.0 0.0
-AmplitudeOfB[V/m]   0.0 0.0 0.0
+InitializeTypeOfE   Uniform
+AmplitudeOfE[V/m]   0.0 0.0 0.0
+InitializeTypeOfB   From1dXFile
+FilePathOfBx        data/Bx.bin
+FilePathOfBy        data/By.bin
+FilePathOfBz        data/Bz.bin
 WeightingOrder      5
 MaxIterForPoisson   200
 TolForPoisson       1e-7

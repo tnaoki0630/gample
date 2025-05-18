@@ -48,13 +48,20 @@
         _field.ngy = -1;
         _field.dx = -1.0;
         _field.dy = -1.0;
-        _field.InitType = NULL;
+        _field.InitTypeE = NULL;
+        _field.InitTypeB = NULL;
         _field.ampE[0] = 0.0;
         _field.ampE[1] = 0.0;
         _field.ampE[2] = 0.0;
         _field.ampB[0] = 0.0;
         _field.ampB[1] = 0.0;
         _field.ampB[2] = 0.0;
+        _field.FilePathEx = NULL;
+        _field.FilePathEy = NULL;
+        _field.FilePathEz = NULL;
+        _field.FilePathBx = NULL;
+        _field.FilePathBy = NULL;
+        _field.FilePathBz = NULL;
         _field.weightOrder = -1;
         _field.ngb = -1;
         _field.maxiter = 200;
@@ -443,20 +450,34 @@
             _field.dx = stod(value);
         } else if (key == "GridSizeOfY") {
             _field.dy = stod(value);
-        } else if (key == "InitializeType") {
-            _field.InitType = [NSString stringWithUTF8String:value.c_str()];
+        } else if (key == "InitializeTypeOfE") {
+            _field.InitTypeE = [NSString stringWithUTF8String:value.c_str()];
         } else if (key == "AmplitudeOfE[V/m]") {
             _field.ampE[0] = stod(value)*VtoG;
             if (iss >> val1 >> val2) {
                 _field.ampE[1] = stod(val1)*VtoG;
                 _field.ampE[2] = stod(val2)*VtoG;
             }
+        } else if (key == "FilePathOfEx") {
+            _field.FilePathEx = [NSString stringWithUTF8String:value.c_str()];
+        } else if (key == "FilePathOfEy") {
+            _field.FilePathEy = [NSString stringWithUTF8String:value.c_str()];
+        } else if (key == "FilePathOfEz") {
+            _field.FilePathEz = [NSString stringWithUTF8String:value.c_str()];
+        } else if (key == "InitializeTypeOfB") {
+            _field.InitTypeB = [NSString stringWithUTF8String:value.c_str()];
         } else if (key == "AmplitudeOfB[V/m]") {
             _field.ampB[0] = stod(value)*TtoG;
             if (iss >> val1 >> val2) {
                 _field.ampB[1] = stod(val1)*TtoG;
                 _field.ampB[2] = stod(val2)*TtoG;
             }
+        } else if (key == "FilePathOfBx") {
+            _field.FilePathBx = [NSString stringWithUTF8String:value.c_str()];
+        } else if (key == "FilePathOfBy") {
+            _field.FilePathBy = [NSString stringWithUTF8String:value.c_str()];
+        } else if (key == "FilePathOfBz") {
+            _field.FilePathBz = [NSString stringWithUTF8String:value.c_str()];
         } else if (key == "WeightingOrder") {
             _field.weightOrder = stoi(value);
             _field.ngb = stoi(value)/2; // 5th-order -> ngb = 2
@@ -554,7 +575,6 @@
                 // culculate weight from initial number density
                 float ppc = (float)_particles[s].pNum/(float)(_field.ngx*_field.ngy);
                 _particles[s].w = _initWeightFromDens[s]*_field.dx*_field.dy/ppc;
-                NSLog(@"check particleParam for %@: bunbo = %e, bunshi = %e", _particles[s].pName, _initWeightFromDens[s]*_field.dx*_field.dy, ppc);
             }else{
                 NSLog(@"check particleParam for %@ failed.", _particles[s].pName);
                 return false;
