@@ -1,1 +1,88 @@
 # gample
+## solver commands
+### FlagForEquation
+- Particle  :(int) number of specimens
+- EMField   :(int) flag
+    -  0: constant
+    -  1: ElectroStatic field by poisson solver
+    - (2: ElectroMagnetic field by FDTD)
+- MCCollision   :(int) flag
+    -  0: collisionless
+    - (1: null-collision)
+### ParamForTimeIntegration
+- Start             :(int) start time
+- End               :(int) end time
+- ParticleOutput    :(int) output timing of particle trajectory
+- FieldOutput       :(int) output timing of field
+- TimeStep          :(double) time increment amount of each time step
+### ParamForParticle
+- ParticleName          :(string) particle name
+- InitPtclNumPerCell    :(int) initial particle number per cell
+- MaxParticleNumber     :(int) maximum particle number
+- Charge                :(double) particle charge
+- Mass                  :(double) particle mass
+- WeightFromDens[1/cm3] :(double) culculate particle weight from initial number density
+- GenerateType          :(string) particle generation algorithm
+    - uniform-Gaussian
+- InitialPosX           :(double[2] or string) particle generation area
+    - (double[2]) minimum, maximum
+    - (string) auto
+- InitialPosY           :(double[2] or string) particle generation area
+    - (double[2]) minimum, maximum
+    - (string) auto
+- InitialVel            :(double[3]) initial mean velocity
+- InitialTemp[eV]       :(double) initial temperature
+### BoundaryConditionForParticle
+- RegionName    :(string) region name
+    - Xmin
+    - Xmax
+    - Ymin
+    - Ymax
+- BCType        :(string) type of boundary condition
+    - Delete
+    - periodic
+### SourceForParticle
+- ParticleName      :(string) particle name
+- GenerateType      :(string)
+    - Xsinusoidal-Gaussian
+    - hollow-cathode
+- SourceValue[A/m2] :(double) source value
+- GeneratePosX      :(double[2] or string) particle generation area
+    - (double[2]) minimum, maximum
+    - (string) auto
+- GeneratePosY      :(double[2] or string) particle generation area
+    - (double[2]) minimum, maximum
+    - (string) auto
+- GenerateTemp[eV]  :(double) initial temperature
+### ParamForField
+- NumberOfGridX     :(int) number of grid for x-axis
+- NumberOfGridY     :(int) number of grid for y-axis
+- GridSizeOfX       :(double) size of grid for x-axis
+- GridSizeOfY       :(double) size of grid for x-axis
+- InitializeTypeOfE :(string) initialize algorithm of E
+    - Uniform
+    - From1dXFile
+- AmplitudeOfE[V/m] :(double[3]) Initial amplitude of E
+- FilePathOfEx      :(string) filepath of Ex
+- FilePathOfEy      :(string) filepath of Ey
+- FilePathOfEz      :(string) filepath of Ez
+- InitializeTypeOfB :(string) initialize algorithm of B
+    - Uniform
+    - From1dXFile
+- FilePathOfBx      :(string) filepath of Bx
+- FilePathOfBy      :(string) filepath of By
+- FilePathOfBz      :(string) filepath of Bz
+- WeightingOrder    :(int) particle weighting order
+    - 5
+- MaxIterForPoisson :(int) maximum iterations for solving poisson eq
+- TolForPoisson     :(double) tolerance of solving poisson eq
+### BoundaryConditionForField
+- RegionName    :(string) region name
+    - Xmin
+    - Xmax
+    - Ymin
+    - Ymax
+- BCType        :(string) type of boundary condition
+    - Dirichlet
+    - Neumann
+    - periodic
