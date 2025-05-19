@@ -2,132 +2,194 @@
 ## solver commands
 ### FlagForEquation
 - Particle
-    - (int) number of specimens
+    - input type: int
+    - discription: number of specimens
 - EMField
-    - (int) flag
+    - input type: int
+    - discription: flag
+    - available options:
         - 0: constant
         - 1: ElectroStatic field by poisson solver
         - (2: ElectroMagnetic field by FDTD)
 - MCCollision
-    - (int) flag
+    - input type: int
+    - discription: flag
+    - available options:
         - 0: collisionless
         - (1: null-collision)
 ### ParamForTimeIntegration
 - Start
-    - (int) start time
+    - input type: int
+    - discription: start time
 - End
-    - (int) end time
+    - input type: int
+    - discription: end time
 - ParticleOutput
-    - (int) output timing of particle trajectory
+    - input type: int
+    - discription: output timing of particle trajectory
 - FieldOutput
-    - (int) output timing of field
+    - input type: int
+    - discription: output timing of field
 - TimeStep
-    - (double) time increment amount of each time step
+    - input type: double
+    - discription: time increment amount of each time step
 ### ParamForParticle
 - ParticleName
-    - (string) particle name
+    - input type: string
+    - discription: particle name
+- InitialParticleNumber
+    - input type: int
+    - discription: initial particle number
 - InitPtclNumPerCell
-    - (int) initial particle number per cell
+    - input type: int
+    - discription: initial particle number per cell
 - MaxParticleNumber
-    - (int) maximum particle number
+    - input type: int
+    - discription: maximum particle number
 - Charge
-    - (double) particle charge
+    - input type: double
+    - discription: particle charge
 - Mass
-    - (double) particle mass
+    - input type: double
+    - discription: particle mass
 - WeightFromDens[1/cm3]
-    - (double) culculate particle weight from initial number density
+    - input type: double
+    - discription: culculate particle weight from initial number density
 - GenerateType
-    - (string) particle generation algorithm
+    - input type: string
+    - discription: particle generation algorithm
+    - available options:
         - uniform-Gaussian
 - InitialPosX
-    - (double[2] or string) particle generation area
+    - input type: double[2] or string
+    - discription: particle generation area
+    - available options:
         - (double[2]) minimum, maximum
         - (string) auto
 - InitialPosY
-    - (double[2] or string) particle generation area
+    - input type: double[2] or string
+    - discription: particle generation area
+    - available options:
         - (double[2]) minimum, maximum
         - (string) auto
 - InitialVel
-    - (double[3]) initial mean velocity
+    - input type: double[3]
+    - discription: initial mean velocity
 - InitialTemp[eV]
-    - (double) initial temperature
+    - input type: double
+    - discription: initial temperature
 ### BoundaryConditionForParticle
 - RegionName
-    - (string) region name
+    - input type: string
+    - discription: region name
+    - available options:
         - Xmin
         - Xmax
         - Ymin
         - Ymax
 - BCType
-    - (string) type of boundary condition
+    - input type: string
+    - discription: type of boundary condition
+    - available options:
         - Delete
         - periodic
 ### SourceForParticle
 - ParticleName
-    - (string) particle name
+    - input type: string
+    - discription: particle name
 - GenerateType
-    - (string)
+    - input type: string
+    - discription: generate algorithm 
+    - available options:
         - Xsinusoidal-Gaussian
         - hollow-cathode
 - SourceValue[A/m2]
-    - (double) source value
+    - input type: double
+    - discription: source value
 - GeneratePosX
-    - (double[2] or string) particle generation area
+    - input type: double[2] or string
+    - discription: particle generation area
+    - available options:
         - (double[2]) minimum, maximum
         - (string) auto
 - GeneratePosY
-    - (double[2] or string) particle generation area
+    - input type: double[2] or string
+    - discription: particle generation area
+    - available options:
         - (double[2]) minimum, maximum
         - (string) auto
 - GenerateTemp[eV]
-    - (double) initial temperature
+    - input type: double
+    - discription: initial temperature
 ### ParamForField
 - NumberOfGridX
-    - (int) number of grid for x-axis
+    - input type: int
+    - discription: number of grid for x-axis
 - NumberOfGridY
-    - (int) number of grid for y-axis
+    - input type: int
+    - discription: number of grid for y-axis
 - GridSizeOfX 
-    - (double) size of grid for x-axis
+    - input type: double
+    - discription: size of grid for x-axis
 - GridSizeOfY 
-    - (double) size of grid for x-axis
+    - input type: double
+    - discription: size of grid for x-axis
 - InitializeTypeOfE
-    - (string) initialize algorithm of E
+    - input type: string
+    - discription: initialize algorithm of E
+    - available options:
         - Uniform
         - From1dXFile
 - AmplitudeOfE[V/m]
-    - (double[3]) Initial amplitude of E
+    - input type: double[3]) Initial amplitude of E
 - FilePathOfEx
-    - (string) filepath of Ex
+    - input type: string
+    - discription: filepath of Ex
 - FilePathOfEy
-    - (string) filepath of Ey
+    - input type: string
+    - discription: filepath of Ey
 - FilePathOfEz
-    - (string) filepath of Ez
+    - input type: string
+    - discription: filepath of Ez
 - InitializeTypeOfB
-    - (string) initialize algorithm of B
+    - input type: string
+    - discription: initialize algorithm of B
+    - available options:
         - Uniform
         - From1dXFile
 - FilePathOfBx
-    - (string) filepath of Bx
+    - input type: string
+    - discription: filepath of Bx
 - FilePathOfBy
-    - (string) filepath of By
+    - input type: string
+    - discription: filepath of By
 - FilePathOfBz
-    - (string) filepath of Bz
+    - input type: string
+    - discription: filepath of Bz
 - WeightingOrder   
-    - (int) particle weighting order
+    - input type: int
+    - discription: particle weighting order
+    - available options:
         - 5
 - MaxIterForPoisson
-    - (int) maximum iterations for solving poisson eq
+    - input type: int
+    - discription: maximum iterations for solving poisson eq
 - TolForPoisson
-    - (double) tolerance of solving poisson eq
+    - input type: double
+    - discription: tolerance of solving poisson eq
 ### BoundaryConditionForField
 - RegionName   
-    - (string) region name
+    - input type: string
+    - discription: region name
+    - available options:
         - Xmin
         - Xmax
         - Ymin
         - Ymax
 - BCType  
-    - (string) type of boundary condition
+    - input type: string
+    - discription: type of boundary condition
+    - available options:
         - Dirichlet
         - Neumann
         - periodic

@@ -54,11 +54,6 @@ $(TARGET): $(OBJECTS)
 # オブジェクトファイルの生成
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.mm
 	$(CXX) $(CXXFLAGS) -c $< -o $@
- 
-# デバッグ実行
-debug: $(TARGET)
-	chmod +x run_debug.sh
-	./run_debug.sh $(TARGET) $(RESULT_DIR)
 
 # clean
 clean:
