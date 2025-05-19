@@ -1,14 +1,17 @@
 # gample
 ## solver commands
 ### FlagForEquation
-- Particle  :(int) number of specimens
-- EMField   :(int) flag
-    -  0: constant
-    -  1: ElectroStatic field by poisson solver
-    - (2: ElectroMagnetic field by FDTD)
-- MCCollision   :(int) flag
-    -  0: collisionless
-    - (1: null-collision)
+- Particle
+    - (int) number of specimens
+- EMField
+    - (int) flag
+        - 0: constant
+        - 1: ElectroStatic field by poisson solver
+        - (2: ElectroMagnetic field by FDTD)
+- MCCollision
+    - (int) flag
+        - 0: collisionless
+        - (1: null-collision)
 ### ParamForTimeIntegration
 - Start             :(int) start time
 - End               :(int) end time
