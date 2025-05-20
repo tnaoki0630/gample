@@ -12,7 +12,7 @@ TimeStep        5e-12
 #
 ParamForParticle
 ParticleName            electron
-InitPtclNumPerCell      10000
+InitPtclNumPerCell      10
 MaxParticleNumber       20000000
 Charge                  -4.803204197e-10
 Mass                    9.10938188e-28
@@ -24,7 +24,7 @@ InitialVel              0 0 0
 InitialTemp[eV]         0
 /
 ParticleName            ion(Xe+)
-InitPtclNumPerCell      10000
+InitPtclNumPerCell      10
 MaxParticleNumber       20000000
 Charge                  4.803204197e-10
 Mass                    2.1801714e-22

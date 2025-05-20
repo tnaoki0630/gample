@@ -1,5 +1,6 @@
 #include <chrono>
 #include <iostream>
+#include <numeric>
 #import <Foundation/Foundation.h>
 #import "Init.h"
 #import "Particle.h"
@@ -26,11 +27,11 @@ int main(int argc, const char * argv[]) {
         }
 
         // NSLog 出力先を変更
-        char *filePath = (char*)[@"log.log" UTF8String];
-        freopen(filePath, "a+", stderr);
+        // char *filePath = (char*)[@"log.log" UTF8String];
+        // freopen(filePath, "a+", stderr);
         
         // 初期化用クラスの設定
-        NSString *inputFilePath = @"data/condition_checkPoisson.txt";
+        NSString *inputFilePath = @"data/condition.txt";
         Init *init = [[Init alloc] parseInputFile:inputFilePath];
         // 入力チェック、変数演算
         bool check = [init checkInput];
@@ -96,6 +97,11 @@ int main(int argc, const char * argv[]) {
             for (int s = 0; s < EqFrags.Particle; s++) {
                 Particle *ptcl = [ptclArr objectAtIndex:s];
                 MEASURE("injection", ret.push_back([ptcl injection:dt withParam:init withCurrent:int_current]));
+            }
+            // すべての injection が成功したら総和は0
+            if (std::reduce(std::begin(ret), std::end(ret)) != 0){
+                NSLog(@"injection failed.");
+                return 1;
             }
 
             std::cout << "Frame " << cycle << "completed" << std::endl;

@@ -648,9 +648,7 @@ kernel void integrateChargeDensity(
     for (int i = 0; i < ng; i++){
         for (int j = 0; j < threadGroupNum; j++){
             rho[i] += partialSums[j + i*threadGroupNum];
-            // NSLog(@"i = %d, j = %d, rho[%d] = %e, partialSums[%d] = %e", i, j, i, rho[i], j + i*threadGroupNum, partialSums[j + i*threadGroupNum]);
         }
-        NSLog(@"%@: rho[%d] = %e", _pName, i, rho[i]);
     }
 };
 

@@ -37,8 +37,8 @@ def write_1d_field(
 
 
 if __name__ == "__main__":
-    dx = 1e-2
-    ngx = 250
+    dx = 5e-3
+    ngx = 500
     ngb = 2
     nx = ngx+2*ngb
 

@@ -433,32 +433,37 @@ typedef amgcl::make_solver<
 - (void)solvePoisson{
     // 電荷密度の取得
     float* rho = (float*)_rhoBuffer.contents;
+
     // 周期境界の処理
     int idx_in, idx_out;
     if ([_BC_Xmin isEqualToString:@"periodic"]){
-        for (int j = 0; j <= _ny+1; j++){
+        for (int j = 0; j <= _ny; j++){
+            // min側（境界の値を持つ）
             for (int i = 0; i < _ngb; i++){
-                idx_in = i + j*(_nx+2);
-                idx_out = _ngx+i + j*(_nx+2); // _ngb+_ngx-_ngb+i のように、オフセット分が打ち消しあう
+                idx_in = i + j*(_nx+1);
+                idx_out = _ngx+i + j*(_nx+1); // _ngb+_ngx-_ngb+i のように、オフセット分が打ち消しあう
                 rho[idx_out] += rho[idx_in];
             }
-            for (int i = 0; i < _ngb+1; i++){
-                idx_in = _ngb+_ngx+i + j*(_nx+2);
-                idx_out = _ngb+i + j*(_nx+2);
+            // max側（境界の値は持たない）
+            for (int i = 0; i <= _ngb; i++){
+                idx_in = _ngb+_ngx+i + j*(_nx+1);
+                idx_out = _ngb+i + j*(_nx+1);
                 rho[idx_out] += rho[idx_in];
             }
         }
     }
     if ([_BC_Ymin isEqualToString:@"periodic"]){
-        for (int i = 0; i <= _nx+1; i++){
+        for (int i = 0; i <= _nx; i++){
+            // min側（境界の値を持つ）
             for (int j = 0; j < _ngb; j++){
-                idx_in = i + j*(_nx+2);
-                idx_out = i + (_ngy+2+j)*(_nx+2);
+                idx_in = i + j*(_nx+1);
+                idx_out = i + (_ngy+j)*(_nx+1);
                 rho[idx_out] += rho[idx_in];
             }
-            for (int j = 0; j < _ngb+1; j++){ // なんで非対称？？わからん。
-                idx_in = i + (_ngb+_ngy+j)*(_nx+2);
-                idx_out = i + (_ngb+1+j)*(_nx+2);
+            // max側（境界の値は持たない）
+            for (int j = 0; j <= _ngb; j++){
+                idx_in = i + (_ngb+_ngy+j)*(_nx+1);
+                idx_out = i + (_ngb+j)*(_nx+1);
                 rho[idx_out] += rho[idx_in];
             }
         }
@@ -692,7 +697,7 @@ typedef amgcl::make_solver<
             Ey[i + j*(_nx+1)] = -(_phi[i+1 + (j+1)*(_nx+2)] - _phi[i+1 + (j  )*(_nx+2)])/_dy;
         }
     }
-    
+
 }
 
 - (void)resetChargeDensity{
@@ -714,6 +719,18 @@ typedef amgcl::make_solver<
     float* Ex = (float *)_ExBuffer.contents; 
     float* Ey = (float *)_EyBuffer.contents; 
     float* Bz = (float *)_BzBuffer.contents; 
+
+    // minmax
+    float min_rho = 1e20;
+    float max_rho = -1e20;
+    for(int i = 0; i < (_ngx+2*_ngb+1)*(_ngy+2*_ngb+1); i++){
+        if (rho[i] < min_rho) {
+            min_rho = rho[i];
+        }else if(rho[i] > max_rho){
+            max_rho = rho[i];
+        }
+    }
+    NSLog(@"MinMax: min_rho = %e, max_rho = %e", min_rho, max_rho);
     
     FILE *fp = fopen(filePath, "wb");
     if (!fp) {

@@ -59,7 +59,7 @@ def plot_field(field, title, figname, type_id, bool_buff):
 
 if __name__ == '__main__':
 
-    cycle = 20
+    cycle = 1
     filename = f"bin/field_{cycle:08}.bin"
 
     with open(filename, 'rb') as f:
@@ -101,6 +101,7 @@ if __name__ == '__main__':
 
     # プロット
     for name, type_id, arr in fields:
-        print(f"{name} (type_id={type_id}) shape={arr.shape}")
-        plot_field(arr, name, f"fig/{name}.png" , type_id , True)
-        plot_field(arr, name, f"fig/{name}_woBuff.png" , type_id , False)
+        print(f"{name}: type_id={type_id}, shape={arr.shape}, min={arr.min()}, max={arr.max()}")
+        plot_field(arr, name, f"fig/{name}_wBuff.png" , type_id , True)
+        plot_field(arr, name, f"fig/{name}.png" , type_id , False)
+        # print(arr)
