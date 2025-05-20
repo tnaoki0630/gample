@@ -104,17 +104,18 @@ kernel void updateParticles(
     float Bpy = 0.0;
     float Bpz = 0.0;
     int ii, jj;
+    const int nx = (prm.ngx + 2*prm.ngb);
     for (int i = 0; i < 6; i++) {
         for (int j = 0; j < 6; j++) {
-            ii = i1+(i-2);
-            jj = j1+(j-2);
-            Epx += sf[i][0][0]*sf[j][0][1]*Ex[ii+jj*prm.ngy];
-            ii = i2+(i-2);
-            jj = j2+(j-2);
-            Epy += sf[i][1][0]*sf[j][1][1]*Ey[ii+jj*prm.ngy];
-            ii = i1+(i-2);
-            jj = j2+(j-2);
-            Bpz += sf[i][0][0]*sf[j][1][1]*Bz[ii+jj*prm.ngy];
+            ii = i1+(i-prm.ngb);
+            jj = j1+(j-prm.ngb);
+            Epx += sf[i][0][0]*sf[j][0][1]*Ex[ii+jj*(nx+1)];
+            ii = i2+(i-prm.ngb);
+            jj = j2+(j-prm.ngb);
+            Epy += sf[i][1][0]*sf[j][1][1]*Ey[ii+jj*(nx+1)];
+            ii = i1+(i-prm.ngb);
+            jj = j2+(j-prm.ngb);
+            Bpz += sf[i][0][0]*sf[j][1][1]*Bz[ii+jj*(nx+1)];
         }
     }
     
@@ -589,11 +590,6 @@ kernel void integrateChargeDensity(
     int ng = (fld.nx+1)*(fld.ny+1);
     id<MTLBuffer> rhoBuffer = [fld rhoBuffer];
     float* rho = (float*)rhoBuffer.contents;
-    
-    // 電荷密度の初期化
-    for (int i = 0; i < ng; i++){
-        rho[i] = 0.0f;
-    }
 
     // constant 引数バッファ
     id<MTLBuffer> chunkSizeBuffer = [_device newBufferWithBytes:&_integrationChunkSize
@@ -652,7 +648,9 @@ kernel void integrateChargeDensity(
     for (int i = 0; i < ng; i++){
         for (int j = 0; j < threadGroupNum; j++){
             rho[i] += partialSums[j + i*threadGroupNum];
+            // NSLog(@"i = %d, j = %d, rho[%d] = %e, partialSums[%d] = %e", i, j, i, rho[i], j + i*threadGroupNum, partialSums[j + i*threadGroupNum]);
         }
+        NSLog(@"%@: rho[%d] = %e", _pName, i, rho[i]);
     }
 };
 

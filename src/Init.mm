@@ -466,7 +466,7 @@
             _field.FilePathEz = [NSString stringWithUTF8String:value.c_str()];
         } else if (key == "InitializeTypeOfB") {
             _field.InitTypeB = [NSString stringWithUTF8String:value.c_str()];
-        } else if (key == "AmplitudeOfB[V/m]") {
+        } else if (key == "AmplitudeOfB[T]") {
             _field.ampB[0] = stod(value)*TtoG;
             if (iss >> val1 >> val2) {
                 _field.ampB[1] = stod(val1)*TtoG;
@@ -558,6 +558,7 @@
                 return false;
             }
             // pNum か initPNumPerCell のどちらかは初期化必須
+            NSLog(@"before %d", _particles[s].pNum);
             if(_flagForPNum[s]){
                 // OK
             }else if(_initPNumPerCell[s] > 0){

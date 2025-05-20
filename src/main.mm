@@ -1,4 +1,5 @@
 #include <chrono>
+#include <iostream>
 #import <Foundation/Foundation.h>
 #import "Init.h"
 #import "Particle.h"
@@ -23,9 +24,13 @@ int main(int argc, const char * argv[]) {
             NSLog(@"Metal is not supported on this device");
             return 1;
         }
+
+        // NSLog 出力先を変更
+        char *filePath = (char*)[@"log.log" UTF8String];
+        freopen(filePath, "a+", stderr);
         
         // 初期化用クラスの設定
-        NSString *inputFilePath = @"data/condition.txt";
+        NSString *inputFilePath = @"data/condition_checkPoisson.txt";
         Init *init = [[Init alloc] parseInputFile:inputFilePath];
         // 入力チェック、変数演算
         bool check = [init checkInput];
@@ -56,6 +61,8 @@ int main(int argc, const char * argv[]) {
         double dt = timeParams.dt;
         int int_current;
         for (int cycle = StartCycle; cycle <= timeParams.EndCycle; cycle++) {
+            // 電荷密度の初期化
+            [fld resetChargeDensity];
             // 粒子ループ
             int_current = 0;
             for (int s = 0; s < EqFrags.Particle; s++) {
@@ -91,6 +98,7 @@ int main(int argc, const char * argv[]) {
                 MEASURE("injection", ret.push_back([ptcl injection:dt withParam:init withCurrent:int_current]));
             }
 
+            std::cout << "Frame " << cycle << "completed" << std::endl;
             NSLog(@"Frame %d completed", cycle);
         }
     }
