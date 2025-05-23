@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # プロット関数
-def plot_field(field, title, figname, type_id, bool_buff):
+def plotField2d(field, title, figname, type_id, bool_buff):
     # 解析領域の ikmin, jkmin を復元
     if type_id == 4:
         buff = ngb+1
@@ -57,9 +57,46 @@ def plot_field(field, title, figname, type_id, bool_buff):
     fig.savefig(figname)
     plt.close(fig)
 
+# プロット関数
+def plotField1dx(field, title, figname, type_id, j):
+    # 解析領域の ikmin, jkmin を復元
+    if type_id == 4:
+        buff = ngb+1
+    else:
+        buff = ngb
+    # 定義点を調整
+    if type_id == 0 or type_id == 4:
+        x = np.linspace(-buff*dx, (ngx+ngb)*dx, ngx+ngb+buff+1)
+    elif type_id == 1:
+        ## shifted to left
+        x = np.linspace(-(buff+0.5)*dx, (ngx+ngb-0.5)*dx, ngx+ngb+buff+1)
+    elif type_id == 2:
+        ## shifted to bottom
+        x = np.linspace(-buff*dx, (ngx+ngb)*dx, ngx+ngb+buff+1)
+    elif type_id == 3:
+        ## shifted to left and bottom
+        x = np.linspace(-(buff+0.5)*dx, (ngx+ngb-0.5)*dx, ngx+ngb+buff+1)
+
+    # プロット
+    fig, ax = plt.subplots()
+    ax.plot(x[0:nx+1], field[j, 0:nx+1], label = "j = "+str(j))
+    ax.plot(x[0:nx+1], field[j+1, 0:nx+1], label = "j = "+str(j+1))
+    ax.plot(x[0:nx+1], field[j+2, 0:nx+1], label = "j = "+str(j+2))
+    ax.legend(loc=1)
+    ax.set_xlabel('x (units)')
+    ax.set_ylabel('y (units)')
+    ax.set_xlim(-(ngb+2)*dx, (ngx+ngb+2)*dx)
+    ax.set_title(title)
+    # メッシュの描画
+    ax.axvline(0, color='gray', linestyle=':', linewidth=0.5)
+    ax.axvline(ngx*dx, color='gray', linestyle=':', linewidth=0.5)
+    fig.tight_layout()
+    fig.savefig(figname)
+    plt.close(fig)
+
 if __name__ == '__main__':
 
-    cycle = 1
+    cycle = 200
     filename = f"bin/field_{cycle:08}.bin"
 
     with open(filename, 'rb') as f:
@@ -102,6 +139,7 @@ if __name__ == '__main__':
     # プロット
     for name, type_id, arr in fields:
         print(f"{name}: type_id={type_id}, shape={arr.shape}, min={arr.min()}, max={arr.max()}")
-        plot_field(arr, name, f"fig/{name}_wBuff.png" , type_id , True)
-        plot_field(arr, name, f"fig/{name}.png" , type_id , False)
+        plotField2d(arr, name, f"fig/{name}_wBuff.png" , type_id , True)
+        plotField2d(arr, name, f"fig/{name}.png" , type_id , False)
+        plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
         # print(arr)

@@ -1,6 +1,8 @@
 #include <chrono>
 #include <iostream>
 #include <numeric>
+#import <map>
+#import <string>
 #import <Foundation/Foundation.h>
 #import "Init.h"
 #import "Particle.h"
@@ -17,6 +19,19 @@
         NSLog(@"%s: %lld us", name, _time);                           \
     } while (0)
 
+std::map<std::string, std::string> parseArgs(int argc, const char* argv[]) {
+    std::map<std::string, std::string> options;
+    for (int i = 1; i < argc - 1; ++i) {
+        std::string key = argv[i];
+        if (key[0] == '-') {
+            std::string value = argv[i + 1];
+            options[key] = value;
+            ++i; // 値をスキップ
+        }
+    }
+    return options;
+}
+
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
         // デフォルトのMetalデバイスを取得
@@ -26,13 +41,28 @@ int main(int argc, const char * argv[]) {
             return 1;
         }
 
-        // NSLog 出力先を変更
-        // char *filePath = (char*)[@"log.log" UTF8String];
-        // freopen(filePath, "a+", stderr);
-        
+        // I/O チェック
+        auto args = parseArgs(argc, argv);
+        NSString* inputPath;
+        if (args.count("-i") == 1) {
+            inputPath = [NSString stringWithUTF8String:args["-i"].c_str()];
+            // ファイルの存在確認
+            if (![[NSFileManager defaultManager] fileExistsAtPath:inputPath]) {
+                NSLog(@"%@ is not found.", inputPath);
+                return 1;
+            }
+        }else{
+            NSLog(@"Usage: %s -i inputfile.txt -o outputfile.txt", argv[0]);
+            return 1;
+        }
+        if (args.count("-o") == 1) {
+            // NSLog 出力先を変更
+            freopen(args["-o"].c_str(), "w", stderr);
+        }
+
         // 初期化用クラスの設定
-        NSString *inputFilePath = @"data/condition.txt";
-        Init *init = [[Init alloc] parseInputFile:inputFilePath];
+        // NSString *inputPath = @"data/condition.txt";
+        Init *init = [[Init alloc] parseInputFile:inputPath];
         // 入力チェック、変数演算
         bool check = [init checkInput];
         if (!check){
@@ -55,6 +85,11 @@ int main(int argc, const char * argv[]) {
         EMField *fld = [[EMField alloc] initWithDevice:device withParam:init];
         // モーメント量の初期化
         Moment *mom = [[Moment alloc] initialize];
+
+        // 初期場
+        [fld resetChargeDensity];
+        MEASURE("solvePoisson", [fld solvePoisson]);
+        [fld outputField: 0];
 
         // 時間更新ループ
         struct ParamForTimeIntegration timeParams = [init getParamForTimeIntegration];

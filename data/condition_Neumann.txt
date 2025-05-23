@@ -5,35 +5,35 @@ MCCollision 0
 #
 ParamForTimeIntegration
 Start           1
-End             20000
+End             20
 ParticleOutput  0
-FieldOutput     200
+FieldOutput     20
 TimeStep        5e-12
 #
 ParamForParticle
 ParticleName            electron
-InitPtclNumPerCell      10
-MaxParticleNumber       5000000
+InitPtclNumPerCell      1
+MaxParticleNumber       20000000
 Charge                  -4.803204197e-10
 Mass                    9.10938188e-28
-WeightFromDens[1/cm3]   5e10
+WeightFromDens[1/cm3]   5e1
 GenerateType            uniform-Gaussian
 InitialPosX             auto
 InitialPosY             auto
 InitialVel              0 0 0 
-InitialTemp[eV]         10
+InitialTemp[eV]         0
 /
 ParticleName            ion(Xe+)
-InitPtclNumPerCell      10
-MaxParticleNumber       5000000
+InitPtclNumPerCell      1
+MaxParticleNumber       20000000
 Charge                  4.803204197e-10
 Mass                    2.1801714e-22
-WeightFromDens[1/cm3]   5e10
+WeightFromDens[1/cm3]   5e1
 GenerateType            uniform-Gaussian
 InitialPosX             auto
 InitialPosY             auto
 InitialVel              0 0 0 
-InitialTemp[eV]         0.1
+InitialTemp[eV]         0
 /
 #
 BoundaryConditionForParticle
@@ -52,40 +52,24 @@ BCType      periodic
 #
 SourceForParticle
 ParticleName            electron
-GenerateType            Xsinusoidal-Gaussian
-SourceValue[A/m2]       400
-GeneratePosX            0.5 1.5
-GeneratePosY            auto
-GenerateTemp[eV]        10
-/
-ParticleName            ion(Xe+)
-GenerateType            Xsinusoidal-Gaussian
-SourceValue[A/m2]       400
-GeneratePosX            0.5 1.5
-GeneratePosY            auto
-GenerateTemp[eV]        0.1
-/
-ParticleName            electron
 GenerateType            hollow-cathode
-GeneratePosX            2.4 2.4
+GeneratePosX            1.8 1.8
 GeneratePosY            auto
 GenerateTemp[eV]        10
 /
 #
 ParamForField
-NumberOfGridX       500
-NumberOfGridY       200
-GridSizeOfX         5e-3
-GridSizeOfY         5e-3
+NumberOfGridX       100
+NumberOfGridY       50
+GridSizeOfX         1e-2
+GridSizeOfY         1e-2
 InitializeTypeOfE   Uniform
 AmplitudeOfE[V/m]   0.0 0.0 0.0
-InitializeTypeOfB   From1dXFile
-FilePathOfBx        data/Bx.bin
-FilePathOfBy        data/By.bin
-FilePathOfBz        data/Bz.bin
+InitializeTypeOfB   Uniform
+AmplitudeOfB[T]     0.0 0.0 0.0
 WeightingOrder      5
 MaxIterForPoisson   200
-TolForPoisson       1e-6
+TolForPoisson       1e-7
 #
 BoundaryConditionForField
 RegionName  Xmin
@@ -97,10 +81,12 @@ BCType      Dirichlet
 0
 /
 RegionName  Ymin
-BCType      periodic
+BCType      Neumann
+0
 /
 RegionName  Ymax
-BCType      periodic
+BCType      Neumann
+0
 /
 #
 GOGO

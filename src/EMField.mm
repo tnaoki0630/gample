@@ -319,7 +319,7 @@ typedef amgcl::make_solver<
                         _rhs_BC[k] += -_Cy*_phi_Ymin[j];
                     }else if ([_BC_Ymin isEqualToString:@"periodic"]){
                         // 要素の追加
-                        col.push_back(k+_nky);
+                        col.push_back(k+_nky*(_nkx+1));
                         val.push_back(_Cy);
                         row_entries++;
                     }
@@ -490,7 +490,7 @@ typedef amgcl::make_solver<
     // 収束状況
     NSLog(@"poisson: 反復回数 = %d", iters);
     NSLog(@"poisson: 最終誤差 = %e", error);
-
+    
     // index
     bool isLeft, isRight, isBottom, isTop;
     int idx_in_i, idx_in_j;
