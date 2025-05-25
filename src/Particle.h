@@ -4,6 +4,7 @@
 #import <string>
 #import "Init.h"
 #import "EMField.h"
+#import "XmlLogger.h"
 // コンパイルうまくいかないので前方宣言
 @class EMField;
 
@@ -61,20 +62,21 @@ struct SimulationParams {
 @property (nonatomic) uint integrationChunkSize;
 
 // 初期設定
-- (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam specimen:(int)s;
+- (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam specimen:(int)s withLogger:(XmlLogger&)logger;
 // 粒子生成
 - (void)generateParticles:(ParamForParticle)ParticleParam withFieldParam:(ParamForField)FieldParam;
 // 時間更新
-- (void)update:(double)dt withEMField:(EMField*)fld;
+- (void)update:(double)dt withEMField:(EMField*)fld withLogger:(XmlLogger&)logger;
 // 粒子境界処理
-- (void)reduce;
+- (void)reduce:(XmlLogger&)logger;
 // 電荷密度更新
-- (void)integrateChargeDensity:(EMField*)fld;
+- (void)integrateChargeDensity:(EMField*)fld withLogger:(XmlLogger&)logger;
 // 粒子軌道出力
-- (void)outputPhaseSpace:(int)cycle withEMField:(EMField*)fld;
+- (void)outputPhaseSpace:(int)cycle withEMField:(EMField*)fld withLogger:(XmlLogger&)logger;
 // 粒子注入
-- (int)injection:(double)dt withParam:(Init*)initParam withCurrent:(int)current;
+- (int)injection:(double)dt withParam:(Init*)initParam withCurrent:(int)current withLogger:(XmlLogger&)logger;
 // アクセサ
+- (NSString*)pName;
 - (int)pinum_Xmin;
 - (int)pinum_Xmax;
 - (int)pinum_Ymin;

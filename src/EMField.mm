@@ -1,6 +1,7 @@
+#import <Metal/Metal.h>
 #import "EMField.h"
 #import "Constant.h"
-#import <Metal/Metal.h>
+#import "XmlLogger.h"
 #include <amgcl/make_solver.hpp>
 #include <amgcl/solver/bicgstab.hpp>
 #include <amgcl/amg.hpp>
@@ -72,7 +73,7 @@ typedef amgcl::make_solver<
     std::unique_ptr<Solver> _solver;
 }
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam {
+- (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam  withLogger:(XmlLogger&)logger{
     self = [super init];
     if (self) {
         _device = device;
@@ -430,7 +431,7 @@ typedef amgcl::make_solver<
     return true;
 }
 
-- (void)solvePoisson{
+- (void)solvePoisson:(XmlLogger&)logger{
     // 電荷密度の取得
     float* rho = (float*)_rhoBuffer.contents;
 
@@ -488,8 +489,11 @@ typedef amgcl::make_solver<
     std::tie(iters, error) = (*_solver)(rhs, _phi_sol); // solver, phi_sol は使い回す
 
     // 収束状況
-    NSLog(@"poisson: 反復回数 = %d", iters);
-    NSLog(@"poisson: 最終誤差 = %e", error);
+    std::map<std::string, std::string> data ={
+        {"iteration", std::to_string(iters)},
+        {"error", fmtSci(error, 6)},
+    };
+    logger.logSection("solvePoisson", data);
     
     // index
     bool isLeft, isRight, isBottom, isTop;
@@ -710,7 +714,7 @@ typedef amgcl::make_solver<
     }
 }
 
-- (void)outputField:(int)cycle{
+- (void)outputField:(int)cycle withLogger:(XmlLogger&)logger{
     NSString *fileName = [NSString stringWithFormat:@"bin/field_%08d.bin", cycle];
     const char *filePath = [fileName UTF8String];
 
@@ -730,7 +734,12 @@ typedef amgcl::make_solver<
             max_rho = rho[i];
         }
     }
-    NSLog(@"MinMax: min_rho = %e, max_rho = %e", min_rho, max_rho);
+    // NSLog(@"MinMax: min_rho = %e, max_rho = %e", min_rho, max_rho);
+    std::map<std::string, std::string> data ={
+        {"rho_min", fmtSci(min_rho, 6)},
+        {"rho_max", fmtSci(min_rho, 6)},
+    };
+    logger.logSection("outputField", data);
     
     FILE *fp = fopen(filePath, "wb");
     if (!fp) {

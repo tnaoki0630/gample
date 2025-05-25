@@ -298,7 +298,7 @@ kernel void integrateChargeDensity(
 }
 
 // 初期設定
-- (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam specimen:(int)s{
+- (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam specimen:(int)s withLogger:(XmlLogger&)logger{
     self = [super init];
     if (self) {
 
@@ -420,8 +420,7 @@ kernel void integrateChargeDensity(
     return self;
 }
 
-- (void)generateParticles:(ParamForParticle)particleParam
-            withFieldParam:(ParamForField)fieldParam{
+- (void)generateParticles:(ParamForParticle)particleParam withFieldParam:(ParamForField)fieldParam{
     // 範囲指定
     float Xmin, Lx;
     float Ymin, Ly;
@@ -469,7 +468,7 @@ kernel void integrateChargeDensity(
 }
 
 // 時間更新
-- (void)update:(double)dt withEMField:(EMField*)fld {
+- (void)update:(double)dt withEMField:(EMField*)fld  withLogger:(XmlLogger&)logger{
     // シミュレーションパラメータの更新
     SimulationParams* prm = (SimulationParams*)[_paramsBuffer contents];
     prm->constE = 0.5*_q*dt/_m;
@@ -530,7 +529,7 @@ kernel void integrateChargeDensity(
 
 }
 
-- (void)reduce{
+- (void)reduce:(XmlLogger&)logger{
     // obtain objects
     SimulationParams* prm = (SimulationParams*)[_paramsBuffer contents];
     ParticleState* p = (ParticleState*)[_particleBuffer contents];
@@ -581,10 +580,17 @@ kernel void integrateChargeDensity(
     }
     // update
     prm->pNum -= pulln;
-    NSLog(@"flowout(%@): pulln = %d, pNum = %d", _pName, pulln, prm->pNum);
+    // output log
+    std::map<std::string, std::string>data ={
+        {"particleNumber", std::to_string(prm->pNum)},
+        {"pulledPtclNum", std::to_string(pulln)},
+    };
+    NSString* secName = [NSString stringWithFormat:@"flowout_%@", _pName];
+    logger.logSection([secName UTF8String], data);
+    // NSLog(@"flowout(%@): pulln = %d, pNum = %d", _pName, pulln, prm->pNum);
 }
 
-- (void)integrateChargeDensity:(EMField*)fld{
+- (void)integrateChargeDensity:(EMField*)fld withLogger:(XmlLogger&)logger{
     // obtain objects
     SimulationParams* prm = (SimulationParams*)[_paramsBuffer contents];
     int ng = (fld.nx+1)*(fld.ny+1);
@@ -652,7 +658,7 @@ kernel void integrateChargeDensity(
     }
 };
 
-- (void)outputPhaseSpace:(int)cycle withEMField:(EMField*)fld{
+- (void)outputPhaseSpace:(int)cycle withEMField:(EMField*)fld withLogger:(XmlLogger&)logger{
     // obtain objects
     ParticleState *p = (ParticleState*)[_particleBuffer contents];
     SimulationParams *prm = (SimulationParams*)[_paramsBuffer contents];
@@ -684,13 +690,15 @@ kernel void integrateChargeDensity(
     }
 }
 
-- (int)injection:(double)dt withParam:(Init*)initParam withCurrent:(int)current{
+- (int)injection:(double)dt withParam:(Init*)initParam withCurrent:(int)current withLogger:(XmlLogger&)logger{
     // パラメータ取得
     struct ParamForField fieldParam = [initParam getParamForField];
     NSArray *Sources = [initParam getParticleSources];
     struct SourceForParticle source;
     // オブジェクト取得
     SimulationParams *prm = (SimulationParams*)[_paramsBuffer contents];
+    // ログ出力用データセット
+    std::map<std::string, std::string>data;
     
     for (int i = 0; i < Sources.count; i++){
         NSValue *value = Sources[i];
@@ -738,7 +746,6 @@ kernel void integrateChargeDensity(
                 }else{
                     addn = (int)addn_d;
                 }
-                NSLog(@"injection: type = %@, addn_d = %e", source.genType, addn_d);
             }
             // check
             if(prm->pNum+addn > _pNumMax){
@@ -784,14 +791,18 @@ kernel void integrateChargeDensity(
             }
             // 粒子数更新
             prm->pNum += addn;
-            NSLog(@"injection: type = %@, addn = %d", source.genType, addn);
+            data[[source.genType UTF8String]] = std::to_string(addn);
         }
 
     }
+    // ログ出力
+    NSString* secName = [NSString stringWithFormat:@"injection_%@", _pName];
+    logger.logSection([secName UTF8String], data);
     return 0;
 }
 
 // アクセサ
+- (NSString*)pName { return _pName; }
 - (int)pinum_Xmin { return _pinum_Xmin; }
 - (int)pinum_Xmax { return _pinum_Xmax; }
 - (int)pinum_Ymin { return _pinum_Ymin; }

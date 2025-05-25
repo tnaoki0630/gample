@@ -24,8 +24,6 @@ SOURCES_COMMON = $(SRC_DIR)/main.mm \
                  $(SRC_DIR)/EMField.mm \
                  $(SRC_DIR)/Init.mm \
                  $(SRC_DIR)/Moment.mm \
-                 $(SRC_DIR)/DebugPrint.mm\
-                 $(SRC_DIR)/Constant.mm\
 
 # EXEC の値によって Particle ソースを切り替え
 ifeq ($(EXEC), mpi)

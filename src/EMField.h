@@ -2,14 +2,15 @@
 #import <Metal/Metal.h>
 #import "Init.h"
 #import "Particle.h"
+#import "XmlLogger.h"
 @class Particle;
 
 @interface EMField : NSObject
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam ;
-- (void)solvePoisson;
+- (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam withLogger:(XmlLogger&)logger;
+- (void)solvePoisson:(XmlLogger&)logger;
 - (void)resetChargeDensity;
-- (void)outputField:(int)cycle;
+- (void)outputField:(int)cycle withLogger:(XmlLogger&)logger;
 - (bool)load1dField:(std::vector<float>&)field withFilePath:(NSString*)filePath;
 - (bool)load2dField:(std::vector<float>&)field withFilePath:(NSString*)filePath;
 

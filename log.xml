@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SimulationLog>
+<![CDATA[
+--- FlagForEquation ---
+Particle: 2
+EMField: 1
+MCCollision: 0
+--- ParamForTimeIntegration ---
+EndCycle: 10
+ptclOutCycle: 0
+fldOutCycle: 200
+dt: 5.000000e-12
+--- ParamForParticle (2 entries) ---
+[Particle 1]
+  Name: electron
+  InitialParticleNumber: 10
+  MaxParticleNumber: 5000000
+  Charge: -4.803204e-10
+  Mass: 9.109382e-28
+  Weight: 5.000000e+06
+  genType: uniform-Gaussian
+  initialU: 0.000000e+00
+  initialV: 0.000000e+00
+  initialW: 0.000000e+00
+  initialT: 1.160400e+05
+[Particle 2]
+  Name: ion_Xe1
+  InitialParticleNumber: 10
+  MaxParticleNumber: 5000000
+  Charge: 4.803204e-10
+  Mass: 2.180171e-22
+  Weight: 5.000000e+06
+  genType: uniform-Gaussian
+  initialU: 0.000000e+00
+  initialV: 0.000000e+00
+  initialW: 0.000000e+00
+  initialT: 1.160400e+03
+--- BoundaryConditionForParticle (4 entries) ---
+[Boundary 1]
+  Position: Xmin
+  Type: Delete
+  Value: 0.000000e+00
+[Boundary 2]
+  Position: Xmax
+  Type: Delete
+  Value: 0.000000e+00
+[Boundary 3]
+  Position: Ymin
+  Type: periodic
+  Value: 0.000000e+00
+[Boundary 4]
+  Position: Ymax
+  Type: periodic
+  Value: 0.000000e+00
+--- SourceForParticle (1 entries) ---
+[Source 1]
+  pName: electron
+  genType: hollow-cathode
+  src: 0.000000e+00
+  genXmin: 2.400000e+00
+  genXmax: 2.400000e+00
+  genYmin: -1.000000e+00
+  genYmax: -1.000000e+00
+  genU: 0.000000e+00
+  genV: 0.000000e+00
+  genW: 0.000000e+00
+  genT: 1.160400e+05
+--- ParamForField ---
+NGX: 500
+NGY: 200
+DX: 5.000000e-03
+DY: 5.000000e-03
+--- BoundaryConditionForField (4 entries) ---
+[Boundary 1]
+  Position: Xmin
+  Type: Dirichlet
+  Value: 6.671282e-01
+[Boundary 2]
+  Position: Xmax
+  Type: Dirichlet
+  Value: 0.000000e+00
+[Boundary 3]
+  Position: Ymin
+  Type: periodic
+  Value: 0.000000e+00
+[Boundary 4]
+  Position: Ymax
+  Type: periodic
+  Value: 0.000000e+00
+]]>
+ <Cycle ID="1">
+  time = 5e-12
+  <Section Name="flowout_electron">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.990956e-07</error>
+   <iteration>5</iteration>
+  </Section>
+  <Section Name="injection_electron">
+   <hollow-cathode>0</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>23</injection_electron>
+   <injection_ion_Xe1>5</injection_ion_Xe1>
+   <integrateChargeDensity>490826</integrateChargeDensity>
+   <reduce_electron>15</reduce_electron>
+   <reduce_ion_Xe1>14</reduce_ion_Xe1>
+   <solvePoisson>336657</solvePoisson>
+   <update_electron>6805</update_electron>
+   <update_ion_Xe1>25700</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="2">
+  time = 1e-11
+  <Section Name="flowout_electron">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.961972e-07</error>
+   <iteration>3</iteration>
+  </Section>
+  <Section Name="injection_electron">
+   <hollow-cathode>0</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>15</injection_electron>
+   <injection_ion_Xe1>2</injection_ion_Xe1>
+   <integrateChargeDensity>265477</integrateChargeDensity>
+   <reduce_electron>12</reduce_electron>
+   <reduce_ion_Xe1>12</reduce_ion_Xe1>
+   <solvePoisson>163487</solvePoisson>
+   <update_electron>810</update_electron>
+   <update_ion_Xe1>425</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="3">
+  time = 1.5e-11
+  <Section Name="flowout_electron">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.863212e-07</error>
+   <iteration>3</iteration>
+  </Section>
+  <Section Name="injection_electron">
+   <hollow-cathode>0</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>19</injection_electron>
+   <injection_ion_Xe1>2</injection_ion_Xe1>
+   <integrateChargeDensity>264038</integrateChargeDensity>
+   <reduce_electron>10</reduce_electron>
+   <reduce_ion_Xe1>10</reduce_ion_Xe1>
+   <solvePoisson>162979</solvePoisson>
+   <update_electron>447</update_electron>
+   <update_ion_Xe1>420</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="4">
+  time = 2e-11
+  <Section Name="flowout_electron">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>8.513092e-07</error>
+   <iteration>3</iteration>
+  </Section>
+  <Section Name="injection_electron">
+   <hollow-cathode>0</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>13</injection_electron>
+   <injection_ion_Xe1>2</injection_ion_Xe1>
+   <integrateChargeDensity>264843</integrateChargeDensity>
+   <reduce_electron>7</reduce_electron>
+   <reduce_ion_Xe1>19</reduce_ion_Xe1>
+   <solvePoisson>162702</solvePoisson>
+   <update_electron>476</update_electron>
+   <update_ion_Xe1>630</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="5">
+  time = 2.5e-11
+  <Section Name="flowout_electron">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.137427e-07</error>
+   <iteration>3</iteration>
+  </Section>
+  <Section Name="injection_electron">
+   <hollow-cathode>0</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>19</injection_electron>
+   <injection_ion_Xe1>2</injection_ion_Xe1>
+   <integrateChargeDensity>264179</integrateChargeDensity>
+   <reduce_electron>9</reduce_electron>
+   <reduce_ion_Xe1>19</reduce_ion_Xe1>
+   <solvePoisson>172683</solvePoisson>
+   <update_electron>453</update_electron>
+   <update_ion_Xe1>631</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="6">
+  time = 3e-11
+  <Section Name="flowout_electron">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.591728e-07</error>
+   <iteration>3</iteration>
+  </Section>
+  <Section Name="injection_electron">
+   <hollow-cathode>0</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>24</injection_electron>
+   <injection_ion_Xe1>2</injection_ion_Xe1>
+   <integrateChargeDensity>264469</integrateChargeDensity>
+   <reduce_electron>9</reduce_electron>
+   <reduce_ion_Xe1>44</reduce_ion_Xe1>
+   <solvePoisson>162913</solvePoisson>
+   <update_electron>482</update_electron>
+   <update_ion_Xe1>645</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="7">
+  time = 3.5e-11
+  <Section Name="flowout_electron">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.268991e-07</error>
+   <iteration>3</iteration>
+  </Section>
+  <Section Name="injection_electron">
+   <hollow-cathode>0</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>33</injection_electron>
+   <injection_ion_Xe1>4</injection_ion_Xe1>
+   <integrateChargeDensity>262868</integrateChargeDensity>
+   <reduce_electron>7</reduce_electron>
+   <reduce_ion_Xe1>10</reduce_ion_Xe1>
+   <solvePoisson>163543</solvePoisson>
+   <update_electron>510</update_electron>
+   <update_ion_Xe1>411</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="8">
+  time = 4e-11
+  <Section Name="flowout_electron">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>8.621515e-07</error>
+   <iteration>3</iteration>
+  </Section>
+  <Section Name="injection_electron">
+   <hollow-cathode>0</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>16</injection_electron>
+   <injection_ion_Xe1>2</injection_ion_Xe1>
+   <integrateChargeDensity>263261</integrateChargeDensity>
+   <reduce_electron>8</reduce_electron>
+   <reduce_ion_Xe1>14</reduce_ion_Xe1>
+   <solvePoisson>166888</solvePoisson>
+   <update_electron>515</update_electron>
+   <update_ion_Xe1>632</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="9">
+  time = 4.5e-11
+  <Section Name="flowout_electron">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.490829e-07</error>
+   <iteration>3</iteration>
+  </Section>
+  <Section Name="injection_electron">
+   <hollow-cathode>0</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>15</injection_electron>
+   <injection_ion_Xe1>2</injection_ion_Xe1>
+   <integrateChargeDensity>263655</integrateChargeDensity>
+   <reduce_electron>7</reduce_electron>
+   <reduce_ion_Xe1>19</reduce_ion_Xe1>
+   <solvePoisson>161211</solvePoisson>
+   <update_electron>465</update_electron>
+   <update_ion_Xe1>610</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="10">
+  time = 5e-11
+  <Section Name="flowout_electron">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>10</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.223019e-07</error>
+   <iteration>3</iteration>
+  </Section>
+  <Section Name="injection_electron">
+   <hollow-cathode>0</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>18</injection_electron>
+   <injection_ion_Xe1>2</injection_ion_Xe1>
+   <integrateChargeDensity>266030</integrateChargeDensity>
+   <reduce_electron>8</reduce_electron>
+   <reduce_ion_Xe1>34</reduce_ion_Xe1>
+   <solvePoisson>160935</solvePoisson>
+   <update_electron>473</update_electron>
+   <update_ion_Xe1>719</update_ion_Xe1>
+  </Section>
+ </Cycle>
+</SimulationLog>

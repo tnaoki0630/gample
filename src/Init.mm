@@ -554,7 +554,7 @@
         for (int s = 0; s < _particles.size(); s++){
             // pNumMax は初期化必須
             if(_particles[s].pNumMax == 0){
-                NSLog(@"check particleParam for %@ failed.", _particles[s].pName);
+                NSLog(@"check particleParam for %@'s pNumMax failed.", _particles[s].pName);
                 return false;
             }
             // pNum か initPNumPerCell のどちらかは初期化必須
@@ -565,7 +565,7 @@
                 // culculate pNum from initPNumPerCell
                 _particles[s].pNum = _initPNumPerCell[s]*_field.ngx*_field.ngy;
             }else{
-                NSLog(@"check particleParam for %@ failed.", _particles[s].pName);
+                NSLog(@"check particleParam for %@'s pNum failed.", _particles[s].pName);
                 return false;
             }
             NSLog(@"check pNum: %d", _particles[s].pNum);
@@ -577,7 +577,7 @@
                 float ppc = (float)_particles[s].pNum/(float)(_field.ngx*_field.ngy);
                 _particles[s].w = _initWeightFromDens[s]*_field.dx*_field.dy/ppc;
             }else{
-                NSLog(@"check particleParam for %@ failed.", _particles[s].pName);
+                NSLog(@"check particleParam for %@'s weight failed.", _particles[s].pName);
                 return false;
             }
 

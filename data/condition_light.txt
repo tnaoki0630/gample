@@ -5,30 +5,30 @@ MCCollision 0
 #
 ParamForTimeIntegration
 Start           1
-End             20000
+End             10
 ParticleOutput  0
 FieldOutput     200
 TimeStep        5e-12
 #
 ParamForParticle
 ParticleName            electron
-InitPtclNumPerCell      10
+InitialParticleNumber   10
 MaxParticleNumber       3000000
 Charge                  -4.803204197e-10
 Mass                    9.10938188e-28
-WeightFromDens[1/cm3]   5e10
+Weight[1/cm]            5e6
 GenerateType            uniform-Gaussian
 InitialPosX             auto
 InitialPosY             auto
 InitialVel              0 0 0 
 InitialTemp[eV]         10
 /
-ParticleName            ion(Xe+)
-InitPtclNumPerCell      10
+ParticleName            ion_Xe1
+InitialParticleNumber   10
 MaxParticleNumber       3000000
 Charge                  4.803204197e-10
 Mass                    2.1801714e-22
-WeightFromDens[1/cm3]   5e10
+Weight[1/cm]            5e6
 GenerateType            uniform-Gaussian
 InitialPosX             auto
 InitialPosY             auto
@@ -51,20 +51,6 @@ BCType      periodic
 /
 #
 SourceForParticle
-ParticleName            electron
-GenerateType            Xsinusoidal-Gaussian
-SourceValue[A/m2]       400
-GeneratePosX            0.5 1.5
-GeneratePosY            auto
-GenerateTemp[eV]        10
-/
-ParticleName            ion(Xe+)
-GenerateType            Xsinusoidal-Gaussian
-SourceValue[A/m2]       400
-GeneratePosX            0.5 1.5
-GeneratePosY            auto
-GenerateTemp[eV]        0.1
-/
 ParticleName            electron
 GenerateType            hollow-cathode
 GeneratePosX            2.4 2.4
