@@ -69,8 +69,8 @@ typedef amgcl::make_solver<
     float _Cy;
     std::vector<float> _phi_sol;
     std::vector<float> _rhs_BC;
-    // smart pointer
-    std::unique_ptr<Solver> _solver;
+    std::unique_ptr<Solver> _solver;    // smart pointer
+    float _cathodePos;
 }
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam  withLogger:(XmlLogger&)logger{
@@ -153,31 +153,33 @@ typedef amgcl::make_solver<
             if ([BC.position isEqualToString:@"Xmin"]){
                 _BC_Xmin = BC.type;
                 if ([BC.type isEqualToString:@"Dirichlet"]){
-                    _phi_Xmin.assign(_ngy+1, BC.val);
+                    _phi_Xmin.assign(_ngy+1, BC.val*VtosV);
                 }else if ([BC.type isEqualToString:@"Neumann"]){
                     _dphidx_Xmin.assign(_ngy+1, BC.val);
                 }
             }else if ([BC.position isEqualToString:@"Xmax"]){
                 _BC_Xmax = BC.type;
                 if ([BC.type isEqualToString:@"Dirichlet"]){
-                    _phi_Xmax.assign(_ngy+1, BC.val);
+                    _phi_Xmax.assign(_ngy+1, BC.val*VtosV);
                 }else if ([BC.type isEqualToString:@"Neumann"]){
                     _dphidx_Xmax.assign(_ngy+1, BC.val);
                 }
             }else if ([BC.position isEqualToString:@"Ymin"]){
                 _BC_Ymin = BC.type;
                 if ([BC.type isEqualToString:@"Dirichlet"]){
-                    _phi_Ymin.assign(_ngx+1, BC.val);
+                    _phi_Ymin.assign(_ngx+1, BC.val*VtosV);
                 }else if ([BC.type isEqualToString:@"Neumann"]){
                     _dphidy_Ymin.assign(_ngx+1, BC.val);
                 }
             }else if ([BC.position isEqualToString:@"Ymax"]){
                 _BC_Ymax = BC.type;
                 if ([BC.type isEqualToString:@"Dirichlet"]){
-                    _phi_Ymax.assign(_ngx+1, BC.val);
+                    _phi_Ymax.assign(_ngx+1, BC.val*VtosV);
                 }else if ([BC.type isEqualToString:@"Neumann"]){
                     _dphidy_Ymax.assign(_ngx+1, BC.val);
                 }
+            }else if ([BC.position isEqualToString:@"hollow-cathode"]){
+                _cathodePos = BC.val;
             }
         }
 
@@ -485,13 +487,27 @@ typedef amgcl::make_solver<
     // solve
     int iters;
     float error;
-
     std::tie(iters, error) = (*_solver)(rhs, _phi_sol); // solver, phi_sol は使い回す
+
+    // adjust potential
+    float mean = 0.0;
+    for (int j = 0; j <= _nky; j++){
+        idx_in = (int)(_cathodePos/_dx) + j*(_nkx+1);
+        mean += _phi_sol[idx_in];
+    }
+    mean /= _nky+1;
+    for (int j = 0; j <= _nky; j++){
+        for (int i = 0; i <= _nkx; i++){
+            int k = i + j*(_nkx+1);
+            _phi_sol[k] -= mean*(i*_dx)/_cathodePos;
+        }
+    }
 
     // 収束状況
     std::map<std::string, std::string> data ={
         {"iteration", std::to_string(iters)},
         {"error", fmtSci(error, 6)},
+        {"meanCathode", fmtSci(mean*sVtoV, 6)},
     };
     logger.logSection("solvePoisson", data);
     
@@ -548,7 +564,6 @@ typedef amgcl::make_solver<
             if (!isLeft && !isRight && !isBottom && !isTop){
                 idx_in = idx_in_i + idx_in_j*(_nkx+1);
                 _phi[idx_out] = _phi_sol[idx_in];
-                // std::cout << "i,j: " << i << ", " << j << ", phi_sol[k]: " << _phi_sol[idx_in]*sVtoV << std::endl;
             }
             // 境界の値を線形近似(Left)
             if (isLeft && !isRight && !isBottom && !isTop){
@@ -696,7 +711,6 @@ typedef amgcl::make_solver<
     // 勾配計算
     for (int i = 0; i <= _nx; ++i) {
         for (int j = 0; j <= _ny; ++j) {
-            // std::cout << "i,j: " << i << ", " << j << ", phi[k]: " << _phi[i + j*(_nx+2)]*sVtoV << std::endl;
             Ex[i + j*(_nx+1)] = -(_phi[i+1 + (j+1)*(_nx+2)] - _phi[i   + (j+1)*(_nx+2)])/_dx;
             Ey[i + j*(_nx+1)] = -(_phi[i+1 + (j+1)*(_nx+2)] - _phi[i+1 + (j  )*(_nx+2)])/_dy;
         }
@@ -725,19 +739,30 @@ typedef amgcl::make_solver<
     float* Bz = (float *)_BzBuffer.contents; 
 
     // minmax
-    float min_rho = 1e20;
-    float max_rho = -1e20;
+    float min_rho = 1e20, max_rho = -1e20;
+    float min_phi = 1e20, max_phi = -1e20;
+    float min_Ex = 1e20, max_Ex = -1e20;
+    float min_Ey = 1e20, max_Ey = -1e20;
     for(int i = 0; i < (_ngx+2*_ngb+1)*(_ngy+2*_ngb+1); i++){
-        if (rho[i] < min_rho) {
-            min_rho = rho[i];
-        }else if(rho[i] > max_rho){
-            max_rho = rho[i];
-        }
+        if (rho[i] < min_rho)       { min_rho = rho[i]; }
+        else if(rho[i] > max_rho)   { max_rho = rho[i]; }
+        if (_phi[i] < min_phi)      { min_phi = _phi[i]; }
+        else if(_phi[i] > max_phi)  { max_phi = _phi[i]; }
+        if (Ex[i] < min_Ex)         { min_Ex = Ex[i]; }
+        else if(Ex[i] > max_Ex)     { max_Ex = Ex[i]; }
+        if (Ey[i] < min_Ey)         { min_Ey = Ey[i]; }
+        else if(Ey[i] > max_Ey)     { max_Ey = Ey[i]; }
     }
     // NSLog(@"MinMax: min_rho = %e, max_rho = %e", min_rho, max_rho);
     std::map<std::string, std::string> data ={
         {"rho_min", fmtSci(min_rho, 6)},
-        {"rho_max", fmtSci(min_rho, 6)},
+        {"rho_max", fmtSci(max_rho, 6)},
+        {"phi_min", fmtSci(min_phi*sVtoV, 6)},
+        {"phi_max", fmtSci(max_phi*sVtoV, 6)},
+        {"Ex_min", fmtSci(min_Ex*GtoV, 6)},
+        {"Ex_max", fmtSci(max_Ex*GtoV, 6)},
+        {"Ey_min", fmtSci(min_Ey*GtoV, 6)},
+        {"Ey_max", fmtSci(max_Ey*GtoV, 6)},
     };
     logger.logSection("outputField", data);
     

@@ -738,7 +738,12 @@ kernel void integrateChargeDensity(
             int addn;
             double addn_d;
             if ([source.genType isEqualToString:@"hollow-cathode"]){
-                addn = -current; // アノード電流の符号を反転した分だけ電子が流入
+                if (current < 0){
+                    addn = -current; // アノード電流の符号を反転した分だけ電子が流入
+                    current = 0; // リセット
+                }else{
+                    continue; // current は初期化せず次ステップに引き継ぎ
+                }
             }else{
                 addn_d = source.src*dt;
                 if(unif_dist(engine) < addn_d - (int)addn_d){

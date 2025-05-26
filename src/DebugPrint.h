@@ -81,10 +81,10 @@ void printInitContents(Init* init, XmlLogger& logger){
     // ParamForField の出力
     struct ParamForField fieldParams = [init getParamForField];
     [log appendFormat:@"--- ParamForField ---\n"];
-    [log appendFormat:@"NGX: %d\n", fieldParams.ngx];
-    [log appendFormat:@"NGY: %d\n", fieldParams.ngy];
-    [log appendFormat:@"DX: %e\n", fieldParams.dx];
-    [log appendFormat:@"DY: %e\n", fieldParams.dy];
+    [log appendFormat:@"ngx: %d\n", fieldParams.ngx];
+    [log appendFormat:@"ngy: %d\n", fieldParams.ngy];
+    [log appendFormat:@"dx: %e\n", fieldParams.dx];
+    [log appendFormat:@"dy: %e\n", fieldParams.dy];
     
     // BoundaryConditionForField の出力
     NSArray *fieldBoundaries = [init getFieldBoundaries];

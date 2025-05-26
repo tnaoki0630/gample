@@ -20,7 +20,7 @@ Weight                  2.5e9
 GenerateType            UniformConstant
 InitialVel              5e8 0 0 
 /
-ParticleName            ion(Xe+)
+ParticleName            ion_Xe1
 InitialParticleNumber   1
 MaxParticleNumber       20
 Charge                  4.803204197e-10

@@ -106,7 +106,7 @@
     - available options:
         - Xsinusoidal-Gaussian
         - hollow-cathode
-- SourceValue[A/m2]
+- CurrentDensity[A/m2]
     - input type: `double`
     - discription: source value
 - GeneratePosX

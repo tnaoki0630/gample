@@ -23,7 +23,7 @@ InitialPosY             auto
 InitialVel              0 0 0 
 InitialTemp[eV]         0
 /
-ParticleName            ion(Xe+)
+ParticleName            ion_Xe1
 InitPtclNumPerCell      1
 MaxParticleNumber       20000000
 Charge                  4.803204197e-10

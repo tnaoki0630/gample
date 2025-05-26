@@ -393,10 +393,10 @@
                 if ([source.genType isEqualToString:@"hollow-cathode"]){
                     _currentDensity.push_back(0); // 使わないので0埋め
                 }
-            } else if (paramKey == "SourceValue[1/(cm s)]") {
+            } else if (paramKey == "SourceValue[1/cm/s]") {
                 source.src = std::stod(paramValue);
                 _currentDensity.push_back(0); // 使わないので0埋め
-            } else if (paramKey == "SourceValue[A/m2]") {
+            } else if (paramKey == "CurrentDensity[A/m2]") {
                 _currentDensity.push_back(std::stod(paramValue)*JtosJ);
             } else if (paramKey == "GeneratePosX") {
                 if (paramValue == "auto"){
@@ -505,25 +505,18 @@
     
     // Parse the type line
     std::string valueLine;
-    if (std::getline(inputFile, valueLine)) {
+    while (std::getline(inputFile, valueLine)) {
+        if (valueLine == "/") {
+            // End of particle definition
+            break;
+        }
         std::istringstream typeIss(valueLine);
-        if (typeIss >> key >> value && key == "BCType") {
-            boundary.type = [NSString stringWithUTF8String:value.c_str()];
-        }
-    }
-    
-    // Parse optional value line (if any before the '/' delimiter)
-    if (std::getline(inputFile, valueLine) && valueLine != "/") {
-        std::istringstream valueIss(valueLine);
-        double val;
-        if (valueIss >> val) {
-            boundary.val = val*VtosV;
-        }
-        // Skip the next line if it's a '/'
-        std::string nextLine;
-        if (std::getline(inputFile, nextLine) && nextLine != "/") {
-            // Put back if not a delimiter
-            inputFile.seekg(-nextLine.length() - 1, std::ios_base::cur);
+        if (typeIss >> key >> value){
+            if (key == "BCType") {
+                boundary.type = [NSString stringWithUTF8String:value.c_str()];
+            }else if(key == "Value"){
+                boundary.val = stod(value);
+            }
         }
     }
     
@@ -558,7 +551,6 @@
                 return false;
             }
             // pNum か initPNumPerCell のどちらかは初期化必須
-            NSLog(@"before %d", _particles[s].pNum);
             if(_flagForPNum[s]){
                 // OK
             }else if(_initPNumPerCell[s] > 0){
@@ -568,7 +560,6 @@
                 NSLog(@"check particleParam for %@'s pNum failed.", _particles[s].pName);
                 return false;
             }
-            NSLog(@"check pNum: %d", _particles[s].pNum);
             // weight か _initWeightFromDens のどちらかは初期化必須
             if(_particles[s].w > 0.0){
                 // OK

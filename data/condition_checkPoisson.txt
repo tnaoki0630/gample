@@ -23,7 +23,7 @@ InitialPosY             auto
 InitialVel              0 0 0 
 InitialTemp[eV]         0
 /
-ParticleName            ion(Xe+)
+ParticleName            ion_Xe1
 InitialParticleNumber   0
 MaxParticleNumber       20000000
 Charge                  4.803204197e-10
@@ -53,7 +53,7 @@ BCType      periodic
 SourceForParticle
 ParticleName            electron
 GenerateType            hollow-cathode
-GeneratePosX            1.8 1.8
+GeneratePosX            2.4 2.4
 GeneratePosY            auto
 GenerateTemp[eV]        10
 /
@@ -61,8 +61,8 @@ GenerateTemp[eV]        10
 ParamForField
 NumberOfGridX       500
 NumberOfGridY       200
-GridSizeOfX         1e-2
-GridSizeOfY         1e-2
+GridSizeOfX         5e-3
+GridSizeOfY         5e-3
 InitializeTypeOfE   Uniform
 AmplitudeOfE[V/m]   0.0 0.0 0.0
 InitializeTypeOfB   Uniform
@@ -85,6 +85,9 @@ BCType      periodic
 /
 RegionName  Ymax
 BCType      periodic
+/
+RegionName  hollow-cathode
+Position    2.4
 /
 #
 GOGO

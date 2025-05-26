@@ -142,4 +142,3 @@ if __name__ == '__main__':
         plotField2d(arr, name, f"fig/{name}_wBuff.png" , type_id , True)
         plotField2d(arr, name, f"fig/{name}.png" , type_id , False)
         plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
-        # print(arr)

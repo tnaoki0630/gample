@@ -93,7 +93,7 @@ int main(int argc, const char * argv[]) {
         double time = 0.0;
         double comp = 0.0; // 保証項
         double y,t;
-        int int_current;
+        int intCurrent = 0;
         for (int cycle = StartCycle; cycle <= timeParams.EndCycle; cycle++) {
             // 時間計算
             y = dt - comp;
@@ -106,7 +106,6 @@ int main(int argc, const char * argv[]) {
             [fld resetChargeDensity];
 
             // 粒子ループ
-            int_current = 0;
             for (int s = 0; s < EqFrags.Particle; s++) {
                 Particle *ptcl = [ptclArr objectAtIndex:s];
                 std::string pName = [ptcl.pName UTF8String];
@@ -114,7 +113,7 @@ int main(int argc, const char * argv[]) {
                 MEASURE("update_"+pName, [ptcl update:dt withEMField:fld withLogger:logger], dataElapsedTime);
                 // 流出粒子の処理
                 MEASURE("reduce_"+pName, [ptcl reduce:logger], dataElapsedTime);
-                int_current += ptcl.pinum_Xmin;
+                intCurrent += ptcl.pinum_Xmin;
                 std::map<std::string, std::string> data ={
                     {"Xmin", std::to_string(ptcl.pinum_Xmin)},
                     {"Xmax", std::to_string(ptcl.pinum_Xmax)},
@@ -124,7 +123,7 @@ int main(int argc, const char * argv[]) {
                 logger.logSection("flowout_"+pName, data);
                 // 電荷密度の更新
                 if (EqFrags.EMField == 1){
-                    MEASURE("integrateChargeDensity", [ptcl integrateChargeDensity:fld withLogger:logger], dataElapsedTime);
+                    MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld withLogger:logger], dataElapsedTime);
                 }
                 // 粒子軌道の出力
                 if (timeParams.ptclOutCycle != 0 && cycle%timeParams.ptclOutCycle == 0){
@@ -146,7 +145,7 @@ int main(int argc, const char * argv[]) {
             for (int s = 0; s < EqFrags.Particle; s++) {
                 Particle *ptcl = [ptclArr objectAtIndex:s];
                 std::string pName = [ptcl.pName UTF8String];
-                MEASURE("injection_"+pName, ret.push_back([ptcl injection:dt withParam:init withCurrent:int_current withLogger:logger]), dataElapsedTime);
+                MEASURE("injection_"+pName, ret.push_back([ptcl injection:dt withParam:init withCurrent:intCurrent withLogger:logger]), dataElapsedTime);
             }
             if (std::reduce(std::begin(ret), std::end(ret)) != 0){
                 // すべての injection が成功したら総和は0

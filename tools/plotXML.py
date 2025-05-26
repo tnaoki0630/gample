@@ -79,3 +79,8 @@ def plot_variable_from_xml(xml_file, section_name, tag_name):
 
 if __name__ == '__main__':
     plot_variable_from_xml('log.xml', 'elapsedTime', 'all')
+    plot_variable_from_xml('log.xml', 'injection_electron', 'Xsinusoidal-Gaussian')
+    plot_variable_from_xml('log.xml', 'flowout_ion_Xe1', 'all')
+    plot_variable_from_xml('log.xml', 'flowout_electron', 'all')
+    plot_variable_from_xml('log.xml', 'solvePoisson', 'meanCathode')
+    plot_variable_from_xml('log.xml', 'solvePoisson', 'iteration')

@@ -12,7 +12,7 @@ TimeStep        5e-12
 #
 ParamForParticle
 ParticleName            electron
-InitPtclNumPerCell      10
+InitPtclNumPerCell      20
 MaxParticleNumber       3000000
 Charge                  -4.803204197e-10
 Mass                    9.10938188e-28
@@ -23,8 +23,8 @@ InitialPosY             auto
 InitialVel              0 0 0 
 InitialTemp[eV]         10
 /
-ParticleName            ion(Xe+)
-InitPtclNumPerCell      10
+ParticleName            ion_Xe1
+InitPtclNumPerCell      20
 MaxParticleNumber       3000000
 Charge                  4.803204197e-10
 Mass                    2.1801714e-22
@@ -33,7 +33,7 @@ GenerateType            uniform-Gaussian
 InitialPosX             auto
 InitialPosY             auto
 InitialVel              0 0 0 
-InitialTemp[eV]         0.1
+InitialTemp[eV]         0.5
 /
 #
 BoundaryConditionForParticle
@@ -53,17 +53,17 @@ BCType      periodic
 SourceForParticle
 ParticleName            electron
 GenerateType            Xsinusoidal-Gaussian
-SourceValue[A/m2]       400
-GeneratePosX            0.5 1.5
+CurrentDensity[A/m2]    400
+GeneratePosX            0.25 1.0
 GeneratePosY            auto
 GenerateTemp[eV]        10
 /
-ParticleName            ion(Xe+)
+ParticleName            ion_Xe1
 GenerateType            Xsinusoidal-Gaussian
-SourceValue[A/m2]       400
-GeneratePosX            0.5 1.5
+CurrentDensity[A/m2]    400
+GeneratePosX            0.25 1.0
 GeneratePosY            auto
-GenerateTemp[eV]        0.1
+GenerateTemp[eV]        0.5
 /
 ParticleName            electron
 GenerateType            hollow-cathode
@@ -90,17 +90,20 @@ TolForPoisson       1e-6
 BoundaryConditionForField
 RegionName  Xmin
 BCType      Dirichlet
-200
+Value       200
 /
 RegionName  Xmax
 BCType      Dirichlet
-0
+Value       0
 /
 RegionName  Ymin
 BCType      periodic
 /
 RegionName  Ymax
 BCType      periodic
+/
+RegionName  hollow-cathode
+Value       2.4
 /
 #
 GOGO
