@@ -63,8 +63,6 @@ struct SimulationParams {
 
 // 初期設定
 - (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam specimen:(int)s withLogger:(XmlLogger&)logger;
-// 粒子生成
-- (void)generateParticles:(ParamForParticle)ParticleParam withFieldParam:(ParamForField)FieldParam;
 // 時間更新
 - (void)update:(double)dt withEMField:(EMField*)fld withLogger:(XmlLogger&)logger;
 // 粒子境界処理
@@ -74,7 +72,7 @@ struct SimulationParams {
 // 粒子軌道出力
 - (void)outputPhaseSpace:(int)cycle withEMField:(EMField*)fld withLogger:(XmlLogger&)logger;
 // 粒子注入
-- (int)injection:(double)dt withParam:(Init*)initParam withCurrent:(int)current withLogger:(XmlLogger&)logger;
+- (int)injection:(double)dt withParam:(Init*)initParam withCurrent:(int&)current withLogger:(XmlLogger&)logger;
 // アクセサ
 - (NSString*)pName;
 - (int)pinum_Xmin;

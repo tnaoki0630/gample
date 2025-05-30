@@ -3,7 +3,7 @@ CXX = clang++
 CXXFLAGS = -std=c++17 \
            -isysroot $(shell xcrun --show-sdk-path)\
            -I/Users/$(shell whoami)/Library/amgcl\
-           -I/opt/homebrew/Cellar/boost/1.87.0/include
+           -I/opt/homebrew/Cellar/boost/1.87.0/include\
 
 # リンカフラグ
 LDFLAGS = -framework Metal \
@@ -21,8 +21,8 @@ RESULT_DIR = bin
 
 # 共通のソースファイル
 SOURCES_COMMON = $(SRC_DIR)/main.mm \
-                 $(SRC_DIR)/EMField.mm \
                  $(SRC_DIR)/Init.mm \
+                 $(SRC_DIR)/EMField.mm \
                  $(SRC_DIR)/Moment.mm \
 
 # EXEC の値によって Particle ソースを切り替え

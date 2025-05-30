@@ -175,7 +175,7 @@ kernel void updateParticles(
     }
 
     // debug print
-    print[id] = p.piflag;
+    print[id] = prm.constX;
 }
 
 // 電荷密度更新カーネル
@@ -303,22 +303,21 @@ kernel void integrateChargeDensity(
     if (self) {
 
         // パラメータ取得
-        NSArray *ParticleParams = [initParam getParamForParticle];
-        NSValue *value = ParticleParams[s];
-        struct ParamForParticle particleParam;
-        [value getValue:&particleParam];
-        struct ParamForField fieldParam = [initParam getParamForField];
-        
+        struct ParamForField fieldParam = initParam.paramForField;
+        struct ParamForComputing compParam = initParam.paramForComputing;
+        std::vector<struct ParamForParticle> particleParam = initParam.paramForParticle;
+        std::vector<struct BoundaryConditionForParticle> pBCs = initParam.particleBoundaries;
+    
         // 粒子パラメータ
-        _pName = particleParam.pName;
-        _pNumMax = particleParam.pNumMax;
-        _m = particleParam.m;
-        _q = particleParam.q;
-        _w = particleParam.w;
+        _pName = particleParam[s].pName;
+        _pNumMax = particleParam[s].pNumMax;
+        _m = particleParam[s].m;
+        _q = particleParam[s].q;
+        _w = particleParam[s].w;
 
         // 並列計算パラメータ
-        _integrationChunkSize = 4096;
-        _threadGroupSize = 256;
+        _integrationChunkSize = compParam.integrationChunkSize;
+        _threadGroupSize = compParam.threadGroupSize;
         
         // コマンドキューの作成
         _device = device;
@@ -326,9 +325,7 @@ kernel void integrateChargeDensity(
 
         // コンピュートパイプラインの設定
         NSError *error = nil;
-        id<MTLLibrary> library = [device newLibraryWithSource:kMetalShaderSource
-                                                    options:nil
-                                                    error:&error];
+        id<MTLLibrary> library = [device newLibraryWithSource:kMetalShaderSource options:nil error:&error];
         if (!library) {
             NSLog(@"Failed to create Metal library: %@", error);
             return nil;
@@ -346,44 +343,40 @@ kernel void integrateChargeDensity(
         _paramsBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
         SimulationParams* prm = (SimulationParams*)[_paramsBuffer contents];
         // パラメータ格納
-        prm->pNum = particleParam.pNum;
+        prm->pNum = particleParam[s].pNum;
         prm->ngx = fieldParam.ngx;
         prm->ngy = fieldParam.ngy;
         prm->ngb = fieldParam.ngb;
         // 境界条件格納
-        NSArray* particleBCs = [initParam getParticleBoundaries];
-        for (int pos = 0; pos < particleBCs.count; pos++){
-            NSValue* value = particleBCs[pos];
-            struct BoundaryConditionForParticle BC;
-            [value getValue:&BC];
-            if ([BC.position isEqualToString:@"Xmin"]){
-                if ([BC.type isEqualToString:@"periodic"]){
+        for (int pos = 0; pos < pBCs.size(); pos++){
+            if ([pBCs[pos].position isEqualToString:@"Xmin"]){
+                if ([pBCs[pos].type isEqualToString:@"periodic"]){
                     prm->BC_Xmin = 0;
-                }else if ([BC.type isEqualToString:@"Delete"]){
+                }else if ([pBCs[pos].type isEqualToString:@"Delete"]){
                     prm->BC_Xmin = 1;
                 }else{
                     prm->BC_Xmin = -1; // error
                 }
-            }else if ([BC.position isEqualToString:@"Xmax"]){
-                if ([BC.type isEqualToString:@"periodic"]){
+            }else if ([pBCs[pos].position isEqualToString:@"Xmax"]){
+                if ([pBCs[pos].type isEqualToString:@"periodic"]){
                     prm->BC_Xmax = 0;
-                }else if ([BC.type isEqualToString:@"Delete"]){
+                }else if ([pBCs[pos].type isEqualToString:@"Delete"]){
                     prm->BC_Xmax = 1;
                 }else{
                     prm->BC_Xmax = -1; // error
                 }
-            }else if ([BC.position isEqualToString:@"Ymin"]){
-                if ([BC.type isEqualToString:@"periodic"]){
+            }else if ([pBCs[pos].position isEqualToString:@"Ymin"]){
+                if ([pBCs[pos].type isEqualToString:@"periodic"]){
                     prm->BC_Ymin = 0;
-                }else if ([BC.type isEqualToString:@"Delete"]){
+                }else if ([pBCs[pos].type isEqualToString:@"Delete"]){
                     prm->BC_Ymin = 1;
                 }else{
                     prm->BC_Ymin = -1; // error
                 }
-            }else if ([BC.position isEqualToString:@"Ymax"]){
-                if ([BC.type isEqualToString:@"periodic"]){
+            }else if ([pBCs[pos].position isEqualToString:@"Ymax"]){
+                if ([pBCs[pos].type isEqualToString:@"periodic"]){
                     prm->BC_Ymax = 0;
-                }else if ([BC.type isEqualToString:@"Delete"]){
+                }else if ([pBCs[pos].type isEqualToString:@"Delete"]){
                     prm->BC_Ymax = 1;
                 }else{
                     prm->BC_Ymax = -1; // error
@@ -392,14 +385,56 @@ kernel void integrateChargeDensity(
         }
 
         // 粒子バッファ
-        if(particleParam.pNum > particleParam.pNumMax){
-            NSLog(@"pNum > pNumMax: pName = %@, pNum = %dd, pNumMax = %d", _pName, particleParam.pNum, particleParam.pNumMax);
+        if(particleParam[s].pNum > particleParam[s].pNumMax){
+            NSLog(@"pNum > pNumMax: pName = %@, pNum = %d, pNumMax = %d", _pName, particleParam[s].pNum, particleParam[s].pNumMax);
             return nil;
         }
-        buffSize = sizeof(ParticleState)*particleParam.pNumMax; // maxで初期化
+        buffSize = sizeof(ParticleState)*particleParam[s].pNumMax; // maxで初期化
         _particleBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
         // 初期粒子分布の設定
-        [self generateParticles:particleParam withFieldParam:fieldParam];
+        float Xmin, Lx;
+        float Ymin, Ly;
+        if (particleParam[s].genX[0] < 0){
+            Lx = fieldParam.dx * fieldParam.ngx;
+            Xmin = 0.0;
+        }else{
+            Lx = particleParam[s].genX[1] - particleParam[s].genX[0];
+            Xmin = particleParam[s].genX[0];
+        }
+        if (particleParam[s].genY[0] < 0){
+            Ly = fieldParam.dy * fieldParam.ngy;
+            Ymin = 0.0;
+        }else{
+            Ly = particleParam[s].genY[1] - particleParam[s].genY[0];
+            Ymin = particleParam[s].genY[0];
+        }
+        // 乱数生成器
+        std::random_device seed_gen;
+        std::default_random_engine engine(seed_gen());
+        std::uniform_real_distribution<> unif_dist(0.0, 1.0);
+        float vth_epi  = sqrt(2*kb*particleParam[s].genT/particleParam[s].m);
+        std::normal_distribution<> norm_dist(0.0, vth_epi);
+        // 粒子の初期化
+        ParticleState *p = (ParticleState *)self.particleBuffer.contents;
+        for (int i = 0; i < particleParam[s].pNum; i++) {
+            if ([particleParam[s].genType isEqualToString:@"uniform-Gaussian"]){
+                // uniform distribution for position
+                p[i].x = Xmin + (float)unif_dist(engine)*Lx;
+                p[i].y = Ymin + (float)unif_dist(engine)*Ly;
+                // Maxwellian for velocity 
+                p[i].vx = (float)particleParam[s].genU[0] + (float)norm_dist(engine);
+                p[i].vy = (float)particleParam[s].genU[1] + (float)norm_dist(engine);
+                p[i].vz = (float)particleParam[s].genU[2] + (float)norm_dist(engine);
+            }
+            // shift from real coordinate to integer coodinate
+            p[i].x = p[i].x/fieldParam.dx;
+            p[i].y = p[i].y/fieldParam.dy;
+            // shift origin for high-order weighting
+            p[i].x = p[i].x + (float)fieldParam.ngb;
+            p[i].y = p[i].y + (float)fieldParam.ngb;
+            // deletion flag
+            p[i].piflag = 0;
+        }
 
         // 電磁場バッファ
         int nx = fieldParam.ngx + 2*fieldParam.ngb;
@@ -413,59 +448,13 @@ kernel void integrateChargeDensity(
         _integratePartialBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
 
         // デバッグ出力用バッファ
-        buffSize = sizeof(float)*particleParam.pNumMax;
+        buffSize = sizeof(float)*particleParam[s].pNumMax;
         _printBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
 
     }
     return self;
 }
 
-- (void)generateParticles:(ParamForParticle)particleParam withFieldParam:(ParamForField)fieldParam{
-    // 範囲指定
-    float Xmin, Lx;
-    float Ymin, Ly;
-    if (particleParam.genX[0] < 0){
-        Lx = fieldParam.dx * fieldParam.ngx;
-        Xmin = 0.0;
-    }else{
-        Lx = particleParam.genX[1] - particleParam.genX[0];
-        Xmin = particleParam.genX[0];
-    }
-    if (particleParam.genY[0] < 0){
-        Ly = fieldParam.dy * fieldParam.ngy;
-        Ymin = 0.0;
-    }else{
-        Ly = particleParam.genY[1] - particleParam.genY[0];
-        Ymin = particleParam.genY[0];
-    }
-    // 乱数生成器
-    std::random_device seed_gen;
-    std::default_random_engine engine(seed_gen());
-    std::uniform_real_distribution<> unif_dist(0.0, 1.0);
-    float vth_epi  = sqrt(2*kb*particleParam.genT/particleParam.m);
-    std::normal_distribution<> norm_dist(0.0, vth_epi);
-    // 粒子の初期化
-    ParticleState *p = (ParticleState *)self.particleBuffer.contents;
-    for (int i = 0; i < particleParam.pNum; i++) {
-        if ([particleParam.genType isEqualToString:@"uniform-Gaussian"]){
-            // uniform distribution for position
-            p[i].x = Xmin + (float)unif_dist(engine)*Lx;
-            p[i].y = Ymin + (float)unif_dist(engine)*Ly;
-            // Maxwellian for velocity 
-            p[i].vx = (float)particleParam.genU[0] + (float)norm_dist(engine);
-            p[i].vy = (float)particleParam.genU[1] + (float)norm_dist(engine);
-            p[i].vz = (float)particleParam.genU[2] + (float)norm_dist(engine);
-        }
-        // shift from real coordinate to integer coodinate
-        p[i].x = p[i].x/fieldParam.dx;
-        p[i].y = p[i].y/fieldParam.dy;
-        // shift origin for high-order weighting
-        p[i].x = p[i].x + (float)fieldParam.ngb;
-        p[i].y = p[i].y + (float)fieldParam.ngb;
-        // deletion flag
-        p[i].piflag = 0;
-    }
-}
 
 // 時間更新
 - (void)update:(double)dt withEMField:(EMField*)fld  withLogger:(XmlLogger&)logger{
@@ -510,21 +499,27 @@ kernel void integrateChargeDensity(
     [computeEncoder dispatchThreadgroups:gridSizeMetalStyle
                             threadsPerThreadgroup:threadGroupSize];
 
+    // // 粒子状態取得
+    // ParticleState* p = (ParticleState*)[_particleBuffer contents];
+    // for (int idx = 0; idx < 10; idx++){
+    //     NSLog(@"before update(%@): p.x[%d]: %f, p.vx[%d]: %f", _pName, idx, p[idx].x, idx, p[idx].vx);
+    // }
+
     // エンコーディングと実行
     [computeEncoder endEncoding];
     [commandBuffer commit];
     [commandBuffer waitUntilCompleted];
 
-    // 粒子状態取得
-    // ParticleState* p = (ParticleState*)[_particleBuffer contents];
-    // for (int idx = 0; idx < 1; idx++){
-    //     NSLog(@"before update: p.x[%d]: %f", idx, p[idx].x);
+    // // 粒子状態取得
+    // p = (ParticleState*)[_particleBuffer contents];
+    // for (int idx = 0; idx < 10; idx++){
+    //     NSLog(@"after update(%@): p.x[%d]: %f, p.vx[%d]: %f", _pName, idx, p[idx].x, idx, p[idx].vx);
     // }
 
     // // デバッグ出力
     // float* prt = (float*)_printBuffer.contents;
     // for (int idx = 0; idx < 10; idx++){
-    //     NSLog(@"debug print: val[%d]: %f", idx, prt[idx]);
+    //     NSLog(@"debug print(%@): val[%d]: %f", _pName, idx, prt[idx]);
     // }
 
 }
@@ -587,7 +582,6 @@ kernel void integrateChargeDensity(
     };
     NSString* secName = [NSString stringWithFormat:@"flowout_%@", _pName];
     logger.logSection([secName UTF8String], data);
-    // NSLog(@"flowout(%@): pulln = %d, pNum = %d", _pName, pulln, prm->pNum);
 }
 
 - (void)integrateChargeDensity:(EMField*)fld withLogger:(XmlLogger&)logger{
@@ -690,54 +684,51 @@ kernel void integrateChargeDensity(
     }
 }
 
-- (int)injection:(double)dt withParam:(Init*)initParam withCurrent:(int)current withLogger:(XmlLogger&)logger{
+- (int)injection:(double)dt withParam:(Init*)initParam withCurrent:(int&)current withLogger:(XmlLogger&)logger{
     // パラメータ取得
-    struct ParamForField fieldParam = [initParam getParamForField];
-    NSArray *Sources = [initParam getParticleSources];
-    struct SourceForParticle source;
+    struct ParamForField fieldParam = initParam.paramForField;
+    std::vector<struct SourceForParticle> sources = initParam.particleSources;
+
     // オブジェクト取得
     SimulationParams *prm = (SimulationParams*)[_paramsBuffer contents];
     // ログ出力用データセット
     std::map<std::string, std::string>data;
     
-    for (int i = 0; i < Sources.count; i++){
-        NSValue *value = Sources[i];
-        [value getValue:&source];
-
-        if([source.pName isEqualToString:_pName]){
+    for (int i = 0; i < sources.size(); i++){
+        if([sources[i].pName isEqualToString:_pName]){
             // 生成範囲
             float Xmin, Xmax, Lx;
             float Ymin, Ymax, Ly;
-            if (source.genX[0] < 0){
+            if (sources[i].genX[0] < 0){
                 // auto
                 Lx = fieldParam.dx * fieldParam.ngx;
                 Xmin = 0.0;
                 Xmax = Lx;
             }else{
-                Lx = source.genX[1] - source.genX[0];
-                Xmin = source.genX[0];
-                Xmax = source.genX[1];
+                Lx = sources[i].genX[1] - sources[i].genX[0];
+                Xmin = sources[i].genX[0];
+                Xmax = sources[i].genX[1];
             }
-            if (source.genY[0] < 0){
+            if (sources[i].genY[0] < 0){
                 // auto
                 Ly = fieldParam.dy * fieldParam.ngy;
                 Ymin = 0.0;
                 Ymax = Ly;
             }else{
-                Ly = source.genY[1] - source.genY[0];
-                Ymin = source.genY[0];
-                Ymax = source.genY[1];
+                Ly = sources[i].genY[1] - sources[i].genY[0];
+                Ymin = sources[i].genY[0];
+                Ymax = sources[i].genY[1];
             }
             // 乱数生成器
             std::random_device seed_gen;
             std::default_random_engine engine(seed_gen());
             std::uniform_real_distribution<> unif_dist(0.0, 1.0);
-            float vth_epi  = sqrt(2*kb*source.genT/_m);
+            float vth_epi  = sqrt(2*kb*sources[i].genT/_m);
             std::normal_distribution<> norm_dist(0.0, vth_epi);
             // 粒子生成数
             int addn;
             double addn_d;
-            if ([source.genType isEqualToString:@"hollow-cathode"]){
+            if ([sources[i].genType isEqualToString:@"hollow-cathode"]){
                 if (current < 0){
                     addn = -current; // アノード電流の符号を反転した分だけ電子が流入
                     current = 0; // リセット
@@ -745,7 +736,7 @@ kernel void integrateChargeDensity(
                     continue; // current は初期化せず次ステップに引き継ぎ
                 }
             }else{
-                addn_d = source.src*dt;
+                addn_d = sources[i].src/_w*dt;
                 if(unif_dist(engine) < addn_d - (int)addn_d){
                     addn = (int)addn_d + 1;
                 }else{
@@ -760,30 +751,30 @@ kernel void integrateChargeDensity(
             // 粒子の追加
             ParticleState *p = (ParticleState*)[_particleBuffer contents];
             for (int i = prm->pNum; i < prm->pNum + addn; i++) {
-                if ([source.genType isEqualToString:@"uniform-Gaussian"] || [source.genType isEqualToString:@"hollow-cathode"]){
+                if ([sources[i].genType isEqualToString:@"uniform-Gaussian"] || [sources[i].genType isEqualToString:@"hollow-cathode"]){
                     // uniform distribution for position
                     p[i].x = Xmin + (float)unif_dist(engine)*Lx;
                     p[i].y = Ymin + (float)unif_dist(engine)*Ly;
                     // Maxwellian for velocity 
-                    p[i].vx = (float)source.genU[0] + (float)norm_dist(engine);
-                    p[i].vy = (float)source.genU[1] + (float)norm_dist(engine);
-                    p[i].vz = (float)source.genU[2] + (float)norm_dist(engine);
-                } else if ([source.genType isEqualToString:@"Xsinusoidal-Gaussian"]){
+                    p[i].vx = (float)sources[i].genU[0] + (float)norm_dist(engine);
+                    p[i].vy = (float)sources[i].genU[1] + (float)norm_dist(engine);
+                    p[i].vz = (float)sources[i].genU[2] + (float)norm_dist(engine);
+                } else if ([sources[i].genType isEqualToString:@"Xsinusoidal-Gaussian"]){
                     // uniform distribution for position
                     p[i].x = (Xmin+Xmax)/2 + Lx/PI*sin(2*unif_dist(engine)-1.0);
                     p[i].y = Ymin + (float)unif_dist(engine)*Ly;
                     // Maxwellian for velocity 
-                    p[i].vx = (float)source.genU[0] + (float)norm_dist(engine);
-                    p[i].vy = (float)source.genU[1] + (float)norm_dist(engine);
-                    p[i].vz = (float)source.genU[2] + (float)norm_dist(engine);
-                } else if ([source.genType isEqualToString:@"Ysinusoidal-Gaussian"]){
+                    p[i].vx = (float)sources[i].genU[0] + (float)norm_dist(engine);
+                    p[i].vy = (float)sources[i].genU[1] + (float)norm_dist(engine);
+                    p[i].vz = (float)sources[i].genU[2] + (float)norm_dist(engine);
+                } else if ([sources[i].genType isEqualToString:@"Ysinusoidal-Gaussian"]){
                     // uniform distribution for position
                     p[i].x = Xmin + (float)unif_dist(engine)*Lx;
                     p[i].y = (Ymin+Ymax)/2 + Ly/PI*sin(2*unif_dist(engine)-1.0);
                     // Maxwellian for velocity 
-                    p[i].vx = (float)source.genU[0] + (float)norm_dist(engine);
-                    p[i].vy = (float)source.genU[1] + (float)norm_dist(engine);
-                    p[i].vz = (float)source.genU[2] + (float)norm_dist(engine);
+                    p[i].vx = (float)sources[i].genU[0] + (float)norm_dist(engine);
+                    p[i].vy = (float)sources[i].genU[1] + (float)norm_dist(engine);
+                    p[i].vz = (float)sources[i].genU[2] + (float)norm_dist(engine);
                 }
                 // shift from real coordinate to integer coodinate
                 p[i].x = p[i].x/fieldParam.dx;
@@ -796,7 +787,7 @@ kernel void integrateChargeDensity(
             }
             // 粒子数更新
             prm->pNum += addn;
-            data[[source.genType UTF8String]] = std::to_string(addn);
+            data[[sources[i].genType UTF8String]] = std::to_string(addn);
         }
 
     }

@@ -79,7 +79,11 @@ typedef amgcl::make_solver<
         _device = device;
         
         // フィールドパラメータの取得
-        struct ParamForField fieldParam = [initParam getParamForField];
+        struct ParamForField fieldParam = initParam.paramForField;
+        struct ParamForComputing compParam = initParam.paramForComputing;
+        std::vector<struct BoundaryConditionForField> fieldBCs = initParam.fieldBoundaries;
+
+        // プライベート変数に格納
         _ngx = fieldParam.ngx;
         _ngy = fieldParam.ngy;
         _ngb = fieldParam.ngb;
@@ -141,45 +145,40 @@ typedef amgcl::make_solver<
                 }
             }
         }
-        
 
         // construct Poisson solver
         float val_Xmin, val_Xmax, val_Ymin, val_Ymax;
-        NSArray* fieldBCs = [initParam getFieldBoundaries];
-        for (int pos = 0; pos < fieldBCs.count; pos++){
-            NSValue* value = fieldBCs[pos];
-            struct BoundaryConditionForField BC;
-            [value getValue:&BC];
-            if ([BC.position isEqualToString:@"Xmin"]){
-                _BC_Xmin = BC.type;
-                if ([BC.type isEqualToString:@"Dirichlet"]){
-                    _phi_Xmin.assign(_ngy+1, BC.val*VtosV);
-                }else if ([BC.type isEqualToString:@"Neumann"]){
-                    _dphidx_Xmin.assign(_ngy+1, BC.val);
+        for (int pos = 0; pos < fieldBCs.size(); pos++){
+            if ([fieldBCs[pos].position isEqualToString:@"Xmin"]){
+                _BC_Xmin = fieldBCs[pos].type;
+                if ([fieldBCs[pos].type isEqualToString:@"Dirichlet"]){
+                    _phi_Xmin.assign(_ngy+1, fieldBCs[pos].val*VtosV);
+                }else if ([fieldBCs[pos].type isEqualToString:@"Neumann"]){
+                    _dphidx_Xmin.assign(_ngy+1, fieldBCs[pos].val);
                 }
-            }else if ([BC.position isEqualToString:@"Xmax"]){
-                _BC_Xmax = BC.type;
-                if ([BC.type isEqualToString:@"Dirichlet"]){
-                    _phi_Xmax.assign(_ngy+1, BC.val*VtosV);
-                }else if ([BC.type isEqualToString:@"Neumann"]){
-                    _dphidx_Xmax.assign(_ngy+1, BC.val);
+            }else if ([fieldBCs[pos].position isEqualToString:@"Xmax"]){
+                _BC_Xmax = fieldBCs[pos].type;
+                if ([fieldBCs[pos].type isEqualToString:@"Dirichlet"]){
+                    _phi_Xmax.assign(_ngy+1, fieldBCs[pos].val*VtosV);
+                }else if ([fieldBCs[pos].type isEqualToString:@"Neumann"]){
+                    _dphidx_Xmax.assign(_ngy+1, fieldBCs[pos].val);
                 }
-            }else if ([BC.position isEqualToString:@"Ymin"]){
-                _BC_Ymin = BC.type;
-                if ([BC.type isEqualToString:@"Dirichlet"]){
-                    _phi_Ymin.assign(_ngx+1, BC.val*VtosV);
-                }else if ([BC.type isEqualToString:@"Neumann"]){
-                    _dphidy_Ymin.assign(_ngx+1, BC.val);
+            }else if ([fieldBCs[pos].position isEqualToString:@"Ymin"]){
+                _BC_Ymin = fieldBCs[pos].type;
+                if ([fieldBCs[pos].type isEqualToString:@"Dirichlet"]){
+                    _phi_Ymin.assign(_ngx+1, fieldBCs[pos].val*VtosV);
+                }else if ([fieldBCs[pos].type isEqualToString:@"Neumann"]){
+                    _dphidy_Ymin.assign(_ngx+1, fieldBCs[pos].val);
                 }
-            }else if ([BC.position isEqualToString:@"Ymax"]){
-                _BC_Ymax = BC.type;
-                if ([BC.type isEqualToString:@"Dirichlet"]){
-                    _phi_Ymax.assign(_ngx+1, BC.val*VtosV);
-                }else if ([BC.type isEqualToString:@"Neumann"]){
-                    _dphidy_Ymax.assign(_ngx+1, BC.val);
+            }else if ([fieldBCs[pos].position isEqualToString:@"Ymax"]){
+                _BC_Ymax = fieldBCs[pos].type;
+                if ([fieldBCs[pos].type isEqualToString:@"Dirichlet"]){
+                    _phi_Ymax.assign(_ngx+1, fieldBCs[pos].val*VtosV);
+                }else if ([fieldBCs[pos].type isEqualToString:@"Neumann"]){
+                    _dphidy_Ymax.assign(_ngx+1, fieldBCs[pos].val);
                 }
-            }else if ([BC.position isEqualToString:@"hollow-cathode"]){
-                _cathodePos = BC.val;
+            }else if ([fieldBCs[pos].position isEqualToString:@"hollow-cathode"]){
+                _cathodePos = fieldBCs[pos].val;
             }
         }
 
@@ -359,8 +358,8 @@ typedef amgcl::make_solver<
 
         // --- amgcl の設定 ---
         Solver::params prm;
-        prm.solver.maxiter = fieldParam.maxiter;
-        prm.solver.tol = fieldParam.tolerance;
+        prm.solver.maxiter = compParam.maxiter;
+        prm.solver.tol = compParam.tolerance;
         // _solver を生成してインスタンス変数として確保
         _solver = std::unique_ptr<Solver>(
             new Solver( std::tie(arrSize, ptr, col, val), prm )
@@ -510,7 +509,8 @@ typedef amgcl::make_solver<
         {"meanCathode", fmtSci(mean*sVtoV, 6)},
     };
     logger.logSection("solvePoisson", data);
-    
+    NSLog(@"mean = %e",mean*sVtoV);
+
     // index
     bool isLeft, isRight, isBottom, isTop;
     int idx_in_i, idx_in_j;

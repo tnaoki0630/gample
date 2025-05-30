@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SimulationLog>
+<![CDATA[
+--- FlagForEquation ---
+Particle: 2
+EMField: 1
+MCCollision: 0
+--- ParamForTimeIntegration ---
+End: 1
+ParticleOutput: 0
+FieldOutput: 200
+TimeStep: 5.000000e-12
+--- ParamForComputing ---
+threadGroupSize: 256
+integrationChunkSize: 4096
+maxiter: 200
+tolerance: 1.000000e-07
+--- ParamForParticle (2 entries) ---
+[Particle 1]
+  Name: electron
+  InitialParticleNumber: 20000
+  MaxParticleNumber: 5000000
+  Charge: -4.803204e-10
+  Mass: 9.109382e-28
+  Weight: 6.250000e+06
+  genType: uniform-Gaussian
+  initialT: 1.160400e+05
+[Particle 2]
+  Name: ion_Xe1
+  InitialParticleNumber: 20000
+  MaxParticleNumber: 5000000
+  Charge: 4.803204e-10
+  Mass: 0.000000e+00
+  Weight: 6.250000e+06
+  genType: uniform-Gaussian
+  initialT: 5.802000e+03
+--- BoundaryConditionForParticle (4 entries) ---
+[pBC 1]
+  Position: Xmin
+  Type: Delete
+[pBC 2]
+  Position: Xmax
+  Type: Delete
+[pBC 3]
+  Position: Ymin
+  Type: periodic
+[pBC 4]
+  Position: Ymax
+  Type: periodic
+--- SourceForParticle (3 entries) ---
+[Source 1]
+  pName: electron
+  genType: Xsinusoidal-Gaussian
+  src: 2.496604e+17
+  genXmin: 2.500000e-01
+  genXmax: 1.000000e+00
+  genYmin: -1.000000e+00
+  genYmax: -1.000000e+00
+  genU: 0.000000e+00
+  genV: 0.000000e+00
+  genW: 0.000000e+00
+  genT: 1.160400e+05
+[Source 2]
+  pName: ion_Xe1
+  genType: Xsinusoidal-Gaussian
+  src: 2.496604e+17
+  genXmin: 2.500000e-01
+  genXmax: 1.000000e+00
+  genYmin: -1.000000e+00
+  genYmax: -1.000000e+00
+  genU: 0.000000e+00
+  genV: 0.000000e+00
+  genW: 0.000000e+00
+  genT: 5.802000e+03
+[Source 3]
+  pName: electron
+  genType: hollow-cathode
+  src: 0.000000e+00
+  genXmin: 2.400000e+00
+  genXmax: 2.400000e+00
+  genYmin: -1.000000e+00
+  genYmax: -1.000000e+00
+  genU: 0.000000e+00
+  genV: 0.000000e+00
+  genW: 0.000000e+00
+  genT: 1.160400e+05
+--- ParamForField ---
+ngx: 50
+ngy: 20
+ngb: 2
+dx: 5.000000e-02
+dy: 5.000000e-02
+--- BoundaryConditionForField (5 entries) ---
+[Boundary 1]
+  Position: Xmin
+  Type: Dirichlet
+  Value: 6.671282e-01
+[Boundary 2]
+  Position: Xmax
+  Type: Dirichlet
+  Value: 0.000000e+00
+[Boundary 3]
+  Position: Ymin
+  Type: periodic
+  Value: 0.000000e+00
+[Boundary 4]
+  Position: Ymax
+  Type: periodic
+  Value: 0.000000e+00
+[Boundary 5]
+  Position: hollow-cathode
+  Type: undefined
+  Value: 8.005538e-03
+]]>
+ <Cycle ID="1">
+  time = 5e-12
+  <Section Name="flowout_electron">
+   <particleNumber>19994</particleNumber>
+   <pulledPtclNum>6</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-5</Xmax>
+   <Xmin>-1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>20000</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>nan</error>
+   <iteration>0</iteration>
+   <meanCathode>0.000000e+00</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>0</Xsinusoidal-Gaussian>
+   <hollow-cathode>1</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>0</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>21</injection_electron>
+   <injection_ion_Xe1>8</injection_ion_Xe1>
+   <integCDens_electron>7254</integCDens_electron>
+   <integCDens_ion_Xe1>6514</integCDens_ion_Xe1>
+   <reduce_electron>48</reduce_electron>
+   <reduce_ion_Xe1>47</reduce_ion_Xe1>
+   <solvePoisson>291</solvePoisson>
+   <update_electron>7249</update_electron>
+   <update_ion_Xe1>6581</update_ion_Xe1>
+  </Section>
+ </Cycle>
+<![CDATA[
+culculation end.
+total elapsed time: 0 sec.]]>
+</SimulationLog>

@@ -35,6 +35,9 @@ std::map<std::string, std::string> parseArgs(int argc, const char* argv[]) {
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
+        // 所要時間計測
+        auto start = std::chrono::high_resolution_clock::now();
+        
         // デフォルトのMetalデバイスを取得
         id<MTLDevice> device = MTLCreateSystemDefaultDevice();
         if (!device) {
@@ -64,20 +67,15 @@ int main(int argc, const char * argv[]) {
 
         // 初期化パラメータクラス作成
         Init *init = [[Init alloc] parseInputFile:inputPath];
-        // 入力チェック、変数演算
-        bool check = [init checkInput];
-        if (!check){
-            NSLog(@"invalid condition.");
-            return 1;
-        }
+
         // パース結果の出力(debugprint.mm)
         printInitContents(init, logger);
 
-        struct FragForEquation EqFrags = [init getFragForEquation];
-        
+        struct FlagForEquation EqFlags = init.flagForEquation;
+
         // 粒子の初期化
-        NSMutableArray *ptclArr = [NSMutableArray arrayWithCapacity:EqFrags.Particle];
-        for (int s = 0; s < EqFrags.Particle; s++) {
+        NSMutableArray *ptclArr = [NSMutableArray arrayWithCapacity:EqFlags.Particle];
+        for (int s = 0; s < EqFlags.Particle; s++) {
             Particle *ptcl = [[Particle alloc] initWithDevice:device withParam:init specimen:s withLogger:logger];
             [ptclArr addObject:ptcl];
         }
@@ -87,14 +85,14 @@ int main(int argc, const char * argv[]) {
         Moment *mom = [[Moment alloc] initialize];
 
         // 時間更新ループ
-        struct ParamForTimeIntegration timeParams = [init getParamForTimeIntegration];
+        struct ParamForTimeIntegration timeParam = init.paramForTimeIntegration;
         int StartCycle = 1; // リスタート時は最終サイクルを引き継ぎたい
-        double dt = timeParams.dt;
+        double dt = timeParam.TimeStep;
         double time = 0.0;
         double comp = 0.0; // 保証項
         double y,t;
         int intCurrent = 0;
-        for (int cycle = StartCycle; cycle <= timeParams.EndCycle; cycle++) {
+        for (int cycle = StartCycle; cycle <= timeParam.End; cycle++) {
             // 時間計算
             y = dt - comp;
             t = time + y;
@@ -106,9 +104,10 @@ int main(int argc, const char * argv[]) {
             [fld resetChargeDensity];
 
             // 粒子ループ
-            for (int s = 0; s < EqFrags.Particle; s++) {
+            std::vector<struct ParamForParticle> particles = init.paramForParticle;
+            for (int s = 0; s < EqFlags.Particle; s++) {
                 Particle *ptcl = [ptclArr objectAtIndex:s];
-                std::string pName = [ptcl.pName UTF8String];
+                std::string pName = [particles[s].pName UTF8String];
                 // 粒子の時間更新
                 MEASURE("update_"+pName, [ptcl update:dt withEMField:fld withLogger:logger], dataElapsedTime);
                 // 流出粒子の処理
@@ -122,29 +121,29 @@ int main(int argc, const char * argv[]) {
                 };
                 logger.logSection("flowout_"+pName, data);
                 // 電荷密度の更新
-                if (EqFrags.EMField == 1){
+                if (EqFlags.EMField == 1){
                     MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld withLogger:logger], dataElapsedTime);
                 }
                 // 粒子軌道の出力
-                if (timeParams.ptclOutCycle != 0 && cycle%timeParams.ptclOutCycle == 0){
+                if (timeParam.ParticleOutput != 0 && cycle%timeParam.ParticleOutput == 0){
                     [ptcl outputPhaseSpace:cycle withEMField:fld withLogger:logger];
                 }
             }
 
             // 電場の更新
-            if (EqFrags.EMField == 1){
+            if (EqFlags.EMField == 1){
                 MEASURE("solvePoisson", [fld solvePoisson:logger], dataElapsedTime);
                 // 場の出力
-                if (timeParams.fldOutCycle != 0 && cycle%timeParams.fldOutCycle == 0){
+                if (timeParam.FieldOutput != 0 && cycle%timeParam.FieldOutput == 0){
                     [fld outputField:cycle withLogger:logger];
                 }
             }
 
             // 粒子生成
-            std::vector<int> ret(EqFrags.Particle);
-            for (int s = 0; s < EqFrags.Particle; s++) {
+            std::vector<int> ret(EqFlags.Particle);
+            for (int s = 0; s < EqFlags.Particle; s++) {
                 Particle *ptcl = [ptclArr objectAtIndex:s];
-                std::string pName = [ptcl.pName UTF8String];
+                std::string pName = [particles[s].pName UTF8String];
                 MEASURE("injection_"+pName, ret.push_back([ptcl injection:dt withParam:init withCurrent:intCurrent withLogger:logger]), dataElapsedTime);
             }
             if (std::reduce(std::begin(ret), std::end(ret)) != 0){
@@ -157,6 +156,12 @@ int main(int argc, const char * argv[]) {
             logger.logSection("elapsedTime", dataElapsedTime);
             logger.logCycleEnd();
         }
+
+        // 計測終了
+        auto end = std::chrono::high_resolution_clock::now();
+        auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(end - start).count(); \
+        logger.logComment("culculation end.\ntotal elapsed time: "+std::to_string(elapsedTime)+" sec.\n");
+        
     }
     return 0;
 }

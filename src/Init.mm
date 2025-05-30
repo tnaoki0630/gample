@@ -8,18 +8,14 @@
 
 @interface Init() {
     // Private properties to store parsed values
-    struct FragForEquation _fragEquation;
+    struct FlagForEquation _flagEquation;
     struct ParamForTimeIntegration _timeIntegration;
+    struct ParamForComputing _computing;
     std::vector<struct ParamForParticle> _particles;
     std::vector<struct BoundaryConditionForParticle> _particleBoundaries;
     std::vector<struct SourceForParticle> _particleSources;
     struct ParamForField _field;
     std::vector<struct BoundaryConditionForField> _fieldBoundaries;
-    // optional values
-    std::vector<bool> _flagForPNum;
-    std::vector<int> _initPNumPerCell;
-    std::vector<float> _initWeightFromDens;
-    std::vector<float> _currentDensity;
 }
 
 @property (nonatomic, strong) NSString *filePath;
@@ -31,622 +27,340 @@
 - (instancetype)parseInputFile:(NSString*)InputFilePath {
     self = [super init];
     if (self) {
-        _filePath = InputFilePath;
-        
-        // Initialize vectors
-        _particles = std::vector<struct ParamForParticle>();
-        _particleBoundaries = std::vector<struct BoundaryConditionForParticle>();
-        _particleSources = std::vector<struct SourceForParticle>();
-        _fieldBoundaries = std::vector<struct BoundaryConditionForField>();
-        _flagForPNum = std::vector<bool>();
-        _initPNumPerCell = std::vector<int>();
-        _initWeightFromDens = std::vector<float>();
-        _currentDensity = std::vector<float>();
 
-        // default param for field
-        _field.ngx = -1;
-        _field.ngy = -1;
-        _field.dx = -1.0;
-        _field.dy = -1.0;
-        _field.InitTypeE = NULL;
-        _field.InitTypeB = NULL;
-        _field.ampE[0] = 0.0;
-        _field.ampE[1] = 0.0;
-        _field.ampE[2] = 0.0;
-        _field.ampB[0] = 0.0;
-        _field.ampB[1] = 0.0;
-        _field.ampB[2] = 0.0;
-        _field.FilePathEx = NULL;
-        _field.FilePathEy = NULL;
-        _field.FilePathEz = NULL;
-        _field.FilePathBx = NULL;
-        _field.FilePathBy = NULL;
-        _field.FilePathBz = NULL;
-        _field.weightOrder = -1;
-        _field.ngb = -1;
-        _field.maxiter = 200;
-        _field.tolerance = 1e-5;
-        
-        // Convert NSString to std::string for C++ file handling
-        std::string filePath = [InputFilePath UTF8String];
-        std::ifstream inputFile(filePath);
-        
-        if (!inputFile.is_open()) {
-            NSLog(@"Error: Could not open input file %@", InputFilePath);
-            return nil;
+        // ファイル読み込み
+        NSError* __autoreleasing readError = nil;
+        NSData *data = [NSData dataWithContentsOfFile:InputFilePath options:0 error:&readError];
+        if (!data) {
+            return nil;  // NSError に詳細が入っている
         }
         
-        // Parse the file
-        if (![self parseFile:inputFile]) {
-            NSLog(@"Error: Failed to parse input file %@", InputFilePath);
+        // JSON パース
+        id jsonObj = [NSJSONSerialization JSONObjectWithData:data
+                                                    options:NSJSONReadingMutableContainers
+                                                    error:&readError];
+        if (!jsonObj) {
             return nil;
         }
+        if (![jsonObj isKindOfClass:[NSDictionary class]]) {
+            if (readError) {
+                readError = [NSError errorWithDomain:@"ConfigError" code:1001 userInfo:@{ NSLocalizedDescriptionKey : @"トップレベルが辞書ではありません" }];
+            }
+            return nil;
+        }
+        NSDictionary *root = (NSDictionary *)jsonObj;
         
-        inputFile.close();
+        // FlagForEquation
+        NSDictionary *flagD = root[@"FlagForEquation"];
+        if (![flagD isKindOfClass:[NSDictionary class]]) {
+            if (readError) {
+                readError = [NSError errorWithDomain:@"ConfigError" code:1002 userInfo:@{ NSLocalizedDescriptionKey : @"FlagForEquation が辞書ではありません" }];
+            }
+            return nil;
+        }
+        NSMutableDictionary *mergedFlagD = [self FlagForEquationDefault];
+        [mergedFlagD addEntriesFromDictionary:flagD];
+        _flagEquation.Particle    = [mergedFlagD[@"Particle"]    integerValue];
+        _flagEquation.EMField     = [mergedFlagD[@"EMField"]     integerValue];
+        _flagEquation.MCCollision = [mergedFlagD[@"MCCollision"] integerValue];
+
+        // ParamForTimeIntegration
+        NSDictionary *timeD = root[@"ParamForTimeIntegration"];
+        if (![timeD isKindOfClass:[NSDictionary class]]) {
+            if (readError) {
+                readError = [NSError errorWithDomain:@"ConfigError" code:1003 userInfo:@{ NSLocalizedDescriptionKey : @"ParamForTimeIntegration が辞書ではありません" }];
+            }
+            return nil;
+        }
+        NSMutableDictionary *mergedTimeD = [self ParamForTimeIntegrationDefault];
+        [mergedTimeD addEntriesFromDictionary:timeD];
+        _timeIntegration.Start          = [mergedTimeD[@"Start"] integerValue];
+        _timeIntegration.End            = [mergedTimeD[@"End"] integerValue];
+        _timeIntegration.ParticleOutput = [mergedTimeD[@"ParticleOutput"] integerValue];
+        _timeIntegration.FieldOutput    = [mergedTimeD[@"FieldOutput"] integerValue];
+        _timeIntegration.TimeStep       = [mergedTimeD[@"TimeStep"] doubleValue];
+        
+        // ParamForComputing
+        NSDictionary *compD = root[@"ParamForComputing"];
+        if (![compD isKindOfClass:[NSDictionary class]]) {
+            if (readError) {
+                readError = [NSError errorWithDomain:@"ConfigError" code:1004 userInfo:@{ NSLocalizedDescriptionKey : @"ParamForComputing が辞書ではありません" }];
+            }
+            return nil;
+        }
+        NSMutableDictionary *mergedCompD = [self ParamForComputingDefault];
+        [mergedCompD addEntriesFromDictionary:compD];
+        _computing.threadGroupSize          = [mergedCompD[@"ThreadGroupSize"] integerValue];
+        _computing.integrationChunkSize     = [mergedCompD[@"IntegrationChunkSize"] integerValue];
+        _computing.maxiter                  = [mergedCompD[@"MaxiterForPoisson"] integerValue];
+        _computing.tolerance                = [mergedCompD[@"ToleranceForPoisson"] doubleValue];
+        
+        // ParamForField
+        NSDictionary *fldD = root[@"ParamForField"];
+        if (![fldD isKindOfClass:[NSDictionary class]]) {
+            if (readError) {
+                readError = [NSError errorWithDomain:@"ConfigError" code:1006 userInfo:@{ NSLocalizedDescriptionKey : @"ParamForField が辞書ではありません" }];
+            }
+            return nil;
+        }
+        NSMutableDictionary *mergedFldD = [self ParamForFieldDefault];
+        [mergedFldD addEntriesFromDictionary:fldD];
+        _field.ngx          = [mergedFldD[@"NumberOfGridX"] integerValue];
+        _field.ngy          = [mergedFldD[@"NumberOfGridY"] integerValue];
+        _field.dx           = [mergedFldD[@"GridSizeOfX"] doubleValue];
+        _field.dy           = [mergedFldD[@"GridSizeOfY"] doubleValue];
+        _field.InitTypeE    = mergedFldD[@"InitializeTypeOfE"];
+        NSArray *ampArr; // vector<double> 読み込み
+        ampArr = mergedFldD[@"AmplitudeOfE"];
+        _field.ampE.clear();
+        if ([ampArr isKindOfClass:[NSArray class]]) {
+            for (id v in ampArr) _field.ampE.push_back([v doubleValue]);
+        }
+        _field.FilePathEx   = mergedFldD[@"FilePathOfEx"];
+        _field.FilePathEy   = mergedFldD[@"FilePathOfEy"];
+        _field.FilePathEz   = mergedFldD[@"FilePathOfEz"];
+        _field.InitTypeB    = mergedFldD[@"InitializeTypeOfB"];
+        ampArr = mergedFldD[@"AmplitudeOfB"];
+        _field.ampB.clear();
+        if ([ampArr isKindOfClass:[NSArray class]]) {
+            for (id v in ampArr) _field.ampB.push_back([v doubleValue]);
+        }
+        _field.FilePathBx   = mergedFldD[@"FilePathOfBx"];
+        _field.FilePathBy   = mergedFldD[@"FilePathOfBy"];
+        _field.FilePathBz   = mergedFldD[@"FilePathOfBz"];
+        _field.weightOrder  = [mergedFldD[@"WeightingOrder"] integerValue];
+        _field.ngb  = _field.weightOrder/2;
+
+        // BoundaryConditionForField
+        NSArray* fbcArr = root[@"BoundaryConditionForField"];
+        if (![fbcArr isKindOfClass:[NSArray class]]) {
+            if (readError) {
+                readError = [NSError errorWithDomain:@"ConfigError" code:1005 userInfo:@{ NSLocalizedDescriptionKey : @"BoundaryConditionForParticle が配列ではありません" }];
+            }
+            return nil;
+        }
+        _fieldBoundaries.clear();
+        for (id elem in fbcArr) {
+            if (![elem isKindOfClass:[NSDictionary class]]) continue;
+            NSDictionary *d = (NSDictionary *)elem;
+            NSMutableDictionary *mergedD = [self BoundaryCoditionDefault];
+            [mergedD addEntriesFromDictionary:d];
+            BoundaryConditionForField bc;
+            bc.position = mergedD[@"RegionName"];
+            bc.type     = mergedD[@"BCType"];
+            bc.val      = [mergedD[@"Value"] doubleValue];
+            _fieldBoundaries.push_back(bc);
+        }
+
+        // ParamForParticle (配列)
+        NSArray *partArr = root[@"ParamForParticle"];
+        if (![partArr isKindOfClass:[NSArray class]]) {
+            if (readError) {
+                readError = [NSError errorWithDomain:@"ConfigError" code:1004 userInfo:@{ NSLocalizedDescriptionKey : @"ParamForParticle が配列ではありません" }];
+            }
+            return nil;
+        }
+        _particles.clear();
+        for (id elem in partArr) {
+            if (![elem isKindOfClass:[NSDictionary class]]) continue;
+            NSDictionary *d = (NSDictionary *)elem;
+            NSMutableDictionary *mergedD = [self ParamForParticleDefault];
+            [mergedD addEntriesFromDictionary:d];
+            ParamForParticle p;
+            p.pName             = mergedD[@"ParticleName"];
+            p.pNumMax           = [mergedD[@"MaxParticleNumber"] integerValue];
+            if([mergedD[@"pNumSetMethod"] isEqualToString:@"InititalParticleNumber"]){
+                p.pNum = [mergedD[@"pNumValue"] integerValue];
+            }else if([mergedD[@"pNumSetMethod"] isEqualToString:@"PtclNumPerCell"]){
+                p.pNum = [mergedD[@"pNumValue"] integerValue]*_field.ngx*_field.ngy;
+            }else{
+                NSLog(@"pNumSet failed.");
+                return nil;
+            }
+            p.q = [mergedD[@"Charge"] doubleValue];
+            p.m = [mergedD[@"Mass"] doubleValue];
+            if([mergedD[@"WeightSetMethod"] isEqualToString:@"WeightValue"]){
+                p.w = [mergedD[@"WeightValue"] doubleValue];
+            }else if([mergedD[@"WeightSetMethod"] isEqualToString:@"InitialNumDens"]){
+                double ppc = (double)(p.pNum)/(double)(_field.ngx*_field.ngy);
+                p.w = [mergedD[@"WeightValue"] doubleValue]*_field.dx*_field.dy/ppc;
+            }else{
+                NSLog(@"WeightSet failed.");
+                return nil;
+            }
+            p.genType = mergedD[@"GenerateType"];
+            NSArray *velArr;    // vector<double> の読み込み
+            velArr = mergedD[@"InitialPosX"];
+            if ([velArr isKindOfClass:[NSArray class]]) {
+                for (id v in velArr) p.genX.push_back([v doubleValue]);
+            }
+            velArr = mergedD[@"InitialPosY"];
+            if ([velArr isKindOfClass:[NSArray class]]) {
+                for (id v in velArr) p.genY.push_back([v doubleValue]);
+            }
+            velArr = mergedD[@"InitialVel"];
+            if ([velArr isKindOfClass:[NSArray class]]) {
+                for (id v in velArr) p.genU.push_back([v doubleValue]);
+            }
+            p.genT = [mergedD[@"InitialTemp"] doubleValue]*eVtoK;
+            _particles.push_back(p);
+        }
+        
+        // SourceForParticle
+        NSArray *srcArr = root[@"SourceForParticle"];
+        if (![srcArr isKindOfClass:[NSArray class]]) {
+            if (readError) {
+                readError = [NSError errorWithDomain:@"ConfigError" code:1004 userInfo:@{ NSLocalizedDescriptionKey : @"ParamForParticle が配列ではありません" }];
+            }
+            return nil;
+        }
+        _particleSources.clear();
+        for (id elem in srcArr) {
+            if (![elem isKindOfClass:[NSDictionary class]]) continue;
+            NSDictionary *d = (NSDictionary *)elem;
+            NSMutableDictionary *mergedD = [self SourceForParticleDefault];
+            [mergedD addEntriesFromDictionary:d];
+            SourceForParticle src;
+            src.pName       = mergedD[@"ParticleName"];
+            src.genType     = mergedD[@"GenerateType"];
+            if([mergedD[@"SrcSetMethod"] isEqualToString:@"Source[1/cm/s]"]){
+                src.src = [mergedD[@"SrcValue"] doubleValue];
+            }else if([mergedD[@"SrcSetMethod"] isEqualToString:@"CurrentDensity[A/m2]"]){
+                src.src = [mergedD[@"SrcValue"] doubleValue]*JtosJ*_field.ngy*_field.dy/ec;
+            }else if([src.genType isEqualToString:@"hollow-cathode"]){
+                src.src = 0;
+            }else{
+                NSLog(@"SrcSet failed.");
+                return nil;
+            }
+            NSArray *velArr;
+            velArr = mergedD[@"GeneratePosX"];
+            if ([velArr isKindOfClass:[NSArray class]]) {
+                for (id v in velArr) src.genX.push_back([v doubleValue]);
+            }
+            velArr = mergedD[@"GeneratePosY"];
+            if ([velArr isKindOfClass:[NSArray class]]) {
+                for (id v in velArr) src.genY.push_back([v doubleValue]);
+            }
+            velArr = mergedD[@"GenerateVel"];
+            if ([velArr isKindOfClass:[NSArray class]]) {
+                for (id v in velArr) src.genU.push_back([v doubleValue]);
+            }
+            src.genT              = [mergedD[@"GenerateTemp"] doubleValue]*eVtoK;
+            _particleSources.push_back(src);
+        }
+        
+        // BoundaryConditionForParticle
+        NSArray *pbcArr = root[@"BoundaryConditionForParticle"];
+        if (![pbcArr isKindOfClass:[NSArray class]]) {
+            if (readError) {
+                readError = [NSError errorWithDomain:@"ConfigError" code:1005 userInfo:@{ NSLocalizedDescriptionKey : @"BoundaryConditionForParticle が配列ではありません" }];
+            }
+            return nil;
+        }
+        _particleBoundaries.clear();
+        for (id elem in pbcArr) {
+            if (![elem isKindOfClass:[NSDictionary class]]) continue;
+            NSDictionary *d = (NSDictionary *)elem;
+            NSMutableDictionary *mergedD = [self BoundaryCoditionDefault];
+            [mergedD addEntriesFromDictionary:d];
+            BoundaryConditionForParticle bc;
+            bc.position = d[@"RegionName"];
+            bc.type     = d[@"BCType"];
+            _particleBoundaries.push_back(bc);
+        }
     }
     return self;
 }
 
-- (BOOL)parseFile:(std::ifstream&)inputFile {
-    std::string line;
-    std::string currentSection = "";
-    
-    while (std::getline(inputFile, line)) {
-        // Skip empty lines
-        if (line.empty()) continue;
-        
-        // Skip comment lines
-        if (line[0] == '#') continue;
-        
-        // Check if this is a section header
-        if (line == "FlagForEquation") {
-            currentSection = line;
-            continue;
-        } else if (line == "ParamForTimeIntegration") {
-            currentSection = line;
-            continue;
-        } else if (line == "ParamForParticle") {
-            currentSection = line;
-            continue;
-        } else if (line == "BoundaryConditionForParticle") {
-            currentSection = line;
-            continue;
-        } else if (line == "SourceForParticle") {
-            currentSection = line;
-            continue;
-        } else if (line == "ParamForField") {
-            currentSection = line;
-            continue;
-        } else if (line == "BoundaryConditionForField") {
-            currentSection = line;
-            continue;
-        } else if (line == "GOGO") {
-            // End of file
-            break;
-        }
-        
-        // Parse based on current section
-        if (currentSection == "FlagForEquation") {
-            [self parseFlagForEquation:line];
-        } else if (currentSection == "ParamForTimeIntegration") {
-            [self parseParamForTimeIntegration:line];
-        } else if (currentSection == "ParamForParticle") {
-            if (line == "/") {
-                // End of a particle definition
-                continue;
-            }
-            
-            [self parseParamForParticle:line inputFile:inputFile];
-        } else if (currentSection == "BoundaryConditionForParticle") {
-            if (line == "/") {
-                // End of a boundary condition
-                continue;
-            }
-            [self parseBoundaryConditionForParticle:line inputFile:inputFile];
-        } else if (currentSection == "SourceForParticle") {
-            if (line == "/") {
-                // End of a source condition
-                continue;
-            }
-            [self parseSourceForParticle:line inputFile:inputFile];
-        } else if (currentSection == "ParamForField") {
-            [self parseParamForField:line];
-        } else if (currentSection == "BoundaryConditionForField") {
-            if (line == "/") {
-                // End of a boundary condition
-                continue;
-            }
-            [self parseBoundaryConditionForField:line inputFile:inputFile];
-        }
-    }
-    
-    return YES;
+// default values
+- (NSMutableDictionary*)FlagForEquationDefault{
+    return [@{
+        @"Particle":        @0,
+        @"EMField":         @0,
+        @"MCCollision":     @0,
+    } mutableCopy];
 }
-
-- (void)parseFlagForEquation:(const std::string&)line {
-    std::istringstream iss(line);
-    std::string key;
-    int value;
-    
-    if (iss >> key >> value) {
-        if (key == "Particle") {
-            // number of specimens
-            _fragEquation.Particle = value;
-        } else if (key == "EMField") {
-            // (developing)0: invariant EMField
-            // 1: Electro-static field w/ poisson eq.
-            // (developing)2: Electro-Magnetic field w/ FDTD
-            _fragEquation.EMField = value;
-        } else if (key == "MCCollision") {
-            // 0: collisionless
-            // (developing)1: MCC-collision
-            // (developing)2: null-collision
-            _fragEquation.MCCollision = value;
-        }
-    }
+- (NSMutableDictionary*)ParamForTimeIntegrationDefault{
+    return [@{
+        @"Start":           @0,
+        @"End":             @0,
+        @"ParticleOutput":  @0,
+        @"FieldOutput":     @0,
+        @"TimeStep":        @0
+    } mutableCopy];
 }
-
-- (void)parseParamForTimeIntegration:(const std::string&)line {
-    std::istringstream iss(line);
-    std::string key;
-    double value;
-    
-    if (iss >> key >> value) {
-        if (key == "End") {
-            _timeIntegration.EndCycle = (int)value;
-        } else if (key == "ParticleOutput") {
-            _timeIntegration.ptclOutCycle = (int)value;
-        } else if (key == "FieldOutput") {
-            _timeIntegration.fldOutCycle = (int)value;
-        } else if (key == "TimeStep") {
-            _timeIntegration.dt = value;
-        }
-    }
+- (NSMutableDictionary*)ParamForComputingDefault{
+    return [@{
+        @"ThreadGroupSize":         @256,
+        @"IntegrationChunkSize":    @256,
+        @"MaxiterForPoisson":       @200,
+        @"ToleranceForPoisson":     @(1e-7)
+    } mutableCopy];
 }
-
-- (void)parseParamForParticle:(const std::string&)line inputFile:(std::ifstream&)inputFile {
-    // Start a new particle definition
-    struct ParamForParticle particle;
-    // Initialize fields to default values
-    particle.pName = NULL;
-    particle.pNum = 0;
-    particle.pNumMax = 0;
-    particle.q = 0.0;
-    particle.m = 0.0;
-    particle.w = 0.0;
-    particle.genType = NULL;
-    particle.genX[0] = 0.0;
-    particle.genX[1] = 0.0;
-    particle.genY[0] = 0.0;
-    particle.genY[1] = 0.0;
-    particle.genU[0] = 0.0;
-    particle.genU[1] = 0.0;
-    particle.genU[2] = 0.0;
-    particle.genT = 0.0;
-    _flagForPNum.push_back(false);
-    _initPNumPerCell.push_back(0);
-    
-    std::istringstream iss(line);
-    std::string key;
-    std::string value;
-    if (iss >> key >> value) {
-        if (key == "ParticleName") {
-            particle.pName = [NSString stringWithUTF8String:value.c_str()];
-        }
-    }
-    
-
-    // Parse subsequent lines for this particle until we hit a '/' line
-    std::string valueLine;
-    while (std::getline(inputFile, valueLine)) {
-        if (valueLine == "/") {
-            // End of particle definition
-            break;
-        }
-        
-        std::istringstream lineIss(valueLine);
-        std::string paramKey;
-        std::string paramValue;
-        std::string val1;
-        std::string val2;
-        
-        if (lineIss >> paramKey >> paramValue) {
-            // NSLog(@"paramKey = %s, paramValue = %s", paramKey.c_str(), paramValue.c_str());
-            if (paramKey == "InitialParticleNumber") {
-                particle.pNum = std::stoi(paramValue);
-                _flagForPNum.back() = true;
-            } else if (paramKey == "InitPtclNumPerCell") {
-                // 初期の particlePerCell で指定
-                _initPNumPerCell.back() = std::stoi(paramValue);
-            } else if (paramKey == "MaxParticleNumber") {
-                particle.pNumMax = std::stoi(paramValue);
-            } else if (paramKey == "Charge") {
-                particle.q = std::stod(paramValue);
-            } else if (paramKey == "Mass") {
-                particle.m = std::stod(paramValue);
-            } else if (paramKey == "Weight[1/cm]") {
-                particle.w = std::stod(paramValue);
-                _initWeightFromDens.push_back(0);
-            } else if (paramKey == "WeightFromDens[1/cm3]") {
-                // 初期の数密度で指定
-                _initWeightFromDens.push_back(std::stod(paramValue));
-            } else if (paramKey == "GenerateType") {
-                particle.genType = [NSString stringWithUTF8String:paramValue.c_str()];
-            } else if (paramKey == "InitialPosX") {
-                if (paramValue == "auto"){
-                    particle.genX[0] = -1.0;
-                    particle.genX[1] = -1.0;
-                }else{
-                    particle.genX[0] = std::stod(paramValue);
-                    if (lineIss >> val1) {
-                        particle.genX[1] = std::stod(val1);
-                    }
-                }
-            } else if (paramKey == "InitialPosY") {
-                if (paramValue == "auto"){
-                    particle.genY[0] = -1.0;
-                    particle.genY[1] = -1.0;
-                }else{
-                    particle.genY[0] = std::stod(paramValue);
-                    if (lineIss >> val1) {
-                        particle.genY[1] = std::stod(val1);
-                    }
-                }
-            } else if (paramKey == "InitialVel") {
-                particle.genU[0] = std::stod(paramValue);
-                if (lineIss >> val1 >> val2) {
-                    particle.genU[1] = std::stod(val1);
-                    particle.genU[2] = std::stod(val2);
-                }
-            } else if (paramKey == "InitialTemp[eV]") {
-                particle.genT = std::stod(paramValue)*evtok;
-            }
-        }
-    }    
-    // Add the completed particle to vector
-    _particles.push_back(particle);
+- (NSMutableDictionary*)ParamForParticleDefault{
+    return [@{
+        @"ParticleName":            @"undefined",
+        @"pNumSetMethod":           @"undefined",
+        @"pNumValue":               @0,
+        @"MaxParticleNumber":       @0,
+        @"Charge":                  @0,
+        @"Mass":                    @(-1),
+        @"WeightSetMethod":         @"undefined",
+        @"WeightValue":             @0,
+        @"GenerateType":            @"undefined",
+        @"InitialPosX":             @[@(-1), @(-1)],
+        @"InitialPosY":             @[@(-1), @(-1)],
+        @"InitialVel":              @[@0, @0, @0],
+        @"InitialTemp":             @0
+    } mutableCopy];
 }
-
-- (void)parseBoundaryConditionForParticle:(const std::string&)line inputFile:(std::ifstream&)inputFile {
-    struct BoundaryConditionForParticle boundary;
-    // Initialize fields to default values
-    boundary.position = NULL;
-    boundary.type = NULL;
-    boundary.val = 0.0;
-    
-    // Parse the first line (RegionName)
-    std::istringstream nameIss(line);
-    std::string key, value;
-    if (nameIss >> key >> value && key == "RegionName") {
-        boundary.position = [NSString stringWithUTF8String:value.c_str()];;
-    }
-    
-    // Parse the type line
-    std::string valueLine;
-    if (std::getline(inputFile, valueLine)) {
-        std::istringstream typeIss(valueLine);
-        if (typeIss >> key >> value && key == "BCType") {
-            boundary.type = [NSString stringWithUTF8String:value.c_str()];;
-        }
-    }
-    
-    // Parse optional value line (if any before the '/' delimiter)
-    if (std::getline(inputFile, valueLine) && valueLine != "/") {
-        std::istringstream valueIss(valueLine);
-        double val;
-        if (valueIss >> val) {
-            boundary.val = val;
-        }
-        // Skip the next line if it's a '/'
-        std::string nextLine;
-        if (std::getline(inputFile, nextLine) && nextLine != "/") {
-            // Put back if not a delimiter
-            inputFile.seekg(-nextLine.length() - 1, std::ios_base::cur);
-        }
-    }
-    
-    // Add the boundary to vector
-    _particleBoundaries.push_back(boundary);
+- (NSMutableDictionary*)BoundaryCoditionDefault{
+    return [@{
+        @"RegionName":  @"undefined",
+        @"BCType":      @"undefined",
+        @"Value":       @0
+    } mutableCopy];
 }
-
-- (void)parseSourceForParticle:(const std::string&)line inputFile:(std::ifstream&)inputFile {
-    struct SourceForParticle source;
-    // Initialize fields to default values
-    source.pName = NULL;
-    source.genType = NULL;
-    source.src = 0.0;
-    source.genX[0] = 0.0;
-    source.genX[1] = 0.0;
-    source.genY[0] = 0.0;
-    source.genY[1] = 0.0;
-    source.genU[0] = 0.0;
-    source.genU[1] = 0.0;
-    source.genU[2] = 0.0;
-    source.genT = 0.0;
-   
-    std::istringstream iss(line);
-    std::string key;
-    std::string value;
-    if (iss >> key >> value) {
-        if (key == "ParticleName") {
-            source.pName = [NSString stringWithUTF8String:value.c_str()];
-        }
-    }
-
-    std::string valueLine;
-    while (std::getline(inputFile, valueLine)) {
-        if (valueLine == "/") {
-            // End of particle definition
-            break;
-        }
-        
-        std::istringstream lineIss(valueLine);
-        std::string paramKey;
-        std::string paramValue;
-        std::string val1;
-        std::string val2;
-        
-        // NSLog(@"ParamValue: %@", [NSString stringWithUTF8String:line.c_str()]);
-        if (lineIss >> paramKey >> paramValue) {
-            if (paramKey == "GenerateType") {
-                source.genType = [NSString stringWithUTF8String:paramValue.c_str()];
-                if ([source.genType isEqualToString:@"hollow-cathode"]){
-                    _currentDensity.push_back(0); // 使わないので0埋め
-                }
-            } else if (paramKey == "SourceValue[1/cm/s]") {
-                source.src = std::stod(paramValue);
-                _currentDensity.push_back(0); // 使わないので0埋め
-            } else if (paramKey == "CurrentDensity[A/m2]") {
-                _currentDensity.push_back(std::stod(paramValue)*JtosJ);
-            } else if (paramKey == "GeneratePosX") {
-                if (paramValue == "auto"){
-                    source.genX[0] = -1.0;
-                    source.genX[1] = -1.0;
-                }else{
-                    source.genX[0] = std::stod(paramValue);
-                    if (lineIss >> val1) {
-                        source.genX[1] = std::stod(val1);
-                    }
-                }
-            } else if (paramKey == "GeneratePosY") {
-                if (paramValue == "auto"){
-                    source.genY[0] = -1.0;
-                    source.genY[1] = -1.0;
-                }else{
-                    source.genY[0] = std::stod(paramValue);
-                    if (lineIss >> val1) {
-                        source.genY[1] = std::stod(val1);
-                    }
-                }
-            } else if (paramKey == "GenerateVel") {
-                source.genU[0] = std::stod(paramValue);
-                if (lineIss >> val1 >> val2) {
-                    source.genU[1] = std::stod(val1);
-                    source.genU[2] = std::stod(val2);
-                }
-            } else if (paramKey == "GenerateTemp[eV]") {
-                source.genT = std::stod(paramValue)*evtok;
-            }
-        }
-    }    
-    // Add the completed source to vector
-    _particleSources.push_back(source);
+- (NSMutableDictionary*)SourceForParticleDefault{
+    return [@{
+        @"ParticleName":    @"undefined",
+        @"GenerateType":    @"undefined",
+        @"SrcSetMethod":    @"undefined",
+        @"SrcVal":          @0,
+        @"GeneratePosX":    @[@(-1), @(-1)],
+        @"GeneratePosY":    @[@(-1), @(-1)],
+        @"GenerateVel":     @[@0, @0, @0],
+        @"GenerateTemp":    @0
+    } mutableCopy];
 }
-
-- (void)parseParamForField:(const std::string&)line {
-    
-    std::istringstream iss(line);
-    std::string key;
-    std::string value;
-    std::string val1;
-    std::string val2;
-    
-    if (iss >> key >> value) {
-        if (key == "NumberOfGridX") {
-            _field.ngx = stoi(value);
-        } else if (key == "NumberOfGridY") {
-            _field.ngy = stoi(value);
-        } else if (key == "GridSizeOfX") {
-            _field.dx = stod(value);
-        } else if (key == "GridSizeOfY") {
-            _field.dy = stod(value);
-        } else if (key == "InitializeTypeOfE") {
-            _field.InitTypeE = [NSString stringWithUTF8String:value.c_str()];
-        } else if (key == "AmplitudeOfE[V/m]") {
-            _field.ampE[0] = stod(value)*VtoG;
-            if (iss >> val1 >> val2) {
-                _field.ampE[1] = stod(val1)*VtoG;
-                _field.ampE[2] = stod(val2)*VtoG;
-            }
-        } else if (key == "FilePathOfEx") {
-            _field.FilePathEx = [NSString stringWithUTF8String:value.c_str()];
-        } else if (key == "FilePathOfEy") {
-            _field.FilePathEy = [NSString stringWithUTF8String:value.c_str()];
-        } else if (key == "FilePathOfEz") {
-            _field.FilePathEz = [NSString stringWithUTF8String:value.c_str()];
-        } else if (key == "InitializeTypeOfB") {
-            _field.InitTypeB = [NSString stringWithUTF8String:value.c_str()];
-        } else if (key == "AmplitudeOfB[T]") {
-            _field.ampB[0] = stod(value)*TtoG;
-            if (iss >> val1 >> val2) {
-                _field.ampB[1] = stod(val1)*TtoG;
-                _field.ampB[2] = stod(val2)*TtoG;
-            }
-        } else if (key == "FilePathOfBx") {
-            _field.FilePathBx = [NSString stringWithUTF8String:value.c_str()];
-        } else if (key == "FilePathOfBy") {
-            _field.FilePathBy = [NSString stringWithUTF8String:value.c_str()];
-        } else if (key == "FilePathOfBz") {
-            _field.FilePathBz = [NSString stringWithUTF8String:value.c_str()];
-        } else if (key == "WeightingOrder") {
-            _field.weightOrder = stoi(value);
-            _field.ngb = stoi(value)/2; // 5th-order -> ngb = 2
-        } else if (key == "MaxIterForPoisson") {
-            _field.maxiter = stoi(value);
-        } else if (key == "TolForPoisson") {
-            _field.tolerance = stof(value);
-        }
-    }
+- (NSMutableDictionary*)ParamForFieldDefault{
+    return [@{
+        @"NumberOfGridX":       @0,
+        @"NumberOfGridY":       @0,
+        @"GridSizeOfX":         @0,
+        @"GridSizeOfY":         @0,
+        @"InitializeTypeOfE":   @"undefined",
+        @"AmplitudeOfE":        @[@0, @0, @0],
+        @"FilePathOfEx":        @"undefined",
+        @"FilePathOfEy":        @"undefined",
+        @"FilePathOfEz":        @"undefined",
+        @"InitializeTypeOfB":   @"undefined",
+        @"AmplitudeOfB":        @[@0, @0, @0],
+        @"FilePathOfBx":        @"undefined",
+        @"FilePathOfBy":        @"undefined",
+        @"FilePathOfBz":        @"undefined",
+        @"WeightingOrder":      @5,
+    } mutableCopy];
 }
-
-- (void)parseBoundaryConditionForField:(const std::string&)line inputFile:(std::ifstream&)inputFile {
-    struct BoundaryConditionForField boundary;
-    // Initialize fields to default values
-    boundary.position = NULL;
-    boundary.type = NULL;
-    boundary.val = 0.0;
-    
-    // Parse the first line (RegionName)
-    std::istringstream nameIss(line);
-    std::string key, value;
-    if (nameIss >> key >> value && key == "RegionName") {
-        boundary.position = [NSString stringWithUTF8String:value.c_str()];
-    }
-    
-    // Parse the type line
-    std::string valueLine;
-    while (std::getline(inputFile, valueLine)) {
-        if (valueLine == "/") {
-            // End of particle definition
-            break;
-        }
-        std::istringstream typeIss(valueLine);
-        if (typeIss >> key >> value){
-            if (key == "BCType") {
-                boundary.type = [NSString stringWithUTF8String:value.c_str()];
-            }else if(key == "Value"){
-                boundary.val = stod(value);
-            }
-        }
-    }
-    
-    // Add the boundary to vector
-    _fieldBoundaries.push_back(boundary);
-}
-
-
-- (BOOL)checkInput{
-    // check fieldParam
-    if (_field.ngx > 0 && _field.ngy > 0 && _field.ngb >= 0 && _field.dx > 0.0 && _field.dy > 0.0){
-        // check vectorsize
-        if(_particles.size() != _initPNumPerCell.size()){
-            NSLog(@"check vectorsize failed.");
-            NSLog(@"_particles.size: %zu", _particles.size());
-            NSLog(@"_initPNumPerCell.size: %zu", _initPNumPerCell.size());
-            return false;
-        }
-        if(_particleSources.size() != _currentDensity.size()){
-            NSLog(@"check vectorsize failed.");
-            NSLog(@"_particleSources.size: %zu", _particleSources.size());
-            NSLog(@"_currentDensity.size: %zu", _currentDensity.size());
-            return false;
-        }
-
-        // check particleParam
-        // iteration
-        for (int s = 0; s < _particles.size(); s++){
-            // pNumMax は初期化必須
-            if(_particles[s].pNumMax == 0){
-                NSLog(@"check particleParam for %@'s pNumMax failed.", _particles[s].pName);
-                return false;
-            }
-            // pNum か initPNumPerCell のどちらかは初期化必須
-            if(_flagForPNum[s]){
-                // OK
-            }else if(_initPNumPerCell[s] > 0){
-                // culculate pNum from initPNumPerCell
-                _particles[s].pNum = _initPNumPerCell[s]*_field.ngx*_field.ngy;
-            }else{
-                NSLog(@"check particleParam for %@'s pNum failed.", _particles[s].pName);
-                return false;
-            }
-            // weight か _initWeightFromDens のどちらかは初期化必須
-            if(_particles[s].w > 0.0){
-                // OK
-            }else if(_initWeightFromDens[s] > 0.0){
-                // culculate weight from initial number density
-                float ppc = (float)_particles[s].pNum/(float)(_field.ngx*_field.ngy);
-                _particles[s].w = _initWeightFromDens[s]*_field.dx*_field.dy/ppc;
-            }else{
-                NSLog(@"check particleParam for %@'s weight failed.", _particles[s].pName);
-                return false;
-            }
-
-            // check Source
-            // iteration
-            for (size_t i = 0; i < _particleSources.size(); i++){
-                // 粒子種が一致し、かつ genType が hollow-cathode でない生成条件をチェック
-                if([_particles[s].pName isEqualToString:_particleSources[i].pName] && ![_particleSources[i].genType isEqualToString:@"hollow-cathode"]){
-                    if(_particleSources[i].src > 0.0){
-                        // OK
-                    }else if(_currentDensity[i] > 0.0){
-                        // culculate src from currentDensity
-                        _particleSources[i].src = _currentDensity[i]*_field.ngy*_field.dy/(ec*_particles[s].w);
-                    }else{
-                        NSLog(@"check particleSources for %@ failed.", _particles[s].pName);
-                        return false;
-                    }
-                }
-            }
-        }
-    }else{
-        NSLog(@"check fieldparam failed.");
-        return false;
-    }
-    return true;
-}
-
 
 // Public accessor methods to get the parsed data
-- (struct FragForEquation)getFragForEquation {
-    return _fragEquation;
-}
-
-- (struct ParamForTimeIntegration)getParamForTimeIntegration {
-    return _timeIntegration;
-}
-
-- (NSArray*)getParamForParticle {
-    NSMutableArray *result = [NSMutableArray array];
-    for (const auto& particle : _particles) {
-        // Create a copy to return
-        struct ParamForParticle copy = particle;
-        [result addObject:[NSValue value:&copy withObjCType:@encode(struct ParamForParticle)]];
-    }
-    return result;
-}
-
-- (NSArray*)getParticleBoundaries {
-    NSMutableArray *result = [NSMutableArray array];
-    for (const auto& boundary : _particleBoundaries) {
-        // Create a copy to return
-        struct BoundaryConditionForParticle copy = boundary;
-        [result addObject:[NSValue value:&copy withObjCType:@encode(struct BoundaryConditionForParticle)]];
-    }
-    return result;
-}
-
-- (NSArray*)getParticleSources {
-    NSMutableArray *result = [NSMutableArray array];
-    for (const auto& source : _particleSources) {
-        // Create a copy to return
-        struct SourceForParticle copy = source;
-        [result addObject:[NSValue value:&copy withObjCType:@encode(struct SourceForParticle)]];
-    }
-    return result;
-}
-
-- (struct ParamForField)getParamForField {
-    return _field;
-}
-
-- (NSArray*)getFieldBoundaries {
-    NSMutableArray *result = [NSMutableArray array];
-    for (const auto& boundary : _fieldBoundaries) {
-        // Create a copy to return
-        struct BoundaryConditionForField copy = boundary;
-        [result addObject:[NSValue value:&copy withObjCType:@encode(struct BoundaryConditionForField)]];
-    }
-    return result;
-}
+- (struct FlagForEquation)flagForEquation { return _flagEquation; }
+- (struct ParamForTimeIntegration)paramForTimeIntegration { return _timeIntegration; }
+- (struct ParamForComputing)paramForComputing { return _computing; }
+- (std::vector<struct ParamForParticle>)paramForParticle { return _particles; }
+- (std::vector<struct BoundaryConditionForParticle>)particleBoundaries { return _particleBoundaries; }
+- (std::vector<struct SourceForParticle>)particleSources{ return _particleSources; }
+- (struct ParamForField)paramForField { return _field; }
+- (std::vector<struct BoundaryConditionForField>)fieldBoundaries { return _fieldBoundaries; }
 @end

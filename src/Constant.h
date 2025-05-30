@@ -8,8 +8,8 @@ const double evtoerg = 1.6021764262e-12;       // from eV     to  erg
 const double ergtoev = 1/1.6021764262e-12;     // from erg    to  eV
 const double ergtoj = 1e-7;                    // from erg    to  Joule
 const double jtoerg = 1/1.0e-7;                // from Joule  to  erg
-const double ktoev = 1/11604;                  // from Kelvin to  eV
-const double evtok = 11604;                    // from eV     to  Kelvin
+const double KtoeV = 1/11604;                  // from Kelvin to  eV
+const double eVtoK = 11604;                    // from eV     to  Kelvin
 const double patoatm = 1/101325;               // from Pa     to  atm
 const double atmtopa = 101325;                 // from atm     to  Pa
 const double VtoG = 1e6/c;                     // V/m to cgs-gauss [V/m = 1/(299*100) statV/cm]

@@ -6,98 +6,87 @@ void printInitContents(Init* init, XmlLogger& logger){
     NSMutableString *log = [NSMutableString string];
 
     // FlagForEquation の出力
-    struct FragForEquation flags = [init getFragForEquation];
+    struct FlagForEquation flags = init.flagForEquation;
     [log appendFormat:@"--- FlagForEquation ---\n"];
     [log appendFormat:@"Particle: %d\n", flags.Particle];
     [log appendFormat:@"EMField: %d\n", flags.EMField];
     [log appendFormat:@"MCCollision: %d\n", flags.MCCollision];
     
     // ParamForTimeIntegration の出力
-    struct ParamForTimeIntegration timeParams = [init getParamForTimeIntegration];
+    struct ParamForTimeIntegration timeParams = init.paramForTimeIntegration;
     [log appendFormat:@"--- ParamForTimeIntegration ---\n"];
-    [log appendFormat:@"EndCycle: %d\n", timeParams.EndCycle];
-    [log appendFormat:@"ptclOutCycle: %d\n", timeParams.ptclOutCycle];
-    [log appendFormat:@"fldOutCycle: %d\n", timeParams.fldOutCycle];
-    [log appendFormat:@"dt: %e\n", timeParams.dt];
+    [log appendFormat:@"End: %d\n", timeParams.End];
+    [log appendFormat:@"ParticleOutput: %d\n", timeParams.ParticleOutput];
+    [log appendFormat:@"FieldOutput: %d\n", timeParams.FieldOutput];
+    [log appendFormat:@"TimeStep: %e\n", timeParams.TimeStep];
+    
+    // ParamForComputing の出力
+    struct ParamForComputing compParams = init.paramForComputing;
+    [log appendFormat:@"--- ParamForComputing ---\n"];
+    [log appendFormat:@"threadGroupSize: %d\n", compParams.threadGroupSize];
+    [log appendFormat:@"integrationChunkSize: %d\n", compParams.integrationChunkSize];
+    [log appendFormat:@"maxiter: %d\n", compParams.maxiter];
+    [log appendFormat:@"tolerance: %e\n", compParams.tolerance];
     
     // ParamForParticle の出力
-    NSArray *particles = [init getParamForParticle];
-    [log appendFormat:@"--- ParamForParticle (%lu entries) ---\n", (unsigned long)particles.count];
-    for (NSUInteger i = 0; i < particles.count; i++) {
-        NSValue *value = particles[i];
-        struct ParamForParticle particle;
-        [value getValue:&particle];
-        
+    std::vector<struct ParamForParticle> particles = init.paramForParticle;
+    [log appendFormat:@"--- ParamForParticle (%zu entries) ---\n", (unsigned long)particles.size()];
+    for (int i = 0; i < particles.size(); i++) {
         [log appendFormat:@"[Particle %lu]\n", (unsigned long)i + 1];
-        [log appendFormat:@"  Name: %@\n", particle.pName];
-        [log appendFormat:@"  InitialParticleNumber: %d\n", particle.pNum];
-        [log appendFormat:@"  MaxParticleNumber: %d\n", particle.pNumMax];
-        [log appendFormat:@"  Charge: %e\n", particle.q];
-        [log appendFormat:@"  Mass: %e\n", particle.m];
-        [log appendFormat:@"  Weight: %e\n", particle.w];
-        [log appendFormat:@"  genType: %@\n", particle.genType];
-        [log appendFormat:@"  initialU: %e\n", particle.genU[0]];
-        [log appendFormat:@"  initialV: %e\n", particle.genU[1]];
-        [log appendFormat:@"  initialW: %e\n", particle.genU[2]];
-        [log appendFormat:@"  initialT: %e\n", particle.genT];
+        [log appendFormat:@"  Name: %@\n", particles[i].pName];
+        [log appendFormat:@"  InitialParticleNumber: %u\n", particles[i].pNum];
+        [log appendFormat:@"  MaxParticleNumber: %u\n", particles[i].pNumMax];
+        [log appendFormat:@"  Charge: %e\n", particles[i].q];
+        [log appendFormat:@"  Mass: %e\n", particles[i].m];
+        [log appendFormat:@"  Weight: %e\n", particles[i].w];
+        [log appendFormat:@"  genType: %@\n", particles[i].genType];
+        [log appendFormat:@"  initialT: %e\n", particles[i].genT];
     }
     
     // BoundaryConditionForParticle の出力
-    NSArray *particleBoundaries = [init getParticleBoundaries];
-    [log appendFormat:@"--- BoundaryConditionForParticle (%lu entries) ---\n", (unsigned long)particleBoundaries.count];
-    for (NSUInteger i = 0; i < particleBoundaries.count; i++) {
-        NSValue *value = particleBoundaries[i];
-        struct BoundaryConditionForParticle boundary;
-        [value getValue:&boundary];
-        
-        [log appendFormat:@"[Boundary %lu]\n", (unsigned long)i + 1];
-        [log appendFormat:@"  Position: %@\n", boundary.position];
-        [log appendFormat:@"  Type: %@\n", boundary.type];
-        [log appendFormat:@"  Value: %e\n", boundary.val];
+    std::vector<struct BoundaryConditionForParticle> pBCs = init.particleBoundaries;
+    [log appendFormat:@"--- BoundaryConditionForParticle (%zu entries) ---\n", (unsigned long)pBCs.size()];
+    for (int i = 0; i < pBCs.size(); i++) {
+        [log appendFormat:@"[pBC %d]\n", i + 1];
+        [log appendFormat:@"  Position: %@\n", pBCs[i].position];
+        [log appendFormat:@"  Type: %@\n", pBCs[i].type];
     }
-    
+
     // SourceForParticle の出力
-    NSArray *particleSources = [init getParticleSources];
-    [log appendFormat:@"--- SourceForParticle (%lu entries) ---\n", (unsigned long)particleSources.count];
-    for (NSUInteger i = 0; i < particleSources.count; i++) {
-        NSValue *value = particleSources[i];
-        struct SourceForParticle source;
-        [value getValue:&source];
-        
+    std::vector<struct SourceForParticle> sources = init.particleSources;
+    [log appendFormat:@"--- SourceForParticle (%zu entries) ---\n", sources.size()];
+    for (int i = 0; i < sources.size(); i++) {
         [log appendFormat:@"[Source %lu]\n", (unsigned long)i + 1];
-        [log appendFormat:@"  pName: %@\n", source.pName];
-        [log appendFormat:@"  genType: %@\n", source.genType];
-        [log appendFormat:@"  src: %e\n", source.src];
-        [log appendFormat:@"  genXmin: %e\n", source.genX[0]];
-        [log appendFormat:@"  genXmax: %e\n", source.genX[1]];
-        [log appendFormat:@"  genYmin: %e\n", source.genY[0]];
-        [log appendFormat:@"  genYmax: %e\n", source.genY[1]];
-        [log appendFormat:@"  genU: %e\n", source.genU[0]];
-        [log appendFormat:@"  genV: %e\n", source.genU[1]];
-        [log appendFormat:@"  genW: %e\n", source.genU[2]];
-        [log appendFormat:@"  genT: %e\n", source.genT];
+        [log appendFormat:@"  pName: %@\n", sources[i].pName];
+        [log appendFormat:@"  genType: %@\n", sources[i].genType];
+        [log appendFormat:@"  src: %e\n", sources[i].src];
+        [log appendFormat:@"  genXmin: %e\n", sources[i].genX[0]];
+        [log appendFormat:@"  genXmax: %e\n", sources[i].genX[1]];
+        [log appendFormat:@"  genYmin: %e\n", sources[i].genY[0]];
+        [log appendFormat:@"  genYmax: %e\n", sources[i].genY[1]];
+        [log appendFormat:@"  genU: %e\n", sources[i].genU[0]];
+        [log appendFormat:@"  genV: %e\n", sources[i].genU[1]];
+        [log appendFormat:@"  genW: %e\n", sources[i].genU[2]];
+        [log appendFormat:@"  genT: %e\n", sources[i].genT];
     }
     
     // ParamForField の出力
-    struct ParamForField fieldParams = [init getParamForField];
+    struct ParamForField fieldParams = init.paramForField;
     [log appendFormat:@"--- ParamForField ---\n"];
     [log appendFormat:@"ngx: %d\n", fieldParams.ngx];
     [log appendFormat:@"ngy: %d\n", fieldParams.ngy];
+    [log appendFormat:@"ngb: %d\n", fieldParams.ngb];
     [log appendFormat:@"dx: %e\n", fieldParams.dx];
     [log appendFormat:@"dy: %e\n", fieldParams.dy];
     
     // BoundaryConditionForField の出力
-    NSArray *fieldBoundaries = [init getFieldBoundaries];
-    [log appendFormat:@"--- BoundaryConditionForField (%lu entries) ---\n", (unsigned long)fieldBoundaries.count];
-    for (NSUInteger i = 0; i < fieldBoundaries.count; i++) {
-        NSValue *value = fieldBoundaries[i];
-        struct BoundaryConditionForField boundary;
-        [value getValue:&boundary];
-        
-        [log appendFormat:@"[Boundary %lu]\n", (unsigned long)i + 1];
-        [log appendFormat:@"  Position: %@\n", boundary.position];
-        [log appendFormat:@"  Type: %@\n", boundary.type];
-        [log appendFormat:@"  Value: %e\n", boundary.val];
+    std::vector<struct BoundaryConditionForField> fBCs = init.fieldBoundaries;
+    [log appendFormat:@"--- BoundaryConditionForField (%zu entries) ---\n", fBCs.size()];
+    for (int i = 0; i < fBCs.size(); i++) {
+        [log appendFormat:@"[Boundary %d]\n", i + 1];
+        [log appendFormat:@"  Position: %@\n", fBCs[i].position];
+        [log appendFormat:@"  Type: %@\n", fBCs[i].type];
+        [log appendFormat:@"  Value: %e\n", fBCs[i].val];
     }
 
     logger.logComment([log UTF8String]);

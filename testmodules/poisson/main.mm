@@ -267,12 +267,9 @@ int main(int argc, const char * argv[]) {
     std::cout << "最終誤差: " << error << std::endl;
 
     // 解を全て標準出力
-    // for (auto item : x)
-    // {
-    //     std::cout << item << ", ";
-    // }
-    // std::cout << std::endl;
-
+    // std::cout << "x: " << std::endl;
+    // for (auto item : x){ std::cout << item << ", "; }
+    
     // 粒子用 fld 配列
     float *phi = (float *)malloc(sizeof(float)*(nx+2*nb+1+1)*(ny+2*nb+1+1));
     float *Ex = (float *)malloc(sizeof(float)*(nx+2*nb+1)*(ny+2*nb+1));

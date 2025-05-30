@@ -1,20 +1,30 @@
+// #import "ParticleParam.h"
 #include <Foundation/Foundation.h>
 #include <string>
 #include <array>
+#include <vector>
 
 @interface Init : NSObject
 
-struct FragForEquation {
+struct FlagForEquation {
     int Particle;
     int EMField;
     int MCCollision;
 };
 
 struct ParamForTimeIntegration {
-    int EndCycle;
-    int ptclOutCycle;
-    int fldOutCycle;
-    double dt;
+    int Start;
+    int End;
+    int ParticleOutput;
+    int FieldOutput;
+    double TimeStep;
+};
+
+struct ParamForComputing {
+    int threadGroupSize;
+    int integrationChunkSize;
+    int maxiter;
+    float tolerance;
 };
 
 struct ParamForParticle {
@@ -25,25 +35,24 @@ struct ParamForParticle {
     double m;
     double w;
     NSString* genType;
-    double genX[2];
-    double genY[2];
-    double genU[3];
+    std::vector<double> genX;
+    std::vector<double> genY;
+    std::vector<double> genU;
     double genT;
 };
 
 struct BoundaryConditionForParticle {
     NSString* position;
     NSString* type;
-    double val;
 };
 
 struct SourceForParticle {
     NSString* pName;
     NSString* genType;
     double src;
-    double genX[2];
-    double genY[2];
-    double genU[3];
+    std::vector<double> genX;
+    std::vector<double> genY;
+    std::vector<double> genU;
     double genT;
 };
 
@@ -55,8 +64,8 @@ struct ParamForField {
     double dy;
     NSString* InitTypeE;
     NSString* InitTypeB;
-    double ampE[3];
-    double ampB[3];
+    std::vector<double> ampE;
+    std::vector<double> ampB;
     NSString* FilePathEx;
     NSString* FilePathEy;
     NSString* FilePathEz;
@@ -64,8 +73,6 @@ struct ParamForField {
     NSString* FilePathBy;
     NSString* FilePathBz;
     int weightOrder;
-    int maxiter;
-    float tolerance;
 };
 
 struct BoundaryConditionForField {
@@ -75,21 +82,21 @@ struct BoundaryConditionForField {
 };
 
 - (instancetype)parseInputFile:(NSString*)inputFilePath;
-- (BOOL)parseFile:(std::ifstream&) inputFile;
-- (BOOL)checkInput;
-- (void)parseFlagForEquation:(const std::string&)line;
-- (void)parseParamForTimeIntegration:(const std::string&)line;
-- (void)parseParamForParticle:(const std::string&)line inputFile:(std::ifstream&)inputFile;
-- (void)parseBoundaryConditionForParticle:(const std::string&)line inputFile:(std::ifstream&)inputFile;
-- (void)parseSourceForParticle:(const std::string&)line inputFile:(std::ifstream&)inputFile;
-- (void)parseParamForField:(const std::string&)line;
-- (void)parseBoundaryConditionForField:(const std::string&)line inputFile:(std::ifstream&)inputFile;
-- (struct FragForEquation)getFragForEquation;
-- (struct ParamForTimeIntegration)getParamForTimeIntegration;
-- (NSArray*)getParamForParticle;
-- (NSArray*)getParticleBoundaries;
-- (NSArray*)getParticleSources;
-- (struct ParamForField)getParamForField;
-- (NSArray*)getFieldBoundaries;
+// デフォルト辞書
+- (NSMutableDictionary*)FlagForEquationDefault;
+- (NSMutableDictionary*)ParamForTimeIntegrationDefault;
+- (NSMutableDictionary*)ParamForParticleDefault;
+- (NSMutableDictionary*)BoundaryCoditionDefault;
+- (NSMutableDictionary*)SourceForParticleDefault;
+- (NSMutableDictionary*)ParamForFieldDefault;
+// アクセサ
+- (struct FlagForEquation)flagForEquation;
+- (struct ParamForTimeIntegration)paramForTimeIntegration;
+- (struct ParamForComputing)paramForComputing;
+- (std::vector<struct ParamForParticle>)paramForParticle;
+- (std::vector<struct BoundaryConditionForParticle>)particleBoundaries;
+- (std::vector<struct SourceForParticle>)particleSources;
+- (struct ParamForField)paramForField;
+- (std::vector<struct BoundaryConditionForField>)fieldBoundaries;
 
 @end
