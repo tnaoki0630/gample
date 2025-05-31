@@ -687,7 +687,7 @@ kernel void integrateChargeDensity(
 - (int)injection:(double)dt withParam:(Init*)initParam withCurrent:(int&)current withLogger:(XmlLogger&)logger{
     // パラメータ取得
     struct ParamForField fieldParam = initParam.paramForField;
-    std::vector<struct SourceForParticle> sources = initParam.particleSources;
+    const std::vector<struct SourceForParticle> sources = initParam.particleSources;
 
     // オブジェクト取得
     SimulationParams *prm = (SimulationParams*)[_paramsBuffer contents];
@@ -750,40 +750,40 @@ kernel void integrateChargeDensity(
             }
             // 粒子の追加
             ParticleState *p = (ParticleState*)[_particleBuffer contents];
-            for (int i = prm->pNum; i < prm->pNum + addn; i++) {
+            for (int idx = prm->pNum; idx < prm->pNum + addn; idx++) {
                 if ([sources[i].genType isEqualToString:@"uniform-Gaussian"] || [sources[i].genType isEqualToString:@"hollow-cathode"]){
                     // uniform distribution for position
-                    p[i].x = Xmin + (float)unif_dist(engine)*Lx;
-                    p[i].y = Ymin + (float)unif_dist(engine)*Ly;
+                    p[idx].x = Xmin + (float)unif_dist(engine)*Lx;
+                    p[idx].y = Ymin + (float)unif_dist(engine)*Ly;
                     // Maxwellian for velocity 
-                    p[i].vx = (float)sources[i].genU[0] + (float)norm_dist(engine);
-                    p[i].vy = (float)sources[i].genU[1] + (float)norm_dist(engine);
-                    p[i].vz = (float)sources[i].genU[2] + (float)norm_dist(engine);
+                    p[idx].vx = (float)sources[i].genU[0] + (float)norm_dist(engine);
+                    p[idx].vy = (float)sources[i].genU[1] + (float)norm_dist(engine);
+                    p[idx].vz = (float)sources[i].genU[2] + (float)norm_dist(engine);
                 } else if ([sources[i].genType isEqualToString:@"Xsinusoidal-Gaussian"]){
                     // uniform distribution for position
-                    p[i].x = (Xmin+Xmax)/2 + Lx/PI*sin(2*unif_dist(engine)-1.0);
-                    p[i].y = Ymin + (float)unif_dist(engine)*Ly;
+                    p[idx].x = (Xmin+Xmax)/2 + Lx/PI*sin(2*unif_dist(engine)-1.0);
+                    p[idx].y = Ymin + (float)unif_dist(engine)*Ly;
                     // Maxwellian for velocity 
-                    p[i].vx = (float)sources[i].genU[0] + (float)norm_dist(engine);
-                    p[i].vy = (float)sources[i].genU[1] + (float)norm_dist(engine);
-                    p[i].vz = (float)sources[i].genU[2] + (float)norm_dist(engine);
+                    p[idx].vx = (float)sources[i].genU[0] + (float)norm_dist(engine);
+                    p[idx].vy = (float)sources[i].genU[1] + (float)norm_dist(engine);
+                    p[idx].vz = (float)sources[i].genU[2] + (float)norm_dist(engine);
                 } else if ([sources[i].genType isEqualToString:@"Ysinusoidal-Gaussian"]){
                     // uniform distribution for position
-                    p[i].x = Xmin + (float)unif_dist(engine)*Lx;
-                    p[i].y = (Ymin+Ymax)/2 + Ly/PI*sin(2*unif_dist(engine)-1.0);
+                    p[idx].x = Xmin + (float)unif_dist(engine)*Lx;
+                    p[idx].y = (Ymin+Ymax)/2 + Ly/PI*sin(2*unif_dist(engine)-1.0);
                     // Maxwellian for velocity 
-                    p[i].vx = (float)sources[i].genU[0] + (float)norm_dist(engine);
-                    p[i].vy = (float)sources[i].genU[1] + (float)norm_dist(engine);
-                    p[i].vz = (float)sources[i].genU[2] + (float)norm_dist(engine);
+                    p[idx].vx = (float)sources[i].genU[0] + (float)norm_dist(engine);
+                    p[idx].vy = (float)sources[i].genU[1] + (float)norm_dist(engine);
+                    p[idx].vz = (float)sources[i].genU[2] + (float)norm_dist(engine);
                 }
                 // shift from real coordinate to integer coodinate
-                p[i].x = p[i].x/fieldParam.dx;
-                p[i].y = p[i].y/fieldParam.dy;
+                p[idx].x = p[idx].x/fieldParam.dx;
+                p[idx].y = p[idx].y/fieldParam.dy;
                 // shift origin for high-order weighting
-                p[i].x = p[i].x + (float)fieldParam.ngb;
-                p[i].y = p[i].y + (float)fieldParam.ngb;
+                p[idx].x = p[idx].x + (float)fieldParam.ngb;
+                p[idx].y = p[idx].y + (float)fieldParam.ngb;
                 // deletion flag
-                p[i].piflag = 0;
+                p[idx].piflag = 0;
             }
             // 粒子数更新
             prm->pNum += addn;

@@ -509,7 +509,7 @@ typedef amgcl::make_solver<
         {"meanCathode", fmtSci(mean*sVtoV, 6)},
     };
     logger.logSection("solvePoisson", data);
-    NSLog(@"mean = %e",mean*sVtoV);
+    // NSLog(@"mean = %e",mean*sVtoV);
 
     // index
     bool isLeft, isRight, isBottom, isTop;

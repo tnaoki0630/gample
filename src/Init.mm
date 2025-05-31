@@ -226,7 +226,7 @@
             if([mergedD[@"SrcSetMethod"] isEqualToString:@"Source[1/cm/s]"]){
                 src.src = [mergedD[@"SrcValue"] doubleValue];
             }else if([mergedD[@"SrcSetMethod"] isEqualToString:@"CurrentDensity[A/m2]"]){
-                src.src = [mergedD[@"SrcValue"] doubleValue]*JtosJ*_field.ngy*_field.dy/ec;
+                src.src = [mergedD[@"SrcValue"] doubleValue]*JtosJ*_field.ngy*_field.dy/ec; // 単一電荷を仮定しているので注意
             }else if([src.genType isEqualToString:@"hollow-cathode"]){
                 src.src = 0;
             }else{

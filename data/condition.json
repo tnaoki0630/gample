@@ -6,7 +6,7 @@
   },
   "ParamForTimeIntegration": {
     "Start":            1,
-    "End":              1,
+    "End":              1000,
     "ParticleOutput":   0,
     "FieldOutput":      200,
     "TimeStep":         5e-12
