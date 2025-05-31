@@ -43,4 +43,5 @@ main
 *.bin
 
 # source files
-src.txt
+result/
+

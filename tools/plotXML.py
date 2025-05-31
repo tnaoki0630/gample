@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 
 def plot_variable_from_xml(xml_file, section_name, tag_name):
     """
-    Parses the given XML file. If tag_name == 'all', plots all tags within the specified section,
-    otherwise plots only the specified tag. Includes legend when plotting multiple series.
+    Parses the given XML file.
     """
     # Parse XML
     tree = ET.parse(xml_file)
