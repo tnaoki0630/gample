@@ -41,7 +41,3 @@ main
 *.vti
 *.vtp
 *.bin
-
-# source files
-result/
-

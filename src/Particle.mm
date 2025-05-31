@@ -199,6 +199,15 @@ kernel void integrateChargeDensity(
         temp[gid + i*chunkSize] = 0.0f;
     }
 
+    // 変数定義
+    int i1, j1;
+    float hv[2];
+    float sc;
+    float sf[6][2];
+    int ii, jj;
+    const int nx = prm.ngx + 2*prm.ngb;
+    const int ng = (nx + 1)*(prm.ngy + 2*prm.ngb + 1);
+
     // 積分ループ
     for (int i = 0; i < pNumPerThread; i++){
         
@@ -212,15 +221,12 @@ kernel void integrateChargeDensity(
         device ParticleState& p = ptcl[pid];
 
         // electro-magnetic field on each ptcl
-        int i1 = int(p.x);
-        int j1 = int(p.y);
-        float hv[2];
+        i1 = int(p.x);
+        j1 = int(p.y);
         hv[0] = p.x - float(i1);
         hv[1] = p.y - float(j1);
         
         // 5th-order weighting
-        float sc;
-        float sf[6][2];
         for (int i = 0; i < 2; i++) {
             sc = 2.0 + hv[i];
             sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
@@ -237,13 +243,11 @@ kernel void integrateChargeDensity(
         }
 
         // accumulation
-        int ii, jj;
-        const int nx = (prm.ngx + 2*prm.ngb);
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 6; j++) {
                 ii = i1+(i-prm.ngb);
                 jj = j1+(j-prm.ngb);
-                int idx_out = gid + (ii+jj*(nx+1))*chunkSize;
+                int idx_out = ii+jj*(nx+1) + gid*ng;
                 temp[idx_out] += sf[i][0]*sf[j][1]*constRho;
             }
         }
@@ -257,9 +261,9 @@ kernel void integrateChargeDensity(
     for (int i = 0; i < arrSize; i++){
         for (uint stride = threadGroupSize / 2; stride > 0; stride /= 2) {
             if (tid < stride) {
-                uint offset = groupID*threadGroupSize + i*chunkSize;
-                int idx_in = tid + stride + offset;
-                int idx_out = tid + offset;
+                uint offset = groupID*threadGroupSize;
+                int idx_in = i + (tid + stride + offset)*ng;
+                int idx_out = i + (tid + offset)*ng;
                 temp[idx_out] += temp[idx_in];
             }
             threadgroup_barrier(mem_flags::mem_threadgroup);
@@ -269,8 +273,8 @@ kernel void integrateChargeDensity(
     // output partialSum
     if (tid == 0) {
         for (int i = 0; i < arrSize; i++){
-            int idx_in = 0 + groupID*threadGroupSize + i*chunkSize;
-            int idx_out = groupID + i*chunkSize/threadGroupSize;
+            int idx_in = i + (0 + groupID*threadGroupSize)*ng;
+            int idx_out = i + groupID*ng;
             partial[idx_out] = temp[idx_in];
         }
     }
@@ -645,9 +649,9 @@ kernel void integrateChargeDensity(
 
     // スレッドグループごとの部分和を加算
     float* partialSums = (float*)_integratePartialBuffer.contents;
-    for (int i = 0; i < ng; i++){
-        for (int j = 0; j < threadGroupNum; j++){
-            rho[i] += partialSums[j + i*threadGroupNum];
+    for (int j = 0; j < threadGroupNum; j++){
+        for (int i = 0; i < ng; i++){
+            rho[i] += partialSums[i + j*ng];
         }
     }
 };

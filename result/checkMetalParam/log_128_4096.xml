@@ -1,0 +1,4719 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SimulationLog>
+<![CDATA[
+--- FlagForEquation ---
+Particle: 2
+EMField: 1
+MCCollision: 0
+--- ParamForTimeIntegration ---
+End: 100
+ParticleOutput: 0
+FieldOutput: 200
+TimeStep: 5.000000e-12
+--- ParamForComputing ---
+threadGroupSize: 128
+integrationChunkSize: 4096
+maxiter: 200
+tolerance: 1.000000e-07
+--- ParamForParticle (2 entries) ---
+[Particle 1]
+  Name: electron
+  InitialParticleNumber: 2000000
+  MaxParticleNumber: 5000000
+  Charge: -4.803204e-10
+  Mass: 9.109382e-28
+  Weight: 6.250000e+04
+  genType: uniform-Gaussian
+  initialT: 1.160400e+05
+[Particle 2]
+  Name: ion_Xe1
+  InitialParticleNumber: 2000000
+  MaxParticleNumber: 5000000
+  Charge: 4.803204e-10
+  Mass: 2.180171e-22
+  Weight: 6.250000e+04
+  genType: uniform-Gaussian
+  initialT: 5.802000e+03
+--- BoundaryConditionForParticle (4 entries) ---
+[pBC 1]
+  Position: Xmin
+  Type: Delete
+[pBC 2]
+  Position: Xmax
+  Type: Delete
+[pBC 3]
+  Position: Ymin
+  Type: periodic
+[pBC 4]
+  Position: Ymax
+  Type: periodic
+--- SourceForParticle (3 entries) ---
+[Source 1]
+  pName: electron
+  genType: Xsinusoidal-Gaussian
+  src: 2.496604e+17
+  genXmin: 2.500000e-01
+  genXmax: 1.000000e+00
+  genYmin: -1.000000e+00
+  genYmax: -1.000000e+00
+  genU: 0.000000e+00
+  genV: 0.000000e+00
+  genW: 0.000000e+00
+  genT: 1.160400e+05
+[Source 2]
+  pName: ion_Xe1
+  genType: Xsinusoidal-Gaussian
+  src: 2.496604e+17
+  genXmin: 2.500000e-01
+  genXmax: 1.000000e+00
+  genYmin: -1.000000e+00
+  genYmax: -1.000000e+00
+  genU: 0.000000e+00
+  genV: 0.000000e+00
+  genW: 0.000000e+00
+  genT: 5.802000e+03
+[Source 3]
+  pName: electron
+  genType: hollow-cathode
+  src: 0.000000e+00
+  genXmin: 2.400000e+00
+  genXmax: 2.400000e+00
+  genYmin: -1.000000e+00
+  genYmax: -1.000000e+00
+  genU: 0.000000e+00
+  genV: 0.000000e+00
+  genW: 0.000000e+00
+  genT: 1.160400e+05
+--- ParamForField ---
+ngx: 500
+ngy: 200
+ngb: 2
+dx: 5.000000e-03
+dy: 5.000000e-03
+--- BoundaryConditionForField (5 entries) ---
+[Boundary 1]
+  Position: Xmin
+  Type: Dirichlet
+  Value: 2.000000e+02
+[Boundary 2]
+  Position: Xmax
+  Type: Dirichlet
+  Value: 0.000000e+00
+[Boundary 3]
+  Position: Ymin
+  Type: periodic
+  Value: 0.000000e+00
+[Boundary 4]
+  Position: Ymax
+  Type: periodic
+  Value: 0.000000e+00
+[Boundary 5]
+  Position: hollow-cathode
+  Type: undefined
+  Value: 2.400000e+00
+]]>
+ <Cycle ID="1">
+  time = 5e-12
+  <Section Name="flowout_electron">
+   <particleNumber>1999411</particleNumber>
+   <pulledPtclNum>589</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-287</Xmax>
+   <Xmin>-302</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000000</particleNumber>
+   <pulledPtclNum>0</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.128543e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>7.537067e+00</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>302</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>114</injection_electron>
+   <injection_ion_Xe1>16</injection_ion_Xe1>
+   <integCDens_electron>983349</integCDens_electron>
+   <integCDens_ion_Xe1>1300354</integCDens_ion_Xe1>
+   <reduce_electron>4196</reduce_electron>
+   <reduce_ion_Xe1>3966</reduce_ion_Xe1>
+   <solvePoisson>371062</solvePoisson>
+   <update_electron>41199</update_electron>
+   <update_ion_Xe1>26267</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="2">
+  time = 1e-11
+  <Section Name="flowout_electron">
+   <particleNumber>1999133</particleNumber>
+   <pulledPtclNum>600</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-292</Xmax>
+   <Xmin>-308</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000019</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>1</Xmax>
+   <Xmin>0</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>4.564069e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>4.534250e+00</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>308</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>114</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>983254</integCDens_electron>
+   <integCDens_ion_Xe1>911055</integCDens_ion_Xe1>
+   <reduce_electron>6009</reduce_electron>
+   <reduce_ion_Xe1>5262</reduce_ion_Xe1>
+   <solvePoisson>307282</solvePoisson>
+   <update_electron>38938</update_electron>
+   <update_ion_Xe1>28871</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="3">
+  time = 1.5e-11
+  <Section Name="flowout_electron">
+   <particleNumber>1998855</particleNumber>
+   <pulledPtclNum>606</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-311</Xmax>
+   <Xmin>-295</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000038</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>3.409300e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>1.508446e+00</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>294</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>100</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>927340</integCDens_electron>
+   <integCDens_ion_Xe1>842133</integCDens_ion_Xe1>
+   <reduce_electron>3195</reduce_electron>
+   <reduce_ion_Xe1>3197</reduce_ion_Xe1>
+   <solvePoisson>307895</solvePoisson>
+   <update_electron>31633</update_electron>
+   <update_ion_Xe1>28492</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="4">
+  time = 2e-11
+  <Section Name="flowout_electron">
+   <particleNumber>1998589</particleNumber>
+   <pulledPtclNum>580</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-282</Xmax>
+   <Xmin>-298</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000057</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>6.192391e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>-1.313976e+00</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>297</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>99</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1253705</integCDens_electron>
+   <integCDens_ion_Xe1>943348</integCDens_ion_Xe1>
+   <reduce_electron>3112</reduce_electron>
+   <reduce_ion_Xe1>2922</reduce_ion_Xe1>
+   <solvePoisson>307432</solvePoisson>
+   <update_electron>33123</update_electron>
+   <update_ion_Xe1>25216</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="5">
+  time = 2.5e-11
+  <Section Name="flowout_electron">
+   <particleNumber>1998304</particleNumber>
+   <pulledPtclNum>602</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-296</Xmax>
+   <Xmin>-306</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000075</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>2</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.840541e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>-4.094872e+00</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>304</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>116</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>977023</integCDens_electron>
+   <integCDens_ion_Xe1>918397</integCDens_ion_Xe1>
+   <reduce_electron>3039</reduce_electron>
+   <reduce_ion_Xe1>2954</reduce_ion_Xe1>
+   <solvePoisson>278493</solvePoisson>
+   <update_electron>32480</update_electron>
+   <update_ion_Xe1>26913</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="6">
+  time = 3e-11
+  <Section Name="flowout_electron">
+   <particleNumber>1998014</particleNumber>
+   <pulledPtclNum>614</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-311</Xmax>
+   <Xmin>-303</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000093</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>1</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>4.970131e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>-6.856627e+00</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>302</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>100</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>973121</integCDens_electron>
+   <integCDens_ion_Xe1>917169</integCDens_ion_Xe1>
+   <reduce_electron>2930</reduce_electron>
+   <reduce_ion_Xe1>2919</reduce_ion_Xe1>
+   <solvePoisson>307937</solvePoisson>
+   <update_electron>29587</update_electron>
+   <update_ion_Xe1>26536</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="7">
+  time = 3.5e-11
+  <Section Name="flowout_electron">
+   <particleNumber>1997751</particleNumber>
+   <pulledPtclNum>585</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-291</Xmax>
+   <Xmin>-294</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000112</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>2.284276e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>-9.509313e+00</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>293</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>96</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>965397</integCDens_electron>
+   <integCDens_ion_Xe1>920794</integCDens_ion_Xe1>
+   <reduce_electron>2957</reduce_electron>
+   <reduce_ion_Xe1>2924</reduce_ion_Xe1>
+   <solvePoisson>307899</solvePoisson>
+   <update_electron>31540</update_electron>
+   <update_ion_Xe1>25878</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="8">
+  time = 4e-11
+  <Section Name="flowout_electron">
+   <particleNumber>1997478</particleNumber>
+   <pulledPtclNum>586</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-275</Xmax>
+   <Xmin>-311</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000131</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>2.213281e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>-1.195687e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>310</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>116</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>868058</integCDens_electron>
+   <integCDens_ion_Xe1>935581</integCDens_ion_Xe1>
+   <reduce_electron>2930</reduce_electron>
+   <reduce_ion_Xe1>2936</reduce_ion_Xe1>
+   <solvePoisson>308525</solvePoisson>
+   <update_electron>28022</update_electron>
+   <update_ion_Xe1>26811</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="9">
+  time = 4.5e-11
+  <Section Name="flowout_electron">
+   <particleNumber>1997217</particleNumber>
+   <pulledPtclNum>591</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-263</Xmax>
+   <Xmin>-328</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000150</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>5.351182e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>-1.445470e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>327</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>105</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1286211</integCDens_electron>
+   <integCDens_ion_Xe1>910962</integCDens_ion_Xe1>
+   <reduce_electron>3095</reduce_electron>
+   <reduce_ion_Xe1>2923</reduce_ion_Xe1>
+   <solvePoisson>308589</solvePoisson>
+   <update_electron>32728</update_electron>
+   <update_ion_Xe1>24762</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="10">
+  time = 5e-11
+  <Section Name="flowout_electron">
+   <particleNumber>1997043</particleNumber>
+   <pulledPtclNum>521</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-237</Xmax>
+   <Xmin>-284</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000168</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>1</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>6.753240e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-1.700698e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>283</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>100</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>908749</integCDens_electron>
+   <integCDens_ion_Xe1>915924</integCDens_ion_Xe1>
+   <reduce_electron>3012</reduce_electron>
+   <reduce_ion_Xe1>2924</reduce_ion_Xe1>
+   <solvePoisson>338607</solvePoisson>
+   <update_electron>32192</update_electron>
+   <update_ion_Xe1>26141</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="11">
+  time = 5.5e-11
+  <Section Name="flowout_electron">
+   <particleNumber>1996754</particleNumber>
+   <pulledPtclNum>592</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-259</Xmax>
+   <Xmin>-333</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000187</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.282284e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-1.895574e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>332</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>124</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1220930</integCDens_electron>
+   <integCDens_ion_Xe1>952852</integCDens_ion_Xe1>
+   <reduce_electron>3061</reduce_electron>
+   <reduce_ion_Xe1>2932</reduce_ion_Xe1>
+   <solvePoisson>335568</solvePoisson>
+   <update_electron>34592</update_electron>
+   <update_ion_Xe1>27388</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="12">
+  time = 6e-11
+  <Section Name="flowout_electron">
+   <particleNumber>1996511</particleNumber>
+   <pulledPtclNum>595</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-285</Xmax>
+   <Xmin>-310</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000206</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>8.708110e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-2.126462e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>309</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>108</injection_electron>
+   <injection_ion_Xe1>17</injection_ion_Xe1>
+   <integCDens_electron>1162699</integCDens_electron>
+   <integCDens_ion_Xe1>919599</integCDens_ion_Xe1>
+   <reduce_electron>2951</reduce_electron>
+   <reduce_ion_Xe1>2926</reduce_ion_Xe1>
+   <solvePoisson>338812</solvePoisson>
+   <update_electron>36573</update_electron>
+   <update_ion_Xe1>26809</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="13">
+  time = 6.5e-11
+  <Section Name="flowout_electron">
+   <particleNumber>1996327</particleNumber>
+   <pulledPtclNum>513</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-224</Xmax>
+   <Xmin>-289</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000223</particleNumber>
+   <pulledPtclNum>3</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>1</Xmax>
+   <Xmin>2</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>8.372080e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-2.318056e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>287</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>104</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1204473</integCDens_electron>
+   <integCDens_ion_Xe1>917045</integCDens_ion_Xe1>
+   <reduce_electron>3108</reduce_electron>
+   <reduce_ion_Xe1>2920</reduce_ion_Xe1>
+   <solvePoisson>338675</solvePoisson>
+   <update_electron>33709</update_electron>
+   <update_ion_Xe1>26980</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="14">
+  time = 7e-11
+  <Section Name="flowout_electron">
+   <particleNumber>1996077</particleNumber>
+   <pulledPtclNum>557</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-224</Xmax>
+   <Xmin>-333</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000242</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>4.197562e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-2.470307e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>332</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>108</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1190028</integCDens_electron>
+   <integCDens_ion_Xe1>909937</integCDens_ion_Xe1>
+   <reduce_electron>2964</reduce_electron>
+   <reduce_ion_Xe1>3467</reduce_ion_Xe1>
+   <solvePoisson>368382</solvePoisson>
+   <update_electron>36079</update_electron>
+   <update_ion_Xe1>27647</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="15">
+  time = 7.5e-11
+  <Section Name="flowout_electron">
+   <particleNumber>1995876</particleNumber>
+   <pulledPtclNum>553</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-260</Xmax>
+   <Xmin>-293</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000261</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.562072e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-2.651719e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>292</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>100</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1086274</integCDens_electron>
+   <integCDens_ion_Xe1>923873</integCDens_ion_Xe1>
+   <reduce_electron>3099</reduce_electron>
+   <reduce_ion_Xe1>2923</reduce_ion_Xe1>
+   <solvePoisson>338777</solvePoisson>
+   <update_electron>33966</update_electron>
+   <update_ion_Xe1>27858</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="16">
+  time = 8e-11
+  <Section Name="flowout_electron">
+   <particleNumber>1995725</particleNumber>
+   <pulledPtclNum>463</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-198</Xmax>
+   <Xmin>-265</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000279</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>1</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.726780e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-2.776570e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>264</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>109</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>987541</integCDens_electron>
+   <integCDens_ion_Xe1>836944</integCDens_ion_Xe1>
+   <reduce_electron>3094</reduce_electron>
+   <reduce_ion_Xe1>2921</reduce_ion_Xe1>
+   <solvePoisson>368331</solvePoisson>
+   <update_electron>33419</update_electron>
+   <update_ion_Xe1>25956</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="17">
+  time = 8.5e-11
+  <Section Name="flowout_electron">
+   <particleNumber>1995488</particleNumber>
+   <pulledPtclNum>521</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-246</Xmax>
+   <Xmin>-275</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000297</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>1</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>5.469342e-09</error>
+   <iteration>7</iteration>
+   <meanCathode>-2.854045e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>274</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>92</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1200741</integCDens_electron>
+   <integCDens_ion_Xe1>947493</integCDens_ion_Xe1>
+   <reduce_electron>2926</reduce_electron>
+   <reduce_ion_Xe1>2924</reduce_ion_Xe1>
+   <solvePoisson>398383</solvePoisson>
+   <update_electron>30279</update_electron>
+   <update_ion_Xe1>26418</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="18">
+  time = 9e-11
+  <Section Name="flowout_electron">
+   <particleNumber>1995240</particleNumber>
+   <pulledPtclNum>542</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-239</Xmax>
+   <Xmin>-303</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000316</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>5.284215e-09</error>
+   <iteration>7</iteration>
+   <meanCathode>-2.923514e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>302</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>106</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>978367</integCDens_electron>
+   <integCDens_ion_Xe1>867485</integCDens_ion_Xe1>
+   <reduce_electron>3080</reduce_electron>
+   <reduce_ion_Xe1>2925</reduce_ion_Xe1>
+   <solvePoisson>398025</solvePoisson>
+   <update_electron>33243</update_electron>
+   <update_ion_Xe1>26166</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="19">
+  time = 9.5e-11
+  <Section Name="flowout_electron">
+   <particleNumber>1995067</particleNumber>
+   <pulledPtclNum>495</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-221</Xmax>
+   <Xmin>-274</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000335</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>6.276978e-09</error>
+   <iteration>7</iteration>
+   <meanCathode>-3.004707e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>19</Xsinusoidal-Gaussian>
+   <hollow-cathode>273</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>108</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1170061</integCDens_electron>
+   <integCDens_ion_Xe1>936090</integCDens_ion_Xe1>
+   <reduce_electron>2943</reduce_electron>
+   <reduce_ion_Xe1>2920</reduce_ion_Xe1>
+   <solvePoisson>398731</solvePoisson>
+   <update_electron>36362</update_electron>
+   <update_ion_Xe1>27669</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="20">
+  time = 1e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1994832</particleNumber>
+   <pulledPtclNum>527</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-243</Xmax>
+   <Xmin>-284</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000353</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>1</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>4.914552e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-3.037613e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>283</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>102</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1222833</integCDens_electron>
+   <integCDens_ion_Xe1>913279</integCDens_ion_Xe1>
+   <reduce_electron>2963</reduce_electron>
+   <reduce_ion_Xe1>2938</reduce_ion_Xe1>
+   <solvePoisson>368537</solvePoisson>
+   <update_electron>31471</update_electron>
+   <update_ion_Xe1>26330</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="21">
+  time = 1.05e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1994626</particleNumber>
+   <pulledPtclNum>509</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-233</Xmax>
+   <Xmin>-276</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000371</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>2</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>5.692797e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-3.062932e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>274</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>97</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>965078</integCDens_electron>
+   <integCDens_ion_Xe1>910703</integCDens_ion_Xe1>
+   <reduce_electron>2928</reduce_electron>
+   <reduce_ion_Xe1>2921</reduce_ion_Xe1>
+   <solvePoisson>368318</solvePoisson>
+   <update_electron>31527</update_electron>
+   <update_ion_Xe1>27653</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="22">
+  time = 1.1e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1994386</particleNumber>
+   <pulledPtclNum>534</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-255</Xmax>
+   <Xmin>-279</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000389</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>2</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>4.078875e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-3.060424e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>277</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>112</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1303532</integCDens_electron>
+   <integCDens_ion_Xe1>901603</integCDens_ion_Xe1>
+   <reduce_electron>3089</reduce_electron>
+   <reduce_ion_Xe1>2919</reduce_ion_Xe1>
+   <solvePoisson>368419</solvePoisson>
+   <update_electron>33316</update_electron>
+   <update_ion_Xe1>25203</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="23">
+  time = 1.15e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1994150</particleNumber>
+   <pulledPtclNum>533</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-257</Xmax>
+   <Xmin>-276</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000408</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>3.832436e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-3.043976e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>275</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>100</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>971367</integCDens_electron>
+   <integCDens_ion_Xe1>917875</integCDens_ion_Xe1>
+   <reduce_electron>3084</reduce_electron>
+   <reduce_ion_Xe1>2929</reduce_ion_Xe1>
+   <solvePoisson>368661</solvePoisson>
+   <update_electron>32720</update_electron>
+   <update_ion_Xe1>26893</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="24">
+  time = 1.2e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1993921</particleNumber>
+   <pulledPtclNum>524</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-283</Xmax>
+   <Xmin>-241</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000427</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>8.463263e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-3.007144e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>240</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>94</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1208996</integCDens_electron>
+   <integCDens_ion_Xe1>927422</integCDens_ion_Xe1>
+   <reduce_electron>2925</reduce_electron>
+   <reduce_ion_Xe1>2922</reduce_ion_Xe1>
+   <solvePoisson>339460</solvePoisson>
+   <update_electron>28964</update_electron>
+   <update_ion_Xe1>26096</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="25">
+  time = 1.25e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1993642</particleNumber>
+   <pulledPtclNum>539</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-291</Xmax>
+   <Xmin>-248</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000446</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.473415e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-2.918011e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>247</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>102</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1190589</integCDens_electron>
+   <integCDens_ion_Xe1>904192</integCDens_ion_Xe1>
+   <reduce_electron>2946</reduce_electron>
+   <reduce_ion_Xe1>2920</reduce_ion_Xe1>
+   <solvePoisson>339282</solvePoisson>
+   <update_electron>31596</update_electron>
+   <update_ion_Xe1>25589</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="26">
+  time = 1.3e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1993427</particleNumber>
+   <pulledPtclNum>482</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-239</Xmax>
+   <Xmin>-243</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000465</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>2.583308e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-2.819823e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>242</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>81</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>984431</integCDens_electron>
+   <integCDens_ion_Xe1>935129</integCDens_ion_Xe1>
+   <reduce_electron>3084</reduce_electron>
+   <reduce_ion_Xe1>2922</reduce_ion_Xe1>
+   <solvePoisson>369808</solvePoisson>
+   <update_electron>32787</update_electron>
+   <update_ion_Xe1>26928</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="27">
+  time = 1.35e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1993147</particleNumber>
+   <pulledPtclNum>542</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-280</Xmax>
+   <Xmin>-261</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000483</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>2</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.394549e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-2.699392e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>259</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>90</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>966804</integCDens_electron>
+   <integCDens_ion_Xe1>948791</integCDens_ion_Xe1>
+   <reduce_electron>3072</reduce_electron>
+   <reduce_ion_Xe1>2918</reduce_ion_Xe1>
+   <solvePoisson>339389</solvePoisson>
+   <update_electron>33958</update_electron>
+   <update_ion_Xe1>26882</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="28">
+  time = 1.4e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1992909</particleNumber>
+   <pulledPtclNum>517</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-269</Xmax>
+   <Xmin>-248</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000501</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>2</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>6.776631e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-2.580814e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>246</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>99</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1143148</integCDens_electron>
+   <integCDens_ion_Xe1>942923</integCDens_ion_Xe1>
+   <reduce_electron>2922</reduce_electron>
+   <reduce_ion_Xe1>2925</reduce_ion_Xe1>
+   <solvePoisson>339483</solvePoisson>
+   <update_electron>30824</update_electron>
+   <update_ion_Xe1>25744</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="29">
+  time = 1.45e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1992659</particleNumber>
+   <pulledPtclNum>516</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-278</Xmax>
+   <Xmin>-238</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000520</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>6.100799e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-2.433985e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>237</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>86</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>958187</integCDens_electron>
+   <integCDens_ion_Xe1>887850</integCDens_ion_Xe1>
+   <reduce_electron>3102</reduce_electron>
+   <reduce_ion_Xe1>2925</reduce_ion_Xe1>
+   <solvePoisson>339450</solvePoisson>
+   <update_electron>33202</update_electron>
+   <update_ion_Xe1>26453</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="30">
+  time = 1.5e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1992383</particleNumber>
+   <pulledPtclNum>533</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-297</Xmax>
+   <Xmin>-236</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000539</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>4.519639e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-2.262163e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>235</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>88</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1268441</integCDens_electron>
+   <integCDens_ion_Xe1>949227</integCDens_ion_Xe1>
+   <reduce_electron>2993</reduce_electron>
+   <reduce_ion_Xe1>2922</reduce_ion_Xe1>
+   <solvePoisson>339129</solvePoisson>
+   <update_electron>35411</update_electron>
+   <update_ion_Xe1>27389</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="31">
+  time = 1.55e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1992149</particleNumber>
+   <pulledPtclNum>489</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-255</Xmax>
+   <Xmin>-234</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000558</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>3.249884e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-2.074757e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>233</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>95</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1080278</integCDens_electron>
+   <integCDens_ion_Xe1>926416</integCDens_ion_Xe1>
+   <reduce_electron>3036</reduce_electron>
+   <reduce_ion_Xe1>2920</reduce_ion_Xe1>
+   <solvePoisson>339614</solvePoisson>
+   <update_electron>31983</update_electron>
+   <update_ion_Xe1>25516</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="32">
+  time = 1.6e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1991849</particleNumber>
+   <pulledPtclNum>553</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-323</Xmax>
+   <Xmin>-230</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000577</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>8.050302e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>-1.871500e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>229</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>86</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1256463</integCDens_electron>
+   <integCDens_ion_Xe1>903624</integCDens_ion_Xe1>
+   <reduce_electron>3035</reduce_electron>
+   <reduce_ion_Xe1>2920</reduce_ion_Xe1>
+   <solvePoisson>309590</solvePoisson>
+   <update_electron>34853</update_electron>
+   <update_ion_Xe1>25868</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="33">
+  time = 1.65e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1991595</particleNumber>
+   <pulledPtclNum>503</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-286</Xmax>
+   <Xmin>-217</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000596</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>5.233716e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>-1.653203e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>216</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>84</injection_electron>
+   <injection_ion_Xe1>15</injection_ion_Xe1>
+   <integCDens_electron>1180488</integCDens_electron>
+   <integCDens_ion_Xe1>901179</integCDens_ion_Xe1>
+   <reduce_electron>3073</reduce_electron>
+   <reduce_ion_Xe1>4136</reduce_ion_Xe1>
+   <solvePoisson>309318</solvePoisson>
+   <update_electron>33585</update_electron>
+   <update_ion_Xe1>27699</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="34">
+  time = 1.7e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1991277</particleNumber>
+   <pulledPtclNum>554</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-308</Xmax>
+   <Xmin>-246</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000615</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>8.008347e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>-1.409697e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>245</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>102</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1211739</integCDens_electron>
+   <integCDens_ion_Xe1>918918</integCDens_ion_Xe1>
+   <reduce_electron>2909</reduce_electron>
+   <reduce_ion_Xe1>2913</reduce_ion_Xe1>
+   <solvePoisson>309712</solvePoisson>
+   <update_electron>36280</update_electron>
+   <update_ion_Xe1>26026</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="35">
+  time = 1.75e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1990973</particleNumber>
+   <pulledPtclNum>569</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-345</Xmax>
+   <Xmin>-224</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000634</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.153673e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>-1.186313e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>223</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>84</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1172769</integCDens_electron>
+   <integCDens_ion_Xe1>897291</integCDens_ion_Xe1>
+   <reduce_electron>3061</reduce_electron>
+   <reduce_ion_Xe1>2910</reduce_ion_Xe1>
+   <solvePoisson>309771</solvePoisson>
+   <update_electron>32630</update_electron>
+   <update_ion_Xe1>26689</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="36">
+  time = 1.8e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1990663</particleNumber>
+   <pulledPtclNum>553</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-322</Xmax>
+   <Xmin>-231</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000653</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.440414e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-9.299435e+00</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>230</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>82</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1137199</integCDens_electron>
+   <integCDens_ion_Xe1>920217</integCDens_ion_Xe1>
+   <reduce_electron>3056</reduce_electron>
+   <reduce_ion_Xe1>2938</reduce_ion_Xe1>
+   <solvePoisson>339428</solvePoisson>
+   <update_electron>34570</update_electron>
+   <update_ion_Xe1>26281</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="37">
+  time = 1.85e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1990388</particleNumber>
+   <pulledPtclNum>525</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-329</Xmax>
+   <Xmin>-196</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000671</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>1</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>2.893981e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-6.730918e+00</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>195</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>92</injection_electron>
+   <injection_ion_Xe1>51</injection_ion_Xe1>
+   <integCDens_electron>970326</integCDens_electron>
+   <integCDens_ion_Xe1>854422</integCDens_ion_Xe1>
+   <reduce_electron>2904</reduce_electron>
+   <reduce_ion_Xe1>2922</reduce_ion_Xe1>
+   <solvePoisson>339504</solvePoisson>
+   <update_electron>35643</update_electron>
+   <update_ion_Xe1>26228</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="38">
+  time = 1.9e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1989999</particleNumber>
+   <pulledPtclNum>604</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-407</Xmax>
+   <Xmin>-197</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000690</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>3.352753e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>-3.716401e+00</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>196</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>79</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1258529</integCDens_electron>
+   <integCDens_ion_Xe1>910539</integCDens_ion_Xe1>
+   <reduce_electron>2885</reduce_electron>
+   <reduce_ion_Xe1>2931</reduce_ion_Xe1>
+   <solvePoisson>309866</solvePoisson>
+   <update_electron>36063</update_electron>
+   <update_ion_Xe1>24497</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="39">
+  time = 1.95e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1989674</particleNumber>
+   <pulledPtclNum>541</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-335</Xmax>
+   <Xmin>-206</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000708</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>1</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>1.696056e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>-6.719899e-01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>205</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>81</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>969434</integCDens_electron>
+   <integCDens_ion_Xe1>903918</integCDens_ion_Xe1>
+   <reduce_electron>2917</reduce_electron>
+   <reduce_ion_Xe1>2921</reduce_ion_Xe1>
+   <solvePoisson>339595</solvePoisson>
+   <update_electron>30998</update_electron>
+   <update_ion_Xe1>26800</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="40">
+  time = 2e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1989288</particleNumber>
+   <pulledPtclNum>611</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-405</Xmax>
+   <Xmin>-206</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000727</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>2.568537e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>2.338626e+00</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>205</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>129</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>1214829</integCDens_electron>
+   <integCDens_ion_Xe1>911632</integCDens_ion_Xe1>
+   <reduce_electron>2919</reduce_electron>
+   <reduce_ion_Xe1>2921</reduce_ion_Xe1>
+   <solvePoisson>339503</solvePoisson>
+   <update_electron>30016</update_electron>
+   <update_ion_Xe1>25264</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="41">
+  time = 2.05e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1988915</particleNumber>
+   <pulledPtclNum>598</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-396</Xmax>
+   <Xmin>-200</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000746</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.885800e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>5.388077e+00</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>199</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>83</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>1231046</integCDens_electron>
+   <integCDens_ion_Xe1>932573</integCDens_ion_Xe1>
+   <reduce_electron>2960</reduce_electron>
+   <reduce_ion_Xe1>2923</reduce_ion_Xe1>
+   <solvePoisson>296607</solvePoisson>
+   <update_electron>36159</update_electron>
+   <update_ion_Xe1>26270</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="42">
+  time = 2.1e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1988538</particleNumber>
+   <pulledPtclNum>596</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-387</Xmax>
+   <Xmin>-209</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000765</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>3.555972e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>8.527295e+00</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>208</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>88</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>823820</integCDens_electron>
+   <integCDens_ion_Xe1>1198223</integCDens_ion_Xe1>
+   <reduce_electron>7071</reduce_electron>
+   <reduce_ion_Xe1>4037</reduce_ion_Xe1>
+   <solvePoisson>322440</solvePoisson>
+   <update_electron>41816</update_electron>
+   <update_ion_Xe1>40588</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="43">
+  time = 2.15e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1988148</particleNumber>
+   <pulledPtclNum>618</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-433</Xmax>
+   <Xmin>-185</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000784</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>3.039171e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>1.157986e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>184</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>387</injection_electron>
+   <injection_ion_Xe1>16</injection_ion_Xe1>
+   <integCDens_electron>795733</integCDens_electron>
+   <integCDens_ion_Xe1>906607</integCDens_ion_Xe1>
+   <reduce_electron>6060</reduce_electron>
+   <reduce_ion_Xe1>2925</reduce_ion_Xe1>
+   <solvePoisson>309635</solvePoisson>
+   <update_electron>33993</update_electron>
+   <update_ion_Xe1>26016</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="44">
+  time = 2.2e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1987729</particleNumber>
+   <pulledPtclNum>623</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-430</Xmax>
+   <Xmin>-193</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000803</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>3.991599e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>1.488853e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>192</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>81</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>923396</integCDens_electron>
+   <integCDens_ion_Xe1>904702</integCDens_ion_Xe1>
+   <reduce_electron>2933</reduce_electron>
+   <reduce_ion_Xe1>2919</reduce_ion_Xe1>
+   <solvePoisson>309915</solvePoisson>
+   <update_electron>28597</update_electron>
+   <update_ion_Xe1>25336</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="45">
+  time = 2.25e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1987295</particleNumber>
+   <pulledPtclNum>646</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-473</Xmax>
+   <Xmin>-173</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000822</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>5.936672e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>1.810512e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>19</Xsinusoidal-Gaussian>
+   <hollow-cathode>172</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>69</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1283778</integCDens_electron>
+   <integCDens_ion_Xe1>895495</integCDens_ion_Xe1>
+   <reduce_electron>2912</reduce_electron>
+   <reduce_ion_Xe1>2928</reduce_ion_Xe1>
+   <solvePoisson>339611</solvePoisson>
+   <update_electron>28178</update_electron>
+   <update_ion_Xe1>26448</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="46">
+  time = 2.3e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1986860</particleNumber>
+   <pulledPtclNum>626</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-432</Xmax>
+   <Xmin>-194</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000840</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>1</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>8.070561e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>2.149264e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>193</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>86</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1075661</integCDens_electron>
+   <integCDens_ion_Xe1>912424</integCDens_ion_Xe1>
+   <reduce_electron>3155</reduce_electron>
+   <reduce_ion_Xe1>2936</reduce_ion_Xe1>
+   <solvePoisson>339964</solvePoisson>
+   <update_electron>32338</update_electron>
+   <update_ion_Xe1>26423</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="47">
+  time = 2.35e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1986431</particleNumber>
+   <pulledPtclNum>642</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-452</Xmax>
+   <Xmin>-189</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000859</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.920200e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>2.462703e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>188</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>77</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1236448</integCDens_electron>
+   <integCDens_ion_Xe1>958447</integCDens_ion_Xe1>
+   <reduce_electron>3075</reduce_electron>
+   <reduce_ion_Xe1>2923</reduce_ion_Xe1>
+   <solvePoisson>309679</solvePoisson>
+   <update_electron>34005</update_electron>
+   <update_ion_Xe1>26345</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="48">
+  time = 2.4e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1985966</particleNumber>
+   <pulledPtclNum>673</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-468</Xmax>
+   <Xmin>-205</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000878</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>8.129931e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>2.776842e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>204</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>90</injection_electron>
+   <injection_ion_Xe1>21</injection_ion_Xe1>
+   <integCDens_electron>1166480</integCDens_electron>
+   <integCDens_ion_Xe1>918229</integCDens_ion_Xe1>
+   <reduce_electron>3067</reduce_electron>
+   <reduce_ion_Xe1>2924</reduce_ion_Xe1>
+   <solvePoisson>309758</solvePoisson>
+   <update_electron>33127</update_electron>
+   <update_ion_Xe1>26047</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="49">
+  time = 2.45e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1985565</particleNumber>
+   <pulledPtclNum>625</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-455</Xmax>
+   <Xmin>-170</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000896</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>2</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.021062e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>3.068301e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>168</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>70</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1206186</integCDens_electron>
+   <integCDens_ion_Xe1>915685</integCDens_ion_Xe1>
+   <reduce_electron>2911</reduce_electron>
+   <reduce_ion_Xe1>2920</reduce_ion_Xe1>
+   <solvePoisson>309964</solvePoisson>
+   <update_electron>35967</update_electron>
+   <update_ion_Xe1>26709</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="50">
+  time = 2.5e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1985139</particleNumber>
+   <pulledPtclNum>614</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-448</Xmax>
+   <Xmin>-166</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000915</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.303583e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>3.390737e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>165</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>80</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>1223421</integCDens_electron>
+   <integCDens_ion_Xe1>920151</integCDens_ion_Xe1>
+   <reduce_electron>2912</reduce_electron>
+   <reduce_ion_Xe1>3380</reduce_ion_Xe1>
+   <solvePoisson>309744</solvePoisson>
+   <update_electron>27128</update_electron>
+   <update_ion_Xe1>28715</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="51">
+  time = 2.55e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1984672</particleNumber>
+   <pulledPtclNum>652</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-467</Xmax>
+   <Xmin>-185</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000934</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>1.327249e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>3.708798e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>184</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>74</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1200983</integCDens_electron>
+   <integCDens_ion_Xe1>921387</integCDens_ion_Xe1>
+   <reduce_electron>3067</reduce_electron>
+   <reduce_ion_Xe1>2928</reduce_ion_Xe1>
+   <solvePoisson>369096</solvePoisson>
+   <update_electron>32692</update_electron>
+   <update_ion_Xe1>26174</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="52">
+  time = 2.6e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1984248</particleNumber>
+   <pulledPtclNum>628</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-430</Xmax>
+   <Xmin>-198</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000953</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>3.548621e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>3.998503e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>197</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>82</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>1201704</integCDens_electron>
+   <integCDens_ion_Xe1>920017</integCDens_ion_Xe1>
+   <reduce_electron>3059</reduce_electron>
+   <reduce_ion_Xe1>2919</reduce_ion_Xe1>
+   <solvePoisson>369463</solvePoisson>
+   <update_electron>32863</update_electron>
+   <update_ion_Xe1>26679</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="53">
+  time = 2.65e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1983874</particleNumber>
+   <pulledPtclNum>591</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-441</Xmax>
+   <Xmin>-150</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000972</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>1.054449e-08</error>
+   <iteration>7</iteration>
+   <meanCathode>4.266163e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>149</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>66</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>1117121</integCDens_electron>
+   <integCDens_ion_Xe1>951831</integCDens_ion_Xe1>
+   <reduce_electron>2911</reduce_electron>
+   <reduce_ion_Xe1>2931</reduce_ion_Xe1>
+   <solvePoisson>398941</solvePoisson>
+   <update_electron>29228</update_electron>
+   <update_ion_Xe1>26626</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="54">
+  time = 2.7e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1983471</particleNumber>
+   <pulledPtclNum>572</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-410</Xmax>
+   <Xmin>-162</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2000990</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>1</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>6.803809e-09</error>
+   <iteration>7</iteration>
+   <meanCathode>4.572309e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>161</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>82</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1224679</integCDens_electron>
+   <integCDens_ion_Xe1>926100</integCDens_ion_Xe1>
+   <reduce_electron>2953</reduce_electron>
+   <reduce_ion_Xe1>2915</reduce_ion_Xe1>
+   <solvePoisson>399185</solvePoisson>
+   <update_electron>31300</update_electron>
+   <update_ion_Xe1>26427</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="55">
+  time = 2.75e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1983048</particleNumber>
+   <pulledPtclNum>604</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-444</Xmax>
+   <Xmin>-160</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001009</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.075385e-09</error>
+   <iteration>7</iteration>
+   <meanCathode>4.855096e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>159</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>64</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1204543</integCDens_electron>
+   <integCDens_ion_Xe1>946809</integCDens_ion_Xe1>
+   <reduce_electron>3012</reduce_electron>
+   <reduce_ion_Xe1>2953</reduce_ion_Xe1>
+   <solvePoisson>399070</solvePoisson>
+   <update_electron>32487</update_electron>
+   <update_ion_Xe1>26205</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="56">
+  time = 2.8e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1982645</particleNumber>
+   <pulledPtclNum>582</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-404</Xmax>
+   <Xmin>-178</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001028</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.730553e-09</error>
+   <iteration>7</iteration>
+   <meanCathode>5.127122e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>177</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>88</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>1164215</integCDens_electron>
+   <integCDens_ion_Xe1>897066</integCDens_ion_Xe1>
+   <reduce_electron>3081</reduce_electron>
+   <reduce_ion_Xe1>2936</reduce_ion_Xe1>
+   <solvePoisson>398458</solvePoisson>
+   <update_electron>33554</update_electron>
+   <update_ion_Xe1>26784</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="57">
+  time = 2.85e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1982269</particleNumber>
+   <pulledPtclNum>573</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-388</Xmax>
+   <Xmin>-185</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001047</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.561571e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>5.369107e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>184</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>70</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1134277</integCDens_electron>
+   <integCDens_ion_Xe1>917101</integCDens_ion_Xe1>
+   <reduce_electron>2891</reduce_electron>
+   <reduce_ion_Xe1>2932</reduce_ion_Xe1>
+   <solvePoisson>369065</solvePoisson>
+   <update_electron>36181</update_electron>
+   <update_ion_Xe1>25562</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="58">
+  time = 2.9e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1981947</particleNumber>
+   <pulledPtclNum>526</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-378</Xmax>
+   <Xmin>-148</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001065</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>1</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.455403e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>5.589137e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>147</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>79</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1250329</integCDens_electron>
+   <integCDens_ion_Xe1>825494</integCDens_ion_Xe1>
+   <reduce_electron>3021</reduce_electron>
+   <reduce_ion_Xe1>2953</reduce_ion_Xe1>
+   <solvePoisson>369233</solvePoisson>
+   <update_electron>34392</update_electron>
+   <update_ion_Xe1>27124</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="59">
+  time = 2.95e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1981592</particleNumber>
+   <pulledPtclNum>522</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-358</Xmax>
+   <Xmin>-164</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001084</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.366462e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>5.832701e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>163</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>70</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1232634</integCDens_electron>
+   <integCDens_ion_Xe1>935395</integCDens_ion_Xe1>
+   <reduce_electron>2922</reduce_electron>
+   <reduce_ion_Xe1>2929</reduce_ion_Xe1>
+   <solvePoisson>369148</solvePoisson>
+   <update_electron>36001</update_electron>
+   <update_ion_Xe1>27074</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="60">
+  time = 3e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1981240</particleNumber>
+   <pulledPtclNum>535</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-374</Xmax>
+   <Xmin>-161</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001103</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.398603e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>6.045458e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>160</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>80</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1125766</integCDens_electron>
+   <integCDens_ion_Xe1>851639</integCDens_ion_Xe1>
+   <reduce_electron>3050</reduce_electron>
+   <reduce_ion_Xe1>2923</reduce_ion_Xe1>
+   <solvePoisson>369276</solvePoisson>
+   <update_electron>33316</update_electron>
+   <update_ion_Xe1>27821</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="61">
+  time = 3.05e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1980951</particleNumber>
+   <pulledPtclNum>469</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-307</Xmax>
+   <Xmin>-162</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001122</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>5.333261e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>6.244913e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>161</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>65</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>1234489</integCDens_electron>
+   <integCDens_ion_Xe1>918656</integCDens_ion_Xe1>
+   <reduce_electron>2999</reduce_electron>
+   <reduce_ion_Xe1>2923</reduce_ion_Xe1>
+   <solvePoisson>369145</solvePoisson>
+   <update_electron>34698</update_electron>
+   <update_ion_Xe1>26491</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="62">
+  time = 3.1e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1980644</particleNumber>
+   <pulledPtclNum>488</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-332</Xmax>
+   <Xmin>-156</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001141</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>5.629888e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>6.428278e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>155</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>65</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>977539</integCDens_electron>
+   <integCDens_ion_Xe1>870071</integCDens_ion_Xe1>
+   <reduce_electron>3011</reduce_electron>
+   <reduce_ion_Xe1>2924</reduce_ion_Xe1>
+   <solvePoisson>369269</solvePoisson>
+   <update_electron>31743</update_electron>
+   <update_ion_Xe1>27714</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="63">
+  time = 3.15e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1980351</particleNumber>
+   <pulledPtclNum>468</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-313</Xmax>
+   <Xmin>-155</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001160</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>6.673604e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>6.602673e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>154</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>78</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1226247</integCDens_electron>
+   <integCDens_ion_Xe1>924103</integCDens_ion_Xe1>
+   <reduce_electron>2940</reduce_electron>
+   <reduce_ion_Xe1>2925</reduce_ion_Xe1>
+   <solvePoisson>369278</solvePoisson>
+   <update_electron>31882</update_electron>
+   <update_ion_Xe1>26291</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="64">
+  time = 3.2e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1980071</particleNumber>
+   <pulledPtclNum>454</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-312</Xmax>
+   <Xmin>-141</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001178</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>2</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>6.760561e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>6.760832e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>139</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>61</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>974647</integCDens_electron>
+   <integCDens_ion_Xe1>913551</integCDens_ion_Xe1>
+   <reduce_electron>2912</reduce_electron>
+   <reduce_ion_Xe1>2932</reduce_ion_Xe1>
+   <solvePoisson>369375</solvePoisson>
+   <update_electron>31466</update_electron>
+   <update_ion_Xe1>25955</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="65">
+  time = 3.25e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1979762</particleNumber>
+   <pulledPtclNum>468</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-310</Xmax>
+   <Xmin>-158</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001197</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.191347e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>6.917193e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>157</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>66</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1224917</integCDens_electron>
+   <integCDens_ion_Xe1>928826</integCDens_ion_Xe1>
+   <reduce_electron>2904</reduce_electron>
+   <reduce_ion_Xe1>2923</reduce_ion_Xe1>
+   <solvePoisson>369219</solvePoisson>
+   <update_electron>29540</update_electron>
+   <update_ion_Xe1>25223</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="66">
+  time = 3.3e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1979508</particleNumber>
+   <pulledPtclNum>431</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-279</Xmax>
+   <Xmin>-152</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001216</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.509429e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>7.038126e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>151</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>81</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>1240788</integCDens_electron>
+   <integCDens_ion_Xe1>930920</integCDens_ion_Xe1>
+   <reduce_electron>2906</reduce_electron>
+   <reduce_ion_Xe1>2921</reduce_ion_Xe1>
+   <solvePoisson>369241</solvePoisson>
+   <update_electron>36822</update_electron>
+   <update_ion_Xe1>26363</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="67">
+  time = 3.35e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1979222</particleNumber>
+   <pulledPtclNum>457</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-287</Xmax>
+   <Xmin>-170</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001235</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>6.639306e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>7.148569e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>169</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>71</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1209751</integCDens_electron>
+   <integCDens_ion_Xe1>889761</integCDens_ion_Xe1>
+   <reduce_electron>3069</reduce_electron>
+   <reduce_ion_Xe1>2925</reduce_ion_Xe1>
+   <solvePoisson>369042</solvePoisson>
+   <update_electron>32484</update_electron>
+   <update_ion_Xe1>25321</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="68">
+  time = 3.4e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1978972</particleNumber>
+   <pulledPtclNum>439</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-276</Xmax>
+   <Xmin>-163</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001254</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>4.699027e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>7.223049e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>162</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>79</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1204237</integCDens_electron>
+   <integCDens_ion_Xe1>927537</integCDens_ion_Xe1>
+   <reduce_electron>3021</reduce_electron>
+   <reduce_ion_Xe1>2922</reduce_ion_Xe1>
+   <solvePoisson>368175</solvePoisson>
+   <update_electron>32723</update_electron>
+   <update_ion_Xe1>26966</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="69">
+  time = 3.45e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1978768</particleNumber>
+   <pulledPtclNum>386</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-226</Xmax>
+   <Xmin>-160</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001273</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>4.975613e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>7.287139e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>159</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>66</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1194145</integCDens_electron>
+   <integCDens_ion_Xe1>926867</integCDens_ion_Xe1>
+   <reduce_electron>3036</reduce_electron>
+   <reduce_ion_Xe1>2924</reduce_ion_Xe1>
+   <solvePoisson>369226</solvePoisson>
+   <update_electron>33074</update_electron>
+   <update_ion_Xe1>26573</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="70">
+  time = 3.5e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1978552</particleNumber>
+   <pulledPtclNum>395</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-215</Xmax>
+   <Xmin>-179</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001291</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>1</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>5.209556e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>7.337893e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>178</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>80</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1200608</integCDens_electron>
+   <integCDens_ion_Xe1>900888</integCDens_ion_Xe1>
+   <reduce_electron>2932</reduce_electron>
+   <reduce_ion_Xe1>2926</reduce_ion_Xe1>
+   <solvePoisson>369569</solvePoisson>
+   <update_electron>30505</update_electron>
+   <update_ion_Xe1>25766</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="71">
+  time = 3.55e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1978378</particleNumber>
+   <pulledPtclNum>372</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-207</Xmax>
+   <Xmin>-164</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001310</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>3.847294e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>7.352214e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>163</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>68</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>961485</integCDens_electron>
+   <integCDens_ion_Xe1>904404</integCDens_ion_Xe1>
+   <reduce_electron>2896</reduce_electron>
+   <reduce_ion_Xe1>2920</reduce_ion_Xe1>
+   <solvePoisson>369136</solvePoisson>
+   <update_electron>30461</update_electron>
+   <update_ion_Xe1>26168</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="72">
+  time = 3.6e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1978205</particleNumber>
+   <pulledPtclNum>356</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-195</Xmax>
+   <Xmin>-161</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001329</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>3.655482e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>7.365491e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>160</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>67</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1196922</integCDens_electron>
+   <integCDens_ion_Xe1>917282</integCDens_ion_Xe1>
+   <reduce_electron>2914</reduce_electron>
+   <reduce_ion_Xe1>2927</reduce_ion_Xe1>
+   <solvePoisson>370457</solvePoisson>
+   <update_electron>31251</update_electron>
+   <update_ion_Xe1>25114</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="73">
+  time = 3.65e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1978051</particleNumber>
+   <pulledPtclNum>334</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-164</Xmax>
+   <Xmin>-170</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001348</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>2.559879e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>7.365083e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>169</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>79</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1164939</integCDens_electron>
+   <integCDens_ion_Xe1>899709</integCDens_ion_Xe1>
+   <reduce_electron>3862</reduce_electron>
+   <reduce_ion_Xe1>2936</reduce_ion_Xe1>
+   <solvePoisson>369417</solvePoisson>
+   <update_electron>33759</update_electron>
+   <update_ion_Xe1>24271</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="74">
+  time = 3.7e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1977890</particleNumber>
+   <pulledPtclNum>350</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-176</Xmax>
+   <Xmin>-174</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001367</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>2.268131e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>7.338824e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>173</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>67</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1213586</integCDens_electron>
+   <integCDens_ion_Xe1>936613</integCDens_ion_Xe1>
+   <reduce_electron>3064</reduce_electron>
+   <reduce_ion_Xe1>2934</reduce_ion_Xe1>
+   <solvePoisson>369690</solvePoisson>
+   <update_electron>32956</update_electron>
+   <update_ion_Xe1>26808</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="75">
+  time = 3.75e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1977740</particleNumber>
+   <pulledPtclNum>343</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-162</Xmax>
+   <Xmin>-181</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001385</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>1</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>2.114684e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>7.293330e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>180</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>68</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>955369</integCDens_electron>
+   <integCDens_ion_Xe1>912581</integCDens_ion_Xe1>
+   <reduce_electron>3314</reduce_electron>
+   <reduce_ion_Xe1>2922</reduce_ion_Xe1>
+   <solvePoisson>369467</solvePoisson>
+   <update_electron>32769</update_electron>
+   <update_ion_Xe1>25805</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="76">
+  time = 3.8e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1977626</particleNumber>
+   <pulledPtclNum>314</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-149</Xmax>
+   <Xmin>-165</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001404</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>1.865445e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>7.225451e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>164</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>75</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>969926</integCDens_electron>
+   <integCDens_ion_Xe1>886447</integCDens_ion_Xe1>
+   <reduce_electron>5306</reduce_electron>
+   <reduce_ion_Xe1>2923</reduce_ion_Xe1>
+   <solvePoisson>369651</solvePoisson>
+   <update_electron>40842</update_electron>
+   <update_ion_Xe1>26126</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="77">
+  time = 3.85e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1977497</particleNumber>
+   <pulledPtclNum>313</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-140</Xmax>
+   <Xmin>-173</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001423</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>1.869960e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>7.158748e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>172</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>68</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1061663</integCDens_electron>
+   <integCDens_ion_Xe1>933695</integCDens_ion_Xe1>
+   <reduce_electron>2901</reduce_electron>
+   <reduce_ion_Xe1>2925</reduce_ion_Xe1>
+   <solvePoisson>369395</solvePoisson>
+   <update_electron>29001</update_electron>
+   <update_ion_Xe1>25739</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="78">
+  time = 3.9e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1977352</particleNumber>
+   <pulledPtclNum>337</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-152</Xmax>
+   <Xmin>-185</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001442</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>1.759357e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>7.070200e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>184</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>68</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1237931</integCDens_electron>
+   <integCDens_ion_Xe1>900342</integCDens_ion_Xe1>
+   <reduce_electron>3058</reduce_electron>
+   <reduce_ion_Xe1>2923</reduce_ion_Xe1>
+   <solvePoisson>369414</solvePoisson>
+   <update_electron>33545</update_electron>
+   <update_ion_Xe1>26283</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="79">
+  time = 3.95e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1977277</particleNumber>
+   <pulledPtclNum>279</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-120</Xmax>
+   <Xmin>-159</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001461</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>1.906386e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>6.954858e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>158</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>81</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1055157</integCDens_electron>
+   <integCDens_ion_Xe1>936387</integCDens_ion_Xe1>
+   <reduce_electron>2899</reduce_electron>
+   <reduce_ion_Xe1>2927</reduce_ion_Xe1>
+   <solvePoisson>369284</solvePoisson>
+   <update_electron>30184</update_electron>
+   <update_ion_Xe1>26386</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="80">
+  time = 4e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1977161</particleNumber>
+   <pulledPtclNum>294</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-112</Xmax>
+   <Xmin>-182</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001480</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>1.808663e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>6.854470e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>181</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>74</injection_electron>
+   <injection_ion_Xe1>13</injection_ion_Xe1>
+   <integCDens_electron>1210021</integCDens_electron>
+   <integCDens_ion_Xe1>910043</integCDens_ion_Xe1>
+   <reduce_electron>3025</reduce_electron>
+   <reduce_ion_Xe1>2924</reduce_ion_Xe1>
+   <solvePoisson>369335</solvePoisson>
+   <update_electron>34411</update_electron>
+   <update_ion_Xe1>26155</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="81">
+  time = 4.05e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1977054</particleNumber>
+   <pulledPtclNum>308</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-121</Xmax>
+   <Xmin>-187</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001499</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>1.863505e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>6.717700e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>186</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>84</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>1190612</integCDens_electron>
+   <integCDens_ion_Xe1>907956</integCDens_ion_Xe1>
+   <reduce_electron>2921</reduce_electron>
+   <reduce_ion_Xe1>3432</reduce_ion_Xe1>
+   <solvePoisson>369280</solvePoisson>
+   <update_electron>31863</update_electron>
+   <update_ion_Xe1>27026</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="82">
+  time = 4.1e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976965</particleNumber>
+   <pulledPtclNum>295</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-109</Xmax>
+   <Xmin>-186</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001518</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>1.837815e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>6.564015e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>185</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>74</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1206363</integCDens_electron>
+   <integCDens_ion_Xe1>900028</integCDens_ion_Xe1>
+   <reduce_electron>2897</reduce_electron>
+   <reduce_ion_Xe1>2924</reduce_ion_Xe1>
+   <solvePoisson>369291</solvePoisson>
+   <update_electron>31138</update_electron>
+   <update_ion_Xe1>25975</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="83">
+  time = 4.15e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976875</particleNumber>
+   <pulledPtclNum>295</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-93</Xmax>
+   <Xmin>-202</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001537</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.985275e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>6.400758e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>201</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>90</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>1201119</integCDens_electron>
+   <integCDens_ion_Xe1>911625</integCDens_ion_Xe1>
+   <reduce_electron>2894</reduce_electron>
+   <reduce_ion_Xe1>3474</reduce_ion_Xe1>
+   <solvePoisson>340079</solvePoisson>
+   <update_electron>29475</update_electron>
+   <update_ion_Xe1>28413</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="84">
+  time = 4.2e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976814</particleNumber>
+   <pulledPtclNum>282</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-89</Xmax>
+   <Xmin>-193</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001556</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.295692e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>6.212017e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>192</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>80</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>961964</integCDens_electron>
+   <integCDens_ion_Xe1>911779</integCDens_ion_Xe1>
+   <reduce_electron>2886</reduce_electron>
+   <reduce_ion_Xe1>2938</reduce_ion_Xe1>
+   <solvePoisson>339415</solvePoisson>
+   <update_electron>28322</update_electron>
+   <update_ion_Xe1>26525</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="85">
+  time = 4.25e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976758</particleNumber>
+   <pulledPtclNum>268</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-94</Xmax>
+   <Xmin>-174</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001575</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.097334e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>6.024985e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>173</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>70</injection_electron>
+   <injection_ion_Xe1>17</injection_ion_Xe1>
+   <integCDens_electron>1190901</integCDens_electron>
+   <integCDens_ion_Xe1>849516</integCDens_ion_Xe1>
+   <reduce_electron>3000</reduce_electron>
+   <reduce_ion_Xe1>2923</reduce_ion_Xe1>
+   <solvePoisson>339932</solvePoisson>
+   <update_electron>32478</update_electron>
+   <update_ion_Xe1>25487</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="86">
+  time = 4.3e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976676</particleNumber>
+   <pulledPtclNum>275</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-75</Xmax>
+   <Xmin>-200</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001594</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.294883e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>5.849759e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>199</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>84</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>1196421</integCDens_electron>
+   <integCDens_ion_Xe1>907839</integCDens_ion_Xe1>
+   <reduce_electron>2936</reduce_electron>
+   <reduce_ion_Xe1>2924</reduce_ion_Xe1>
+   <solvePoisson>339800</solvePoisson>
+   <update_electron>35709</update_electron>
+   <update_ion_Xe1>25410</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="87">
+  time = 4.35e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976653</particleNumber>
+   <pulledPtclNum>242</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-70</Xmax>
+   <Xmin>-172</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001613</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>8.599993e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>5.640716e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>171</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>72</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1113131</integCDens_electron>
+   <integCDens_ion_Xe1>900331</integCDens_ion_Xe1>
+   <reduce_electron>2897</reduce_electron>
+   <reduce_ion_Xe1>2923</reduce_ion_Xe1>
+   <solvePoisson>340050</solvePoisson>
+   <update_electron>30735</update_electron>
+   <update_ion_Xe1>25501</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="88">
+  time = 4.4e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976597</particleNumber>
+   <pulledPtclNum>247</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-71</Xmax>
+   <Xmin>-176</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001632</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>8.878611e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>5.455774e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>175</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>73</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>977323</integCDens_electron>
+   <integCDens_ion_Xe1>909341</integCDens_ion_Xe1>
+   <reduce_electron>2907</reduce_electron>
+   <reduce_ion_Xe1>2898</reduce_ion_Xe1>
+   <solvePoisson>340047</solvePoisson>
+   <update_electron>30657</update_electron>
+   <update_ion_Xe1>25245</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="89">
+  time = 4.45e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976554</particleNumber>
+   <pulledPtclNum>238</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-49</Xmax>
+   <Xmin>-189</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001651</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>8.359184e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>5.262931e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>188</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>88</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>1201388</integCDens_electron>
+   <integCDens_ion_Xe1>915323</integCDens_ion_Xe1>
+   <reduce_electron>2896</reduce_electron>
+   <reduce_ion_Xe1>2927</reduce_ion_Xe1>
+   <solvePoisson>340893</solvePoisson>
+   <update_electron>27426</update_electron>
+   <update_ion_Xe1>25761</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="90">
+  time = 4.5e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976505</particleNumber>
+   <pulledPtclNum>257</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-55</Xmax>
+   <Xmin>-202</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001670</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.611418e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>5.054140e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>201</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>81</injection_electron>
+   <injection_ion_Xe1>46</injection_ion_Xe1>
+   <integCDens_electron>956123</integCDens_electron>
+   <integCDens_ion_Xe1>930183</integCDens_ion_Xe1>
+   <reduce_electron>2978</reduce_electron>
+   <reduce_ion_Xe1>2921</reduce_ion_Xe1>
+   <solvePoisson>339923</solvePoisson>
+   <update_electron>35674</update_electron>
+   <update_ion_Xe1>26609</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="91">
+  time = 4.55e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976475</particleNumber>
+   <pulledPtclNum>251</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-57</Xmax>
+   <Xmin>-194</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001689</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.285178e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>4.831261e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>193</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>74</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>1194364</integCDens_electron>
+   <integCDens_ion_Xe1>893475</integCDens_ion_Xe1>
+   <reduce_electron>2910</reduce_electron>
+   <reduce_ion_Xe1>2924</reduce_ion_Xe1>
+   <solvePoisson>339794</solvePoisson>
+   <update_electron>29473</update_electron>
+   <update_ion_Xe1>26039</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="92">
+  time = 4.6e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976436</particleNumber>
+   <pulledPtclNum>252</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-49</Xmax>
+   <Xmin>-203</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001708</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.555047e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>4.617316e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>202</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>91</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>881038</integCDens_electron>
+   <integCDens_ion_Xe1>889814</integCDens_ion_Xe1>
+   <reduce_electron>2936</reduce_electron>
+   <reduce_ion_Xe1>2924</reduce_ion_Xe1>
+   <solvePoisson>339969</solvePoisson>
+   <update_electron>35361</update_electron>
+   <update_ion_Xe1>25419</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="93">
+  time = 4.65e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976412</particleNumber>
+   <pulledPtclNum>246</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-48</Xmax>
+   <Xmin>-198</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001727</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>6.757188e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>4.396272e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>197</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>73</injection_electron>
+   <injection_ion_Xe1>47</injection_ion_Xe1>
+   <integCDens_electron>1206539</integCDens_electron>
+   <integCDens_ion_Xe1>925412</integCDens_ion_Xe1>
+   <reduce_electron>2904</reduce_electron>
+   <reduce_ion_Xe1>2938</reduce_ion_Xe1>
+   <solvePoisson>339858</solvePoisson>
+   <update_electron>30574</update_electron>
+   <update_ion_Xe1>26884</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="94">
+  time = 4.7e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976411</particleNumber>
+   <pulledPtclNum>218</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-29</Xmax>
+   <Xmin>-189</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001746</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.023945e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>4.183265e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>188</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>73</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>945161</integCDens_electron>
+   <integCDens_ion_Xe1>909476</integCDens_ion_Xe1>
+   <reduce_electron>2892</reduce_electron>
+   <reduce_ion_Xe1>2922</reduce_ion_Xe1>
+   <solvePoisson>339931</solvePoisson>
+   <update_electron>29855</update_electron>
+   <update_ion_Xe1>26186</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="95">
+  time = 4.75e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976380</particleNumber>
+   <pulledPtclNum>239</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-31</Xmax>
+   <Xmin>-208</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001765</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.988879e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>3.986706e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>207</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>92</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1208583</integCDens_electron>
+   <integCDens_ion_Xe1>908294</integCDens_ion_Xe1>
+   <reduce_electron>3044</reduce_electron>
+   <reduce_ion_Xe1>2926</reduce_ion_Xe1>
+   <solvePoisson>340168</solvePoisson>
+   <update_electron>33713</update_electron>
+   <update_ion_Xe1>25577</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="96">
+  time = 4.8e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976352</particleNumber>
+   <pulledPtclNum>255</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-32</Xmax>
+   <Xmin>-223</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001784</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>6.851303e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>3.776478e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>222</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>131</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>971855</integCDens_electron>
+   <integCDens_ion_Xe1>910954</integCDens_ion_Xe1>
+   <reduce_electron>2920</reduce_electron>
+   <reduce_ion_Xe1>2924</reduce_ion_Xe1>
+   <solvePoisson>339865</solvePoisson>
+   <update_electron>31612</update_electron>
+   <update_ion_Xe1>27105</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="97">
+  time = 4.85e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976322</particleNumber>
+   <pulledPtclNum>272</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-31</Xmax>
+   <Xmin>-241</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001803</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.326788e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>3.559787e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>240</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>86</injection_electron>
+   <injection_ion_Xe1>13</injection_ion_Xe1>
+   <integCDens_electron>968064</integCDens_electron>
+   <integCDens_ion_Xe1>902191</integCDens_ion_Xe1>
+   <reduce_electron>2895</reduce_electron>
+   <reduce_ion_Xe1>2916</reduce_ion_Xe1>
+   <solvePoisson>339886</solvePoisson>
+   <update_electron>29376</update_electron>
+   <update_ion_Xe1>25701</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="98">
+  time = 4.9e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976341</particleNumber>
+   <pulledPtclNum>241</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-25</Xmax>
+   <Xmin>-216</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001822</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>7.500383e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>3.334917e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>215</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>93</injection_electron>
+   <injection_ion_Xe1>12</injection_ion_Xe1>
+   <integCDens_electron>1073493</integCDens_electron>
+   <integCDens_ion_Xe1>874245</integCDens_ion_Xe1>
+   <reduce_electron>3017</reduce_electron>
+   <reduce_ion_Xe1>2927</reduce_ion_Xe1>
+   <solvePoisson>339957</solvePoisson>
+   <update_electron>34474</update_electron>
+   <update_ion_Xe1>25758</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="99">
+  time = 4.95e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976309</particleNumber>
+   <pulledPtclNum>267</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-31</Xmax>
+   <Xmin>-236</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001840</particleNumber>
+   <pulledPtclNum>2</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>1</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.307642e-08</error>
+   <iteration>6</iteration>
+   <meanCathode>3.145886e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>235</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>127</injection_electron>
+   <injection_ion_Xe1>13</injection_ion_Xe1>
+   <integCDens_electron>1216983</integCDens_electron>
+   <integCDens_ion_Xe1>952384</integCDens_ion_Xe1>
+   <reduce_electron>3046</reduce_electron>
+   <reduce_ion_Xe1>2920</reduce_ion_Xe1>
+   <solvePoisson>339883</solvePoisson>
+   <update_electron>33210</update_electron>
+   <update_ion_Xe1>27033</update_ion_Xe1>
+  </Section>
+ </Cycle>
+ <Cycle ID="100">
+  time = 5e-10
+  <Section Name="flowout_electron">
+   <particleNumber>1976286</particleNumber>
+   <pulledPtclNum>278</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_electron">
+   <Xmax>-32</Xmax>
+   <Xmin>-246</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <particleNumber>2001859</particleNumber>
+   <pulledPtclNum>1</pulledPtclNum>
+  </Section>
+  <Section Name="flowout_ion_Xe1">
+   <Xmax>0</Xmax>
+   <Xmin>1</Xmin>
+   <Ymax>0</Ymax>
+   <Ymin>0</Ymin>
+  </Section>
+  <Section Name="solvePoisson">
+   <error>9.881721e-08</error>
+   <iteration>5</iteration>
+   <meanCathode>2.947932e+01</meanCathode>
+  </Section>
+  <Section Name="injection_electron">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+   <hollow-cathode>245</hollow-cathode>
+  </Section>
+  <Section Name="injection_ion_Xe1">
+   <Xsinusoidal-Gaussian>20</Xsinusoidal-Gaussian>
+  </Section>
+  <Section Name="elapsedTime">
+   <injection_electron>101</injection_electron>
+   <injection_ion_Xe1>11</injection_ion_Xe1>
+   <integCDens_electron>1219362</integCDens_electron>
+   <integCDens_ion_Xe1>870126</integCDens_ion_Xe1>
+   <reduce_electron>2881</reduce_electron>
+   <reduce_ion_Xe1>2929</reduce_ion_Xe1>
+   <solvePoisson>309945</solvePoisson>
+   <update_electron>36052</update_electron>
+   <update_ion_Xe1>25274</update_ion_Xe1>
+  </Section>
+ </Cycle>
+<![CDATA[
+culculation end.
+total elapsed time: 245 sec.
+]]>
+</SimulationLog>

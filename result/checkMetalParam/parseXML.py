@@ -53,9 +53,30 @@ def plot_values(cycles, arr_values, labels, title="", scale=1.0):
     plt.show()
 
 if __name__ == '__main__':
-    cycles, timeICDE_reduceInCPU = parseXML('result/culcOrderForCDens/reduceInCPU.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, timeICDE_reduceInMtl = parseXML('result/culcOrderForCDens/reduceInMtl.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, timeICDE_arrIdxMajor = parseXML('result/culcOrderForCDens/arrIdxMajor.xml', 'elapsedTime', 'integCDens_electron')
-    timeICDE = [timeICDE_reduceInCPU, timeICDE_reduceInMtl, timeICDE_arrIdxMajor]
-    labels =   ["timeICDE_reduceInCPU", "timeICDE_reduceInMtl", "timeICDE_arrIdxMajor"]
+    cycles, timeICDE_256_2048 = parseXML('result/checkMetalParam/log_256_2048.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, timeICDE_512_2048 = parseXML('result/checkMetalParam/log_512_2048.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, timeICDE_128_4096 = parseXML('result/checkMetalParam/log_128_4096.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, timeICDE_256_4096 = parseXML('result/checkMetalParam/log_256_4096.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, timeICDE_512_4096 = parseXML('result/checkMetalParam/log_512_4096.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, timeICDE_1024_4096 = parseXML('result/checkMetalParam/log_1024_4096.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, timeICDE_256_6114 = parseXML('result/checkMetalParam/log_256_6114.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, timeICDE_512_6114 = parseXML('result/checkMetalParam/log_512_6114.xml', 'elapsedTime', 'integCDens_electron')
+    timeICDE = [\
+                # timeICDE_256_2048, \
+                timeICDE_512_2048, \
+                # timeICDE_128_4096, \
+                # timeICDE_256_4096, \
+                timeICDE_512_4096, \
+                # timeICDE_1024_4096]
+                # timeICDE_256_6114, \
+                timeICDE_512_6114]
+    labels =   [\
+                # "tgs256_ics2048", \
+                "tgs512_ics2048", \
+                # "tgs128_ics4096", \
+                # "tgs256_ics4096", \
+                "tgs512_ics4096", \
+                # "tgs1024_ics4096"]
+                # "tgs256_ics6114", \
+                "tgs512_ics6114"]
     plot_values(cycles, timeICDE, labels, "elapsed time [msec]", 1e-3)
