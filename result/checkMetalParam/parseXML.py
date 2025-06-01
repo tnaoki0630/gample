@@ -50,33 +50,42 @@ def plot_values(cycles, arr_values, labels, title="", scale=1.0):
     plt.xlim(left=0)
     plt.ylim(bottom=0)
     plt.tight_layout()
-    plt.show()
+    plt.show()    
 
 if __name__ == '__main__':
-    cycles, timeICDE_256_2048 = parseXML('result/checkMetalParam/log_256_2048.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, timeICDE_512_2048 = parseXML('result/checkMetalParam/log_512_2048.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, timeICDE_128_4096 = parseXML('result/checkMetalParam/log_128_4096.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, timeICDE_256_4096 = parseXML('result/checkMetalParam/log_256_4096.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, timeICDE_512_4096 = parseXML('result/checkMetalParam/log_512_4096.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, timeICDE_1024_4096 = parseXML('result/checkMetalParam/log_1024_4096.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, timeICDE_256_6114 = parseXML('result/checkMetalParam/log_256_6114.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, timeICDE_512_6114 = parseXML('result/checkMetalParam/log_512_6114.xml', 'elapsedTime', 'integCDens_electron')
-    timeICDE = [\
-                # timeICDE_256_2048, \
-                timeICDE_512_2048, \
-                # timeICDE_128_4096, \
-                # timeICDE_256_4096, \
-                timeICDE_512_4096, \
-                # timeICDE_1024_4096]
-                # timeICDE_256_6114, \
-                timeICDE_512_6114]
-    labels =   [\
-                # "tgs256_ics2048", \
-                "tgs512_ics2048", \
-                # "tgs128_ics4096", \
-                # "tgs256_ics4096", \
-                "tgs512_ics4096", \
-                # "tgs1024_ics4096"]
-                # "tgs256_ics6114", \
-                "tgs512_ics6114"]
+    cycles, tgs1_ics128 = parseXML('log_1_128.xml', 'elapsedTime', 'solvePoisson')
+    cycles, tgs2_ics128 = parseXML('log_2_128.xml', 'elapsedTime', 'solvePoisson')
+    cycles, tgs4_ics128 = parseXML('log_4_128.xml', 'elapsedTime', 'solvePoisson')
+    cycles, tgs8_ics128 = parseXML('log_8_128.xml', 'elapsedTime', 'solvePoisson')
+    cycles, tgs16_ics128 = parseXML('log_16_128.xml', 'elapsedTime', 'solvePoisson')
+    cycles, tgs32_ics128 = parseXML('log_32_128.xml', 'elapsedTime', 'solvePoisson')
+    timeICDE = [ tgs1_ics128 ,  tgs2_ics128 ,  tgs4_ics128 ,  tgs8_ics128 ,  tgs16_ics128 ,  tgs32_ics128 ]
+    labels =   ["tgs1_ics128", "tgs2_ics128", "tgs4_ics128", "tgs8_ics128", "tgs16_ics128", "tgs32_ics128"]
     plot_values(cycles, timeICDE, labels, "elapsed time [msec]", 1e-3)
+    
+    cycles, tgs2_ics32 = parseXML('log_2_32.xml', 'elapsedTime', 'solvePoisson')
+    cycles, tgs2_ics64 = parseXML('log_2_64.xml', 'elapsedTime', 'solvePoisson')
+    cycles, tgs2_ics128 = parseXML('log_2_128.xml', 'elapsedTime', 'solvePoisson')
+    cycles, tgs2_ics256 = parseXML('log_2_256.xml', 'elapsedTime', 'solvePoisson')
+    timeICDE = [ tgs2_ics32 ,  tgs2_ics64 ,  tgs2_ics128 ,  tgs2_ics256 ]
+    labels =   ["tgs2_ics32", "tgs2_ics64", "tgs2_ics128", "tgs2_ics256"]
+    plot_values(cycles, timeICDE, labels, "elapsed time [msec]", 1e-3)
+    
+    cycles, tgs1_ics128 = parseXML('log_1_128.xml', 'solvePoisson', 'meanCathode')
+    cycles, tgs2_ics128 = parseXML('log_2_128.xml', 'solvePoisson', 'meanCathode')
+    cycles, tgs4_ics128 = parseXML('log_4_128.xml', 'solvePoisson', 'meanCathode')
+    cycles, tgs8_ics128 = parseXML('log_8_128.xml', 'solvePoisson', 'meanCathode')
+    cycles, tgs16_ics128 = parseXML('log_16_128.xml', 'solvePoisson', 'meanCathode')
+    cycles, tgs32_ics128 = parseXML('log_32_128.xml', 'solvePoisson', 'meanCathode')
+    timeICDE = [ tgs1_ics128 ,  tgs2_ics128 ,  tgs4_ics128 ,  tgs8_ics128 ,  tgs16_ics128 ,  tgs32_ics128 ]
+    labels =   ["tgs1_ics128", "tgs2_ics128", "tgs4_ics128", "tgs8_ics128", "tgs16_ics128", "tgs32_ics128"]
+    plot_values(cycles, timeICDE, labels, "mean electric potential [V]", 1)
+
+    cycles, tgs1_ics32 = parseXML('log_1_32.xml', 'solvePoisson', 'meanCathode')
+    cycles, tgs1_ics64 = parseXML('log_1_64.xml', 'solvePoisson', 'meanCathode')
+    cycles, tgs1_ics128 = parseXML('log_1_128.xml', 'solvePoisson', 'meanCathode')
+    cycles, tgs1_ics256 = parseXML('log_1_256.xml', 'solvePoisson', 'meanCathode')
+    timeICDE = [ tgs1_ics32 ,  tgs1_ics64 ,  tgs1_ics128 ,  tgs1_ics256 ]
+    labels =   ["tgs1_ics32", "tgs1_ics64", "tgs1_ics128", "tgs1_ics256"]
+    plot_values(cycles, timeICDE, labels, "mean electric potential [V]", 1)
+
