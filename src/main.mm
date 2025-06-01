@@ -1,24 +1,14 @@
-#include <chrono>
-#include <iostream>
-#include <numeric>
-#import <map>
-#import <string>
+#import <iostream>
+#import <numeric>
 #import <Foundation/Foundation.h>
+#import <mach/mach.h>
 #import "Init.h"
 #import "Particle.h"
 #import "Moment.h"
 #import "EMField.h"
 #import "DebugPrint.h"
 #import "XmlLogger.h"
-
-#define MEASURE(name, code, data)                                  \
-    do {                                                           \
-        auto _start = std::chrono::high_resolution_clock::now();  \
-        code;                                                     \
-        auto _end = std::chrono::high_resolution_clock::now();    \
-        auto _time = std::chrono::duration_cast<std::chrono::microseconds>(_end - _start).count(); \
-        data[name] = std::to_string(_time);\
-    } while (0)
+#import "ResourceUtils.h"
 
 std::map<std::string, std::string> parseArgs(int argc, const char* argv[]) {
     std::map<std::string, std::string> options;
@@ -62,8 +52,9 @@ int main(int argc, const char * argv[]) {
 
         // logger の作成
         XmlLogger logger(args["-o"].c_str());
-        // 所用時間格納
+        // 所要リソース格納辞書
         std::map<std::string,std::string> dataElapsedTime;
+        std::map<std::string,std::string> dataMemUsage;
 
         // 初期化パラメータクラス作成
         Init *init = [[Init alloc] parseInputFile:inputPath];
@@ -152,8 +143,16 @@ int main(int argc, const char * argv[]) {
                 return 1;
             }
 
-            NSLog(@"Frame %d completed", cycle);
+            // リソース情報出力(unit: time[us], mem[kB])
             logger.logSection("elapsedTime", dataElapsedTime);
+            size_t phys = MemoryUtils::currentPhysicalFootprint();
+            size_t rss = MemoryUtils::currentRSS();
+            dataMemUsage["physicalFootprint"] = std::to_string(phys/1024);
+            dataMemUsage["residentSetSize"] = std::to_string(rss/1024);
+            logger.logSection("memoryUsage", dataMemUsage);
+            
+            //サイクル終了
+            NSLog(@"Frame %d completed", cycle);
             logger.logCycleEnd();
         }
 

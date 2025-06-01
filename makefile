@@ -1,6 +1,7 @@
 # コンパイラとフラグの設定
 CXX = clang++
 CXXFLAGS = -std=c++17 \
+           -x objective-c++ \
            -isysroot $(shell xcrun --show-sdk-path)\
            -I/Users/$(shell whoami)/Library/amgcl\
            -I/opt/homebrew/Cellar/boost/1.87.0/include\

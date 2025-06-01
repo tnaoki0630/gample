@@ -6,13 +6,13 @@
   },
   "ParamForTimeIntegration": {
     "Start":            1,
-    "End":              10,
+    "End":              200,
     "ParticleOutput":   0,
     "FieldOutput":      0,
     "TimeStep":         5e-12
   },
   "ParamForComputing": {
-    "ThreadGroupSize":      1,
+    "ThreadGroupSize":      8,
     "IntegrationChunkSize": 128,
     "MaxIterForPoisson":    200,
     "ToleranceForPoisson":  1e-7

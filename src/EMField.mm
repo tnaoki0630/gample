@@ -483,10 +483,10 @@ typedef amgcl::make_solver<
         }
     }
 
-    // solve
+    // solve（solver, phi_sol は使い回す）
     int iters;
     float error;
-    std::tie(iters, error) = (*_solver)(rhs, _phi_sol); // solver, phi_sol は使い回す
+    std::tie(iters, error) = (*_solver)(rhs, _phi_sol);
 
     // adjust potential
     float mean = 0.0;
