@@ -1,7 +1,5 @@
+#import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
-#import <simd/simd.h>
-#import <fstream>
-#import <string>
 #import "Init.h"
 #import "EMField.h"
 #import "Particle.h"

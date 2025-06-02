@@ -1153,14 +1153,16 @@ kernel void integratePressureZZ(
     MTLSize gridSizeMetalStyle = MTLSizeMake(threadGroupNum, 1, 1);
     MTLSize threadGroupSize = MTLSizeMake(_threadGroupSize, 1, 1);
     
-    // コマンドバッファとエンコーダの作成
-    id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
-    id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
+    // コマンドバッファとエンコーダ
+    id<MTLCommandBuffer> commandBuffer;
+    id<MTLComputeCommandEncoder> computeEncoder;
     
     // 部分和取得
     float* partialSums;
 
     // 積分実行: n
+    commandBuffer = [_commandQueue commandBuffer];
+    computeEncoder = [commandBuffer computeCommandEncoder];
     [computeEncoder setComputePipelineState:_integrateNumDensPipeline];
     [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
     [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
@@ -1179,6 +1181,8 @@ kernel void integratePressureZZ(
     }
     
     // 積分実行: ux
+    commandBuffer = [_commandQueue commandBuffer];
+    computeEncoder = [commandBuffer computeCommandEncoder];
     [computeEncoder setComputePipelineState:_integrateMeanVelXPipeline];
     [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
     [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
@@ -1197,6 +1201,8 @@ kernel void integratePressureZZ(
     }
 
     // 積分実行: uy
+    commandBuffer = [_commandQueue commandBuffer];
+    computeEncoder = [commandBuffer computeCommandEncoder];
     [computeEncoder setComputePipelineState:_integrateMeanVelYPipeline];
     [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
     [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
@@ -1215,6 +1221,8 @@ kernel void integratePressureZZ(
     }
 
     // 積分実行: uz
+    commandBuffer = [_commandQueue commandBuffer];
+    computeEncoder = [commandBuffer computeCommandEncoder];
     [computeEncoder setComputePipelineState:_integrateMeanVelZPipeline];
     [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
     [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
@@ -1233,6 +1241,8 @@ kernel void integratePressureZZ(
     }
 
     // 積分実行: Pxx
+    commandBuffer = [_commandQueue commandBuffer];
+    computeEncoder = [commandBuffer computeCommandEncoder];
     [computeEncoder setComputePipelineState:_integratePressureXXPipeline];
     [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
     [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
@@ -1251,6 +1261,8 @@ kernel void integratePressureZZ(
     }
 
     // 積分実行: Pxy
+    commandBuffer = [_commandQueue commandBuffer];
+    computeEncoder = [commandBuffer computeCommandEncoder];
     [computeEncoder setComputePipelineState:_integratePressureXYPipeline];
     [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
     [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
@@ -1269,6 +1281,8 @@ kernel void integratePressureZZ(
     }
 
     // 積分実行: Pxz
+    commandBuffer = [_commandQueue commandBuffer];
+    computeEncoder = [commandBuffer computeCommandEncoder];
     [computeEncoder setComputePipelineState:_integratePressureXZPipeline];
     [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
     [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
@@ -1287,6 +1301,8 @@ kernel void integratePressureZZ(
     }
 
     // 積分実行: Pyy
+    commandBuffer = [_commandQueue commandBuffer];
+    computeEncoder = [commandBuffer computeCommandEncoder];
     [computeEncoder setComputePipelineState:_integratePressureYYPipeline];
     [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
     [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
@@ -1305,6 +1321,8 @@ kernel void integratePressureZZ(
     }
 
     // 積分実行: Pyz
+    commandBuffer = [_commandQueue commandBuffer];
+    computeEncoder = [commandBuffer computeCommandEncoder];
     [computeEncoder setComputePipelineState:_integratePressureYZPipeline];
     [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
     [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
@@ -1323,6 +1341,8 @@ kernel void integratePressureZZ(
     }
 
     // 積分実行: Pzz
+    commandBuffer = [_commandQueue commandBuffer];
+    computeEncoder = [commandBuffer computeCommandEncoder];
     [computeEncoder setComputePipelineState:_integratePressureZZPipeline];
     [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
     [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
@@ -1389,7 +1409,7 @@ kernel void integratePressureZZ(
     int ngx = fld.ngx;
     int ngy = fld.ngy;
     int ngb = fld.ngb;
-    int ng = (ngx+2*ngb+1)*(ngy+2*ngb);
+    int ng = (ngx+2*ngb+1)*(ngy+2*ngb+1);
     float dx = fld.dx;
     float dy = fld.dy;
 
@@ -1405,46 +1425,32 @@ kernel void integratePressureZZ(
     float min_Pyz = 1e20, max_Pyz = -1e20;
     float min_Pzz = 1e20, max_Pzz = -1e20;
     for(int i = 0; i < ng; i++){
-        if (_n[i] < min_n)       { min_n = _n[i]; }
-        else if(_n[i] > max_n)   { max_n = _n[i]; }
-        if (_ux[i] < min_ux)       { min_ux = _ux[i]; }
-        else if(_ux[i] > max_ux)   { max_ux = _ux[i]; }
-        if (_uy[i] < min_uy)       { min_uy = _uy[i]; }
-        else if(_uy[i] > max_uy)   { max_uy = _uy[i]; }
-        if (_uy[i] < min_uy)       { min_uy = _uy[i]; }
-        else if(_uy[i] > max_uy)   { max_uy = _uy[i]; }
-        if (_Pxx[i] < min_Pxx)       { min_Pxx = _Pxx[i]; }
-        else if(_Pxx[i] > max_Pxx)   { max_Pxx = _Pxx[i]; }
-        if (_Pxy[i] < min_Pxy)       { min_Pxy = _Pxy[i]; }
-        else if(_Pxy[i] > max_Pxy)   { max_Pxy = _Pxy[i]; }
-        if (_Pxz[i] < min_Pxz)       { min_Pxz = _Pxz[i]; }
-        else if(_Pxz[i] > max_Pxz)   { max_Pxz = _Pxz[i]; }
-        if (_Pyy[i] < min_Pyy)       { min_Pyy = _Pyy[i]; }
-        else if(_Pyy[i] > max_Pyy)   { max_Pyy = _Pyy[i]; }
-        if (_Pyz[i] < min_Pyz)       { min_Pyz = _Pyz[i]; }
-        else if(_Pyz[i] > max_Pyz)   { max_Pyz = _Pyz[i]; }
-        if (_Pzz[i] < min_Pzz)       { min_Pzz = _Pzz[i]; }
-        else if(_Pzz[i] > max_Pxz)   { max_Pxz = _Pxz[i]; }
+        if (_n[i] < min_n) { min_n = _n[i]; } else if (_n[i] > max_n) { max_n = _n[i]; }
+        if (_ux[i] < min_ux) { min_ux = _ux[i]; } else if (_ux[i] > max_ux) { max_ux = _ux[i]; }
+        if (_uy[i] < min_uy) { min_uy = _uy[i]; } else if (_uy[i] > max_uy) { max_uy = _uy[i]; }
+        if (_uy[i] < min_uy) { min_uy = _uy[i]; } else if (_uy[i] > max_uy) { max_uy = _uy[i]; }
+        if (_Pxx[i] < min_Pxx) { min_Pxx = _Pxx[i]; } else if (_Pxx[i] > max_Pxx) { max_Pxx = _Pxx[i]; }
+        if (_Pxy[i] < min_Pxy) { min_Pxy = _Pxy[i]; } else if (_Pxy[i] > max_Pxy) { max_Pxy = _Pxy[i]; }
+        if (_Pxz[i] < min_Pxz) { min_Pxz = _Pxz[i]; } else if (_Pxz[i] > max_Pxz) { max_Pxz = _Pxz[i]; }
+        if (_Pyy[i] < min_Pyy) { min_Pyy = _Pyy[i]; } else if (_Pyy[i] > max_Pyy) { max_Pyy = _Pyy[i]; }
+        if (_Pyz[i] < min_Pyz) { min_Pyz = _Pyz[i]; } else if (_Pyz[i] > max_Pyz) { max_Pyz = _Pyz[i]; }
+        if (_Pzz[i] < min_Pzz) { min_Pzz = _Pzz[i]; } else if (_Pzz[i] > max_Pzz) { max_Pzz = _Pzz[i]; }
     }
     std::map<std::string, std::string> data ={
-        {"n_min", fmtSci(min_n, 6)},
-        {"n_max", fmtSci(max_n, 6)},
-        {"ux_min", fmtSci(min_ux, 6)},
-        {"ux_max", fmtSci(max_ux, 6)},
-        {"uy_min", fmtSci(min_uy, 6)},
-        {"uy_max", fmtSci(max_uy, 6)},
-        {"uz_min", fmtSci(min_uz, 6)},
-        {"uz_max", fmtSci(max_uz, 6)},
-        {"Pxx_min", fmtSci(min_Pxx*0.1, 6)},
-        {"Pxy_max", fmtSci(max_Pxy*0.1, 6)},
-        {"Pxz_min", fmtSci(min_Pxz*0.1, 6)},
-        {"Pyy_max", fmtSci(max_Pyy*0.1, 6)},
-        {"Pyz_min", fmtSci(min_Pyz*0.1, 6)},
-        {"Pzz_max", fmtSci(max_Pzz*0.1, 6)},
+        {"n_min", fmtSci(min_n, 6)}, {"n_max", fmtSci(max_n, 6)},
+        {"ux_min", fmtSci(min_ux, 6)}, {"ux_max", fmtSci(max_ux, 6)},
+        {"uy_min", fmtSci(min_uy, 6)}, {"uy_max", fmtSci(max_uy, 6)},
+        {"uz_min", fmtSci(min_uz, 6)}, {"uz_max", fmtSci(max_uz, 6)},
+        {"Pxx_min", fmtSci(min_Pxx*0.1, 6)}, {"Pxx_max", fmtSci(max_Pxx*0.1, 6)},
+        {"Pxy_min", fmtSci(min_Pxy*0.1, 6)}, {"Pxy_max", fmtSci(max_Pxy*0.1, 6)},
+        {"Pxz_min", fmtSci(min_Pxz*0.1, 6)}, {"Pxz_max", fmtSci(max_Pxz*0.1, 6)},
+        {"Pyy_min", fmtSci(min_Pyy*0.1, 6)}, {"Pyy_max", fmtSci(max_Pyy*0.1, 6)},
+        {"Pyz_min", fmtSci(min_Pyz*0.1, 6)}, {"Pyz_max", fmtSci(max_Pyz*0.1, 6)},
+        {"Pzz_min", fmtSci(min_Pzz*0.1, 6)}, {"Pzz_max", fmtSci(max_Pzz*0.1, 6)},
     };
     std::string pName_str = [pName UTF8String];
     logger.logSection("outputMoment_"+pName_str, data);
-    
+
     FILE *fp = fopen(filePath, "wb");
     if (!fp) {
         NSLog(@"Error: Unable to open file %s for writing", filePath);
@@ -1459,16 +1465,16 @@ kernel void integratePressureZZ(
     fwrite(&dy, sizeof(float), 1, fp);
     
     // フィールドデータを書き出す: name,type,array
-    writeField(fp, "n", 0, _n, ng, 1.0f);
-    writeField(fp, "ux", 0, _ux, ng, 1.0f);
-    writeField(fp, "uy", 0, _uy, ng, 1.0f);
-    writeField(fp, "uz", 0, _uz, ng, 1.0f);
-    writeField(fp, "Pxx", 0, _Pxx, ng, 0.1f);
-    writeField(fp, "Pxy", 0, _Pxy, ng, 0.1f);
-    writeField(fp, "Pxz", 0, _Pxz, ng, 0.1f);
-    writeField(fp, "Pyy", 0, _Pyy, ng, 0.1f);
-    writeField(fp, "Pyz", 0, _Pyz, ng, 0.1f);
-    writeField(fp, "Pzz", 0, _Pzz, ng, 0.1f);
+    writeField(fp, [[pName stringByAppendingString:@"_n"] UTF8String], 0, _n, ng, 1.0f);
+    writeField(fp, [[pName stringByAppendingString:@"_ux"] UTF8String], 0, _ux, ng, 1.0f);
+    writeField(fp, [[pName stringByAppendingString:@"_uy"] UTF8String], 0, _uy, ng, 1.0f);
+    writeField(fp, [[pName stringByAppendingString:@"_uz"] UTF8String], 0, _uz, ng, 1.0f);
+    writeField(fp, [[pName stringByAppendingString:@"_Pxx"] UTF8String], 0, _Pxx, ng, 0.1f);
+    writeField(fp, [[pName stringByAppendingString:@"_Pxy"] UTF8String], 0, _Pxy, ng, 0.1f);
+    writeField(fp, [[pName stringByAppendingString:@"_Pxz"] UTF8String], 0, _Pxz, ng, 0.1f);
+    writeField(fp, [[pName stringByAppendingString:@"_Pyy"] UTF8String], 0, _Pyy, ng, 0.1f);
+    writeField(fp, [[pName stringByAppendingString:@"_Pyz"] UTF8String], 0, _Pyz, ng, 0.1f);
+    writeField(fp, [[pName stringByAppendingString:@"_Pzz"] UTF8String], 0, _Pzz, ng, 0.1f);
     
     fclose(fp);
     NSLog(@"Field data successfully written to %s", filePath);

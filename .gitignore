@@ -24,7 +24,7 @@ xcuserdata/
 *.exe
 *.out
 *.app
-PIC
+PIC*
 main
 
 # Metal shader binaries

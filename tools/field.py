@@ -54,8 +54,9 @@ def plotField2d(field, title, figname, type_id, bool_buff):
         for j in range(ngy+1):
             ax.axhline(j*dy, color='gray', linestyle=':', linewidth=0.5)
     fig.tight_layout()
-    fig.savefig(figname)
-    plt.close(fig)
+    # fig.savefig(figname)
+    # plt.close(fig)
+    plt.show()
 
 # プロット関数
 def plotField1dx(field, title, figname, type_id, j):
@@ -91,13 +92,16 @@ def plotField1dx(field, title, figname, type_id, j):
     ax.axvline(0, color='gray', linestyle=':', linewidth=0.5)
     ax.axvline(ngx*dx, color='gray', linestyle=':', linewidth=0.5)
     fig.tight_layout()
-    fig.savefig(figname)
-    plt.close(fig)
+    # fig.savefig(figname)
+    # plt.close(fig)
+    plt.show()
 
 if __name__ == '__main__':
 
-    cycle = 1
-    filename = f"bin/field_{cycle:08}.bin"
+    cycle = 20
+    # filename = f"bin/field_{cycle:08}.bin"
+    # filename = f"bin/moments_electron_{cycle:08}.bin"
+    filename = f"bin/moments_ion_Xe1_{cycle:08}.bin"
 
     with open(filename, 'rb') as f:
         # ヘッダ情報の読み込み
@@ -115,20 +119,19 @@ if __name__ == '__main__':
             name_bytes = f.read(32)
             if not name_bytes:
                 break  # EOF
-            # 終端のNULL文字を削除して文字列として格納
+            # 終端のNULL文字を削除して文字列として格
             name = name_bytes.decode("utf-8").rstrip('\x00')
 
             # --- 2. タイプID（int）
             type_id = int.from_bytes(f.read(4), byteorder="little")
 
             # 配列サイズの決定
+            nx = ngx+2*ngb
+            ny = ngy+2*ngb
             if type_id == 4:
-                nx = ngx+2*ngb+1
-                ny = ngy+2*ngb+1
-            else:
-                nx = ngx+2*ngb
-                ny = ngy+2*ngb
-
+                nx +=1
+                ny +=1
+            
             # --- 3. 配列
             arrSize = (nx+1)*(ny+1)
             arr = np.frombuffer(f.read(arrSize * 4), dtype=np.float32).reshape((ny+1, nx+1))

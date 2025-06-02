@@ -833,5 +833,3 @@ static void writeField(FILE* fp, const char* name, int type_id, float* array, in
 - (double)dy { return _dy; }
 
 @end
-
-#import "EMField.h"

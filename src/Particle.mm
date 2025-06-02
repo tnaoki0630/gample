@@ -191,8 +191,11 @@ kernel void integrateChargeDensity(
                         uint groupID                        [[ threadgroup_position_in_grid ]]
                         ) {
     // initialize(各スレッドがアクセスし得る範囲を初期化)
-    for (int i = 0; i < arrSize; i++){
-        temp[gid + i*chunkSize] = 0.0f;
+    const int nx = prm.ngx + 2*prm.ngb;
+    const int ny = prm.ngy + 2*prm.ngb;
+    const int ng = (nx+1)*(ny+1);
+    for (int i = 0; i < ng; i++){
+        temp[i + gid*ng] = 0.0f;
     }
 
     // 変数定義
@@ -201,8 +204,6 @@ kernel void integrateChargeDensity(
     float sc;
     float sf[6][2];
     int ii, jj;
-    const int nx = prm.ngx + 2*prm.ngb;
-    const int ng = (nx + 1)*(prm.ngy + 2*prm.ngb + 1);
 
     // 積分ループ
     for (int i = 0; i < pNumPerThread; i++){
