@@ -4,9 +4,11 @@
 #import <string>
 #import "Init.h"
 #import "EMField.h"
+#import "Moment.h"
 #import "XmlLogger.h"
 // コンパイルうまくいかないので前方宣言
 @class EMField;
+@class Moment;
 
 // 粒子データ構造
 struct ParticleState {
@@ -53,8 +55,8 @@ struct SimulationParams {
 @property (nonatomic, strong) id<MTLComputePipelineState> updateParticlesPipeline;
 @property (nonatomic, strong) id<MTLComputePipelineState> integrateChargeDensityPipeline;
 @property (nonatomic, strong) id<MTLBuffer> particleBuffer;
-@property (nonatomic, strong) id<MTLBuffer> integrateTemporaryBuffer;
-@property (nonatomic, strong) id<MTLBuffer> integratePartialBuffer;
+// @property (nonatomic, strong) id<MTLBuffer> integrateTemporaryBuffer;
+// @property (nonatomic, strong) id<MTLBuffer> integratePartialBuffer;
 @property (nonatomic, strong) id<MTLBuffer> paramsBuffer;
 @property (nonatomic, strong) id<MTLBuffer> printBuffer;
 // スカラー変数
@@ -68,13 +70,18 @@ struct SimulationParams {
 // 粒子境界処理
 - (void)reduce:(XmlLogger&)logger;
 // 電荷密度更新
-- (void)integrateChargeDensity:(EMField*)fld withLogger:(XmlLogger&)logger;
+- (void)integrateChargeDensity:(EMField*)fld withMoment:(Moment*)mom withLogger:(XmlLogger&)logger;
 // 粒子軌道出力
 - (void)outputPhaseSpace:(int)cycle withEMField:(EMField*)fld withLogger:(XmlLogger&)logger;
 // 粒子注入
 - (int)injection:(double)dt withParam:(Init*)initParam withCurrent:(int&)current withLogger:(XmlLogger&)logger;
 // アクセサ
 - (NSString*)pName;
+- (id<MTLBuffer>)paramsBuffer;
+- (id<MTLBuffer>)particleBuffer;
+- (float)m;
+- (float)q;
+- (float)w;
 - (int)pinum_Xmin;
 - (int)pinum_Xmax;
 - (int)pinum_Ymin;

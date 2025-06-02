@@ -23,6 +23,7 @@ void printInitContents(Init* init, XmlLogger& logger){
     // ParamForComputing の出力
     struct ParamForComputing compParams = init.paramForComputing;
     [log appendFormat:@"--- ParamForComputing ---\n"];
+    [log appendFormat:@"MaxParticleNumber: %u\n", compParams.pNumMax];
     [log appendFormat:@"threadGroupSize: %d\n", compParams.threadGroupSize];
     [log appendFormat:@"integrationChunkSize: %d\n", compParams.integrationChunkSize];
     [log appendFormat:@"maxiter: %d\n", compParams.maxiter];
@@ -35,7 +36,6 @@ void printInitContents(Init* init, XmlLogger& logger){
         [log appendFormat:@"[Particle %lu]\n", (unsigned long)i + 1];
         [log appendFormat:@"  Name: %@\n", particles[i].pName];
         [log appendFormat:@"  InitialParticleNumber: %u\n", particles[i].pNum];
-        [log appendFormat:@"  MaxParticleNumber: %u\n", particles[i].pNumMax];
         [log appendFormat:@"  Charge: %e\n", particles[i].q];
         [log appendFormat:@"  Mass: %e\n", particles[i].m];
         [log appendFormat:@"  Weight: %e\n", particles[i].w];

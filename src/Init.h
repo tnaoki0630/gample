@@ -21,6 +21,7 @@ struct ParamForTimeIntegration {
 };
 
 struct ParamForComputing {
+    uint pNumMax;
     int threadGroupSize;
     int integrationChunkSize;
     int maxiter;
@@ -30,7 +31,6 @@ struct ParamForComputing {
 struct ParamForParticle {
     NSString* pName;
     uint pNum;
-    uint pNumMax;
     double q;
     double m;
     double w;

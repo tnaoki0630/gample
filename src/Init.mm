@@ -90,6 +90,7 @@
         }
         NSMutableDictionary *mergedCompD = [self ParamForComputingDefault];
         [mergedCompD addEntriesFromDictionary:compD];
+        _computing.pNumMax                  = [mergedCompD[@"MaximumParticleNumber"] integerValue];
         _computing.threadGroupSize          = [mergedCompD[@"ThreadGroupSize"] integerValue];
         _computing.integrationChunkSize     = [mergedCompD[@"IntegrationChunkSize"] integerValue];
         _computing.maxiter                  = [mergedCompD[@"MaxiterForPoisson"] integerValue];
@@ -168,7 +169,6 @@
             [mergedD addEntriesFromDictionary:d];
             ParamForParticle p;
             p.pName             = mergedD[@"ParticleName"];
-            p.pNumMax           = [mergedD[@"MaxParticleNumber"] integerValue];
             if([mergedD[@"pNumSetMethod"] isEqualToString:@"InititalParticleNumber"]){
                 p.pNum = [mergedD[@"pNumValue"] integerValue];
             }else if([mergedD[@"pNumSetMethod"] isEqualToString:@"PtclNumPerCell"]){
@@ -292,6 +292,7 @@
 }
 - (NSMutableDictionary*)ParamForComputingDefault{
     return [@{
+        @"MaximumParticleNumber":   @0,
         @"ThreadGroupSize":         @256,
         @"IntegrationChunkSize":    @256,
         @"MaxiterForPoisson":       @200,
@@ -303,7 +304,6 @@
         @"ParticleName":            @"undefined",
         @"pNumSetMethod":           @"undefined",
         @"pNumValue":               @0,
-        @"MaxParticleNumber":       @0,
         @"Charge":                  @0,
         @"Mass":                    @(-1),
         @"WeightSetMethod":         @"undefined",

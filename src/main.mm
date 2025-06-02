@@ -52,9 +52,6 @@ int main(int argc, const char * argv[]) {
 
         // logger の作成
         XmlLogger logger(args["-o"].c_str());
-        // 所要リソース格納辞書
-        std::map<std::string,std::string> dataElapsedTime;
-        std::map<std::string,std::string> dataMemUsage;
 
         // 初期化パラメータクラス作成
         Init *init = [[Init alloc] parseInputFile:inputPath];
@@ -64,16 +61,16 @@ int main(int argc, const char * argv[]) {
 
         struct FlagForEquation EqFlags = init.flagForEquation;
 
-        // 粒子の初期化
+        // 粒子クラスの初期化
         NSMutableArray *ptclArr = [NSMutableArray arrayWithCapacity:EqFlags.Particle];
         for (int s = 0; s < EqFlags.Particle; s++) {
             Particle *ptcl = [[Particle alloc] initWithDevice:device withParam:init specimen:s withLogger:logger];
             [ptclArr addObject:ptcl];
         }
-        // 場の初期化
+        // 電磁場クラスの初期化
         EMField *fld = [[EMField alloc] initWithDevice:device withParam:init withLogger:logger];
-        // モーメント量の初期化
-        Moment *mom = [[Moment alloc] initialize];
+        // モーメント計算クラスの初期化
+        Moment *mom = [[Moment alloc] initWithDevice:device withParam:init withLogger:logger];
 
         // 時間更新ループ
         struct ParamForTimeIntegration timeParam = init.paramForTimeIntegration;
@@ -90,6 +87,10 @@ int main(int argc, const char * argv[]) {
             comp = (t - time) - y;
             time = t;
             logger.logCycleStart(cycle, time);
+            
+            // 所要リソース格納辞書
+            std::map<std::string,std::string> dataElapsedTime;
+            std::map<std::string,std::string> dataMemUsage;
 
             // 電荷密度の初期化
             [fld resetChargeDensity];
@@ -113,11 +114,16 @@ int main(int argc, const char * argv[]) {
                 logger.logSection("flowout_"+pName, data);
                 // 電荷密度の更新
                 if (EqFlags.EMField == 1){
-                    MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld withLogger:logger], dataElapsedTime);
+                    MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld  withMoment:mom withLogger:logger], dataElapsedTime);
                 }
                 // 粒子軌道の出力
                 if (timeParam.ParticleOutput != 0 && cycle%timeParam.ParticleOutput == 0){
                     [ptcl outputPhaseSpace:cycle withEMField:fld withLogger:logger];
+                }
+                // モーメントの出力
+                if (timeParam.FieldOutput != 0 && cycle%timeParam.FieldOutput == 0){
+                    [mom integrateMoments:ptcl withEMField:fld withLogger:logger];
+                    [mom outputMoments:cycle withPtclName:particles[s].pName withEMField:fld withLogger:logger];
                 }
             }
 

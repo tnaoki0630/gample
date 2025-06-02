@@ -12,11 +12,10 @@
     "TimeStep":         5e-12
   },
   "ParamForComputing": {
-    "MaximumParticleNumber":  5000000,
-    "ThreadGroupSize":        1,
-    "IntegrationChunkSize":   128,
-    "MaxIterForPoisson":      200,
-    "ToleranceForPoisson":    1e-7
+    "ThreadGroupSize":      1,
+    "IntegrationChunkSize": 128,
+    "MaxIterForPoisson":    200,
+    "ToleranceForPoisson":  1e-7
   },
   "ParamForField": {
     "NumberOfGridX":        500,
@@ -34,6 +33,7 @@
   "ParamForParticle": [
     {
       "ParticleName":       "electron",
+      "MaxParticleNumber":  5000000,
       "pNumSetMethod":      "PtclNumPerCell",
       "pNumValue":          20,
       "Charge":             -4.803204197e-10,
@@ -45,6 +45,7 @@
     },
     {
       "ParticleName":       "ion_Xe1",
+      "MaxParticleNumber":  5000000,
       "pNumSetMethod":      "PtclNumPerCell",
       "pNumValue":          20,
       "Charge":             4.803204197e-10,

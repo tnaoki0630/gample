@@ -71,21 +71,21 @@ if __name__ == '__main__':
     labels =   ["tgs2_ics32", "tgs2_ics64", "tgs2_ics128", "tgs2_ics256"]
     plot_values(cycles, timeICDE, labels, "elapsed time [msec]", 1e-3)
     
-    cycles, tgs1_ics128 = parseXML('log_1_128.xml', 'solvePoisson', 'meanCathode')
-    cycles, tgs2_ics128 = parseXML('log_2_128.xml', 'solvePoisson', 'meanCathode')
-    cycles, tgs4_ics128 = parseXML('log_4_128.xml', 'solvePoisson', 'meanCathode')
-    cycles, tgs8_ics128 = parseXML('log_8_128.xml', 'solvePoisson', 'meanCathode')
-    cycles, tgs16_ics128 = parseXML('log_16_128.xml', 'solvePoisson', 'meanCathode')
-    cycles, tgs32_ics128 = parseXML('log_32_128.xml', 'solvePoisson', 'meanCathode')
+    cycles, tgs1_ics128 = parseXML('log_1_128.xml', 'memoryUsage', 'physicalFootprint')
+    cycles, tgs2_ics128 = parseXML('log_2_128.xml', 'memoryUsage', 'physicalFootprint')
+    cycles, tgs4_ics128 = parseXML('log_4_128.xml', 'memoryUsage', 'physicalFootprint')
+    cycles, tgs8_ics128 = parseXML('log_8_128.xml', 'memoryUsage', 'physicalFootprint')
+    cycles, tgs16_ics128 = parseXML('log_16_128.xml', 'memoryUsage', 'physicalFootprint')
+    cycles, tgs32_ics128 = parseXML('log_32_128.xml', 'memoryUsage', 'physicalFootprint')
     timeICDE = [ tgs1_ics128 ,  tgs2_ics128 ,  tgs4_ics128 ,  tgs8_ics128 ,  tgs16_ics128 ,  tgs32_ics128 ]
     labels =   ["tgs1_ics128", "tgs2_ics128", "tgs4_ics128", "tgs8_ics128", "tgs16_ics128", "tgs32_ics128"]
-    plot_values(cycles, timeICDE, labels, "mean electric potential [V]", 1)
+    plot_values(cycles, timeICDE, labels, "memory usage [MB]", 1e-3)
 
-    cycles, tgs1_ics32 = parseXML('log_1_32.xml', 'solvePoisson', 'meanCathode')
-    cycles, tgs1_ics64 = parseXML('log_1_64.xml', 'solvePoisson', 'meanCathode')
-    cycles, tgs1_ics128 = parseXML('log_1_128.xml', 'solvePoisson', 'meanCathode')
-    cycles, tgs1_ics256 = parseXML('log_1_256.xml', 'solvePoisson', 'meanCathode')
+    cycles, tgs1_ics32 = parseXML('log_1_32.xml', 'memoryUsage', 'physicalFootprint')
+    cycles, tgs1_ics64 = parseXML('log_1_64.xml', 'memoryUsage', 'physicalFootprint')
+    cycles, tgs1_ics128 = parseXML('log_1_128.xml', 'memoryUsage', 'physicalFootprint')
+    cycles, tgs1_ics256 = parseXML('log_1_256.xml', 'memoryUsage', 'physicalFootprint')
     timeICDE = [ tgs1_ics32 ,  tgs1_ics64 ,  tgs1_ics128 ,  tgs1_ics256 ]
     labels =   ["tgs1_ics32", "tgs1_ics64", "tgs1_ics128", "tgs1_ics256"]
-    plot_values(cycles, timeICDE, labels, "mean electric potential [V]", 1)
+    plot_values(cycles, timeICDE, labels, "memory usage [MB]", 1e-3)
 

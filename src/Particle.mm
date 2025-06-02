@@ -56,7 +56,6 @@ kernel void updateParticles(
                         device const float* Bx              [[ buffer(5) ]],
                         device const float* By              [[ buffer(6) ]],
                         device const float* Bz              [[ buffer(7) ]],
-                        device float* print                 [[ buffer(8) ]],
                         uint id                             [[ thread_position_in_grid ]]
                         ) {
     if (id >= prm.pNum) return;
@@ -173,9 +172,6 @@ kernel void updateParticles(
     if (prm.BC_Ymax == 1 && p.y - prm.ngb > float(prm.ngy)){
         p.piflag = 4;
     }
-
-    // debug print
-    print[id] = prm.constX;
 }
 
 // 電荷密度更新カーネル
@@ -314,7 +310,7 @@ kernel void integrateChargeDensity(
     
         // 粒子パラメータ
         _pName = particleParam[s].pName;
-        _pNumMax = particleParam[s].pNumMax;
+        _pNumMax = compParam.pNumMax;
         _m = particleParam[s].m;
         _q = particleParam[s].q;
         _w = particleParam[s].w;
@@ -389,11 +385,11 @@ kernel void integrateChargeDensity(
         }
 
         // 粒子バッファ
-        if(particleParam[s].pNum > particleParam[s].pNumMax){
-            NSLog(@"pNum > pNumMax: pName = %@, pNum = %d, pNumMax = %d", _pName, particleParam[s].pNum, particleParam[s].pNumMax);
+        if(particleParam[s].pNum > _pNumMax){
+            NSLog(@"pNum > pNumMax: pName = %@, pNum = %d, pNumMax = %d", _pName, particleParam[s].pNum, _pNumMax);
             return nil;
         }
-        buffSize = sizeof(ParticleState)*particleParam[s].pNumMax; // maxで初期化
+        buffSize = sizeof(ParticleState)*_pNumMax; // maxで初期化
         _particleBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
         // 初期粒子分布の設定
         float Xmin, Lx;
@@ -444,24 +440,13 @@ kernel void integrateChargeDensity(
         int nx = fieldParam.ngx + 2*fieldParam.ngb;
         int ny = fieldParam.ngy + 2*fieldParam.ngb;
         size_t EMbuffSize = sizeof(float)*(nx+1)*(ny+1);
-        
-        // 電荷密度用バッファ
-        buffSize = EMbuffSize*_integrationChunkSize;
-        _integrateTemporaryBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
-        buffSize = EMbuffSize*(_integrationChunkSize/_threadGroupSize);
-        _integratePartialBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
-
-        // デバッグ出力用バッファ
-        buffSize = sizeof(float)*particleParam[s].pNumMax;
-        _printBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
-
     }
     return self;
 }
 
 
 // 時間更新
-- (void)update:(double)dt withEMField:(EMField*)fld  withLogger:(XmlLogger&)logger{
+- (void)update:(double)dt withEMField:(EMField*)fld withLogger:(XmlLogger&)logger{
     // シミュレーションパラメータの更新
     SimulationParams* prm = (SimulationParams*)[_paramsBuffer contents];
     prm->constE = 0.5*_q*dt/_m;
@@ -491,7 +476,6 @@ kernel void integrateChargeDensity(
     [computeEncoder setBuffer:BxBuffer          offset:0 atIndex:5];
     [computeEncoder setBuffer:ByBuffer          offset:0 atIndex:6];
     [computeEncoder setBuffer:BzBuffer          offset:0 atIndex:7];
-    [computeEncoder setBuffer:_printBuffer      offset:0 atIndex:8];
     
     // グリッドとスレッドグループのサイズ設定
     uint gridSize = prm->pNum;
@@ -588,12 +572,17 @@ kernel void integrateChargeDensity(
     logger.logSection([secName UTF8String], data);
 }
 
-- (void)integrateChargeDensity:(EMField*)fld withLogger:(XmlLogger&)logger{
+- (void)integrateChargeDensity:(EMField*)fld withMoment:(Moment*)mom withLogger:(XmlLogger&)logger{
     // obtain objects
     SimulationParams* prm = (SimulationParams*)[_paramsBuffer contents];
     int ng = (fld.nx+1)*(fld.ny+1);
     id<MTLBuffer> rhoBuffer = [fld rhoBuffer];
     float* rho = (float*)rhoBuffer.contents;
+
+    // Momentのバッファを使用
+    id<MTLBuffer> integrateTemporaryBuffer = [mom integrateTemporaryBuffer];
+    id<MTLBuffer> integratePartialBuffer   = [mom integratePartialBuffer  ];
+    id<MTLBuffer> printBuffer = [mom printBuffer];
 
     // constant 引数バッファ
     id<MTLBuffer> chunkSizeBuffer = [_device newBufferWithBytes:&_integrationChunkSize
@@ -624,9 +613,9 @@ kernel void integrateChargeDensity(
     [computeEncoder setComputePipelineState:_integrateChargeDensityPipeline];
     [computeEncoder setBuffer:_particleBuffer           offset:0 atIndex:0];
     [computeEncoder setBuffer:_paramsBuffer             offset:0 atIndex:1];
-    [computeEncoder setBuffer:_integrateTemporaryBuffer offset:0 atIndex:2];
-    [computeEncoder setBuffer:_integratePartialBuffer   offset:0 atIndex:3];
-    [computeEncoder setBuffer:_printBuffer              offset:0 atIndex:4];
+    [computeEncoder setBuffer:integrateTemporaryBuffer  offset:0 atIndex:2];
+    [computeEncoder setBuffer:integratePartialBuffer    offset:0 atIndex:3];
+    [computeEncoder setBuffer:printBuffer               offset:0 atIndex:4];
     [computeEncoder setBuffer:arrSizeBuffer             offset:0 atIndex:5];
     [computeEncoder setBuffer:chunkSizeBuffer           offset:0 atIndex:6];
     [computeEncoder setBuffer:pNumPerThreadBuffer       offset:0 atIndex:7];
@@ -648,7 +637,7 @@ kernel void integrateChargeDensity(
     [commandBuffer waitUntilCompleted];
 
     // スレッドグループごとの部分和を加算
-    float* partialSums = (float*)_integratePartialBuffer.contents;
+    float* partialSums = (float*)integratePartialBuffer.contents;
     for (int j = 0; j < threadGroupNum; j++){
         for (int i = 0; i < ng; i++){
             rho[i] += partialSums[i + j*ng];
@@ -803,6 +792,11 @@ kernel void integrateChargeDensity(
 
 // アクセサ
 - (NSString*)pName { return _pName; }
+- (id<MTLBuffer>)paramsBuffer { return _paramsBuffer; }
+- (id<MTLBuffer>)particleBuffer { return _particleBuffer;}
+- (float)m {return _m; }
+- (float)q {return _q; }
+- (float)w {return _w; }
 - (int)pinum_Xmin { return _pinum_Xmin; }
 - (int)pinum_Xmax { return _pinum_Xmax; }
 - (int)pinum_Ymin { return _pinum_Ymin; }

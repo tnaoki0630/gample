@@ -83,3 +83,4 @@ if __name__ == '__main__':
     plot_variable_from_xml('log.xml', 'flowout_electron', 'all')
     plot_variable_from_xml('log.xml', 'solvePoisson', 'meanCathode')
     plot_variable_from_xml('log.xml', 'solvePoisson', 'iteration')
+    plot_variable_from_xml('log.xml', 'memoryUsage', 'all')
