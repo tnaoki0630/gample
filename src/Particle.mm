@@ -1,8 +1,9 @@
 #import "Particle.h"
 #import "Init.h"
 #import "Constant.h"
-#include <random>
+#import <random>
 #import <string>
+#import <iostream>
 
 # define PI 3.141592653589793
 
@@ -727,8 +728,9 @@ kernel void integrateChargeDensity(
                     addn = -current; // アノード電流の符号を反転した分だけ電子が流入
                     current = 0; // リセット
                 }else{
-                    continue; // current は初期化せず次ステップに引き継ぎ
+                    addn = 0; // current を引き継ぎ
                 }
+                data["keptCurrent"] = std::to_string(-current);
             }else{
                 addn_d = sources[i].src/_w*dt;
                 if(unif_dist(engine) < addn_d - (int)addn_d){
@@ -755,7 +757,7 @@ kernel void integrateChargeDensity(
                     p[idx].vz = (float)sources[i].genU[2] + (float)norm_dist(engine);
                 } else if ([sources[i].genType isEqualToString:@"Xsinusoidal-Gaussian"]){
                     // uniform distribution for position
-                    p[idx].x = (Xmin+Xmax)/2 + Lx/PI*sin(2*unif_dist(engine)-1.0);
+                    p[idx].x = (Xmin+Xmax)/2 + Lx/PI*asin(2*unif_dist(engine)-1.0);
                     p[idx].y = Ymin + (float)unif_dist(engine)*Ly;
                     // Maxwellian for velocity 
                     p[idx].vx = (float)sources[i].genU[0] + (float)norm_dist(engine);
@@ -776,7 +778,7 @@ kernel void integrateChargeDensity(
                 // shift origin for high-order weighting
                 p[idx].x = p[idx].x + (float)fieldParam.ngb;
                 p[idx].y = p[idx].y + (float)fieldParam.ngb;
-                // deletion flag
+                // initialize deletion flag
                 p[idx].piflag = 0;
             }
             // 粒子数更新

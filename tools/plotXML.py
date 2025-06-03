@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
 
-def plot_variable_from_xml(xml_file, section_name, tag_name):
+def plot_variable_from_xml(xml_file, section_name, tag_name, ):
     """
     Parses the given XML file.
     """
@@ -77,10 +77,11 @@ def plot_variable_from_xml(xml_file, section_name, tag_name):
 # plot_variable_from_xml('log.xml', 'elapsedTime', 'all')
 
 if __name__ == '__main__':
-    plot_variable_from_xml('log.xml', 'elapsedTime', 'all')
-    plot_variable_from_xml('log.xml', 'injection_electron', 'Xsinusoidal-Gaussian')
-    plot_variable_from_xml('log.xml', 'flowout_ion_Xe1', 'all')
-    plot_variable_from_xml('log.xml', 'flowout_electron', 'all')
-    plot_variable_from_xml('log.xml', 'solvePoisson', 'meanCathode')
-    plot_variable_from_xml('log.xml', 'solvePoisson', 'iteration')
-    plot_variable_from_xml('log.xml', 'memoryUsage', 'all')
+    plot_variable_from_xml('log_cp.xml', 'elapsedTime', 'all')
+    plot_variable_from_xml('log_cp.xml', 'injection_electron', 'all')
+    plot_variable_from_xml('log_cp.xml', 'flowout_ion_Xe1', 'all')
+    plot_variable_from_xml('log_cp.xml', 'flowout_electron', 'all')
+    plot_variable_from_xml('log_cp.xml', 'solvePoisson', 'meanCathode')
+    plot_variable_from_xml('log_cp.xml', 'solvePoisson', 'iteration')
+    plot_variable_from_xml('log_cp.xml', 'memoryUsage', 'all')
+    plot_variable_from_xml('log_cp.xml', 'outputField', 'all')

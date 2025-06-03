@@ -98,10 +98,10 @@ def plotField1dx(field, title, figname, type_id, j):
 
 if __name__ == '__main__':
 
-    cycle = 20
+    cycle = 50000
     # filename = f"bin/field_{cycle:08}.bin"
-    # filename = f"bin/moments_electron_{cycle:08}.bin"
-    filename = f"bin/moments_ion_Xe1_{cycle:08}.bin"
+    filename = f"bin/moments_electron_{cycle:08}.bin"
+    #filename = f"bin/moments_ion_Xe1_{cycle:08}.bin"
 
     with open(filename, 'rb') as f:
         # ヘッダ情報の読み込み

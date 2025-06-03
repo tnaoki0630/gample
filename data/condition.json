@@ -6,9 +6,9 @@
   },
   "ParamForTimeIntegration": {
     "Start":            1,
-    "End":              20,
+    "End":              1000000,
     "ParticleOutput":   0,
-    "FieldOutput":      10,
+    "FieldOutput":      10000,
     "TimeStep":         5e-12
   },
   "ParamForComputing": {
@@ -16,7 +16,7 @@
     "ThreadGroupSize":        1,
     "IntegrationChunkSize":   128,
     "MaxIterForPoisson":      200,
-    "ToleranceForPoisson":    1e-7
+    "ToleranceForPoisson":    1e-6
   },
   "ParamForField": {
     "NumberOfGridX":        500,
