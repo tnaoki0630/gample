@@ -41,3 +41,6 @@ main
 *.vti
 *.vtp
 *.bin
+
+# debug directory
+gample_xcode/

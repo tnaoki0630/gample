@@ -9,6 +9,7 @@
 #import "DebugPrint.h"
 #import "XmlLogger.h"
 #import "ResourceUtils.h"
+#import "FileIO.h"
 
 std::map<std::string, std::string> parseArgs(int argc, const char* argv[]) {
     std::map<std::string, std::string> options;
@@ -69,97 +70,127 @@ int main(int argc, const char * argv[]) {
         }
         // 電磁場クラスの初期化
         EMField *fld = [[EMField alloc] initWithDevice:device withParam:init withLogger:logger];
+        // 初期場の計算
+        [fld resetChargeDensity];
+        [fld solvePoisson:logger];
         // モーメント計算クラスの初期化
         Moment *mom = [[Moment alloc] initWithDevice:device withParam:init withLogger:logger];
 
-        // 時間更新ループ
+        // 時間更新パラメータ
         struct ParamForTimeIntegration timeParam = init.paramForTimeIntegration;
-        int StartCycle = 1; // リスタート時は最終サイクルを引き継ぎたい
+        int StartCycle = timeParam.Start;
+        int intCurrent = 0;
+        // リスタート
+        if(StartCycle != 0){
+            if(!loadProgress(StartCycle, ptclArr, fld, intCurrent, init)){
+                NSLog(@"restart failed.");
+                return 1;
+            };
+            // チェック用
+            for (int s = 0; s < EqFlags.Particle; s++) {
+                Particle *ptcl = [ptclArr objectAtIndex:s];
+                [ptcl outputPhaseSpace:StartCycle withEMField:fld withLogger:logger];
+            }
+            [fld outputField:StartCycle withLogger:logger];
+        }
         double dt = timeParam.TimeStep;
-        double time = 0.0;
+        double time = StartCycle*dt;
         double comp = 0.0; // 保証項
         double y,t;
-        int intCurrent = 0;
-        for (int cycle = StartCycle; cycle <= timeParam.End; cycle++) {
-            // 時間計算
-            y = dt - comp;
-            t = time + y;
-            comp = (t - time) - y;
-            time = t;
-            logger.logCycleStart(cycle, time);
-            
-            // 所要リソース格納辞書
-            std::map<std::string,std::string> dataElapsedTime;
-            std::map<std::string,std::string> dataMemUsage;
+        // ループ開始
+        for (int cycle = StartCycle+1; cycle <= timeParam.End; cycle++) {
+            @autoreleasepool {
+                // ログ出力のオンオフ
+                if(cycle%100 == 0){ logger.swichLog(true); 
+                }else{ logger.swichLog(false); }
+                // 時間計算
+                y = dt - comp;
+                t = time + y;
+                comp = (t - time) - y;
+                time = t;
+                logger.logCycleStart(cycle, time);
+                
+                // 所要リソース格納辞書
+                std::map<std::string,std::string> dataElapsedTime;
+                std::map<std::string,std::string> dataMemUsage;
 
-            // 電荷密度の初期化
-            [fld resetChargeDensity];
+                // 電荷密度の初期化
+                [fld resetChargeDensity];
 
-            // 粒子ループ
-            std::vector<struct ParamForParticle> particles = init.paramForParticle;
-            for (int s = 0; s < EqFlags.Particle; s++) {
-                Particle *ptcl = [ptclArr objectAtIndex:s];
-                std::string pName = [particles[s].pName UTF8String];
-                // 粒子の時間更新
-                MEASURE("update_"+pName, [ptcl update:dt withEMField:fld withLogger:logger], dataElapsedTime);
-                // 流出粒子の処理
-                MEASURE("reduce_"+pName, [ptcl reduce:logger], dataElapsedTime);
-                intCurrent += ptcl.pinum_Xmin;
-                std::map<std::string, std::string> data ={
-                    {"Xmin", std::to_string(ptcl.pinum_Xmin)},
-                    {"Xmax", std::to_string(ptcl.pinum_Xmax)},
-                    {"Ymin", std::to_string(ptcl.pinum_Ymin)},
-                    {"Ymax", std::to_string(ptcl.pinum_Ymax)},
-                };
-                logger.logSection("flowout_"+pName, data);
-                // 電荷密度の更新
+                // 粒子ループ
+                std::vector<struct ParamForParticle> particles = init.paramForParticle;
+                for (int s = 0; s < EqFlags.Particle; s++) {
+                    Particle *ptcl = [ptclArr objectAtIndex:s];
+                    std::string pName = [particles[s].pName UTF8String];
+                    // 粒子の時間更新
+                    MEASURE("update_"+pName, [ptcl update:dt withEMField:fld withMom:mom withLogger:logger], dataElapsedTime);
+                    // 流出粒子の処理
+                    MEASURE("reduce_"+pName, [ptcl reduce:logger], dataElapsedTime);
+                    // 流出電流の計算
+                    intCurrent += ptcl.pinum_Xmin;
+                    std::map<std::string, std::string> data ={
+                        {"Xmin", std::to_string(ptcl.pinum_Xmin)},
+                        {"Xmax", std::to_string(ptcl.pinum_Xmax)},
+                        {"Ymin", std::to_string(ptcl.pinum_Ymin)},
+                        {"Ymax", std::to_string(ptcl.pinum_Ymax)},
+                    };
+                    logger.logSection("flowout_"+pName, data);
+                    // 電荷密度の更新
+                    if (EqFlags.EMField == 1){
+                        MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld  withMoment:mom withLogger:logger], dataElapsedTime);
+                    }
+                    // 粒子軌道の出力
+                    if (timeParam.ParticleOutput != 0 && cycle%timeParam.ParticleOutput == 0){
+                        [ptcl outputPhaseSpace:cycle withEMField:fld withLogger:logger];
+                    }
+                    // モーメントの出力
+                    if (timeParam.FieldOutput != 0 && cycle%timeParam.FieldOutput == 0){
+                        [mom integrateMoments:ptcl withEMField:fld withLogger:logger];
+                        [mom outputMoments:cycle withPtclName:particles[s].pName withEMField:fld withLogger:logger];
+                    }
+                }
+
+                // 電場の更新
                 if (EqFlags.EMField == 1){
-                    MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld  withMoment:mom withLogger:logger], dataElapsedTime);
+                    MEASURE("solvePoisson", [fld solvePoisson:logger], dataElapsedTime);
+                    // 場の出力
+                    if (timeParam.FieldOutput != 0 && cycle%timeParam.FieldOutput == 0){
+                        [fld outputField:cycle withLogger:logger];
+                    }
                 }
-                // 粒子軌道の出力
-                if (timeParam.ParticleOutput != 0 && cycle%timeParam.ParticleOutput == 0){
-                    [ptcl outputPhaseSpace:cycle withEMField:fld withLogger:logger];
-                }
-                // モーメントの出力
-                if (timeParam.FieldOutput != 0 && cycle%timeParam.FieldOutput == 0){
-                    [mom integrateMoments:ptcl withEMField:fld withLogger:logger];
-                    [mom outputMoments:cycle withPtclName:particles[s].pName withEMField:fld withLogger:logger];
-                }
-            }
 
-            // 電場の更新
-            if (EqFlags.EMField == 1){
-                MEASURE("solvePoisson", [fld solvePoisson:logger], dataElapsedTime);
-                // 場の出力
-                if (timeParam.FieldOutput != 0 && cycle%timeParam.FieldOutput == 0){
-                    [fld outputField:cycle withLogger:logger];
+                // 粒子生成
+                std::vector<int> ret(EqFlags.Particle);
+                for (int s = 0; s < EqFlags.Particle; s++) {
+                    Particle *ptcl = [ptclArr objectAtIndex:s];
+                    std::string pName = [particles[s].pName UTF8String];
+                    MEASURE("injection_"+pName, ret.push_back([ptcl injection:dt withParam:init withCurrent:intCurrent withLogger:logger]), dataElapsedTime);
                 }
-            }
+                if (std::reduce(std::begin(ret), std::end(ret)) != 0){
+                    NSLog(@"injection failed.");
+                    return 1;
+                }
 
-            // 粒子生成
-            std::vector<int> ret(EqFlags.Particle);
-            for (int s = 0; s < EqFlags.Particle; s++) {
-                Particle *ptcl = [ptclArr objectAtIndex:s];
-                std::string pName = [particles[s].pName UTF8String];
-                MEASURE("injection_"+pName, ret.push_back([ptcl injection:dt withParam:init withCurrent:intCurrent withLogger:logger]), dataElapsedTime);
-            }
-            if (std::reduce(std::begin(ret), std::end(ret)) != 0){
-                // すべての injection が成功したら総和は0
-                NSLog(@"injection failed.");
-                return 1;
-            }
+                // 途中経過出力
+                if (timeParam.FieldOutput != 0 && cycle%timeParam.ProgressOutput == 0){
+                    if(!saveProgress(cycle, ptclArr, fld, intCurrent, init)){
+                        NSLog(@"output progress failed.");
+                        return 1;
+                    };
+                }
 
-            // リソース情報出力(unit: time[us], mem[kB])
-            logger.logSection("elapsedTime", dataElapsedTime);
-            size_t phys = MemoryUtils::currentPhysicalFootprint();
-            size_t rss = MemoryUtils::currentRSS();
-            dataMemUsage["physicalFootprint"] = std::to_string(phys/1024);
-            dataMemUsage["residentSetSize"] = std::to_string(rss/1024);
-            logger.logSection("memoryUsage", dataMemUsage);
-            
-            //サイクル終了
-            NSLog(@"Frame %d completed", cycle);
-            logger.logCycleEnd();
+                // リソース情報出力(unit: time[us], mem[kB])
+                logger.logSection("elapsedTime", dataElapsedTime);
+                size_t phys = MemoryUtils::currentPhysicalFootprint();
+                size_t rss = MemoryUtils::currentRSS();
+                dataMemUsage["physicalFootprint"] = std::to_string(phys/1024);
+                dataMemUsage["residentSetSize"] = std::to_string(rss/1024);
+                logger.logSection("memoryUsage", dataMemUsage);
+                
+                //サイクル終了
+                NSLog(@"Frame %d completed", cycle);
+                logger.logCycleEnd();
+            }
         }
 
         // 計測終了

@@ -13,31 +13,45 @@ public:
         if (!ofs_) throw std::runtime_error("Cannot open log file: " + filename);
         ofs_ << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
              << "<SimulationLog>\n";
+        outputFlag_ = true;
     }
 
     // サイクル開始
     void logCycleStart(int cycle, double time){
-        ofs_ << " <Cycle ID=\"" << cycle << "\">\n"
-             << "  time = " << time <<"\n";
+        if (outputFlag_) {
+            ofs_ << " <Cycle ID=\"" << cycle << "\">\n"
+                 << "  time = " << time <<"\n";
+        }
     }
     // ログ出力
     void logSection(const std::string& name, const std::map<std::string, std::string>& data) {
-        ofs_ << "  <Section Name=\"" << name << "\">\n";
-        for (const auto& kv : data){
-            ofs_ << "   <" << kv.first << ">"
-            << kv.second
-            << "</" << kv.first << ">\n";
+        if (outputFlag_) {
+            ofs_ << "  <Section Name=\"" << name << "\">\n";
+            for (const auto& kv : data){
+                ofs_ << "   <" << kv.first << ">"
+                << kv.second
+                << "</" << kv.first << ">\n";
+            }
+            ofs_ << "  </Section>\n";
         }
-        ofs_ << "  </Section>\n";
     }
     // サイクル終了
     void logCycleEnd(){
-        ofs_ << " </Cycle>\n";
+        if (outputFlag_) {
+            ofs_ << " </Cycle>\n";
+        }
     }
 
     // コメント出力
     void logComment(const std::string& comment){
-        ofs_ << "<![CDATA[\n" << comment << "]]>\n";
+        if (outputFlag_) {
+            ofs_ << "<![CDATA[\n" << comment << "]]>\n";
+        }
+    }
+    
+    // 出力スイッチ
+    void swichLog(BOOL swich){
+        outputFlag_ = swich;
     }
 
     // デストラクタ：ルート要素を閉じてファイルを自動クローズ
@@ -51,6 +65,7 @@ public:
 
 private:
     std::ofstream ofs_;
+    BOOL outputFlag_;
 };
 
 // フォーマット変換

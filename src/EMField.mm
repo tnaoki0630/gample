@@ -729,7 +729,7 @@ typedef amgcl::make_solver<
 }
 
 - (void)outputField:(int)cycle withLogger:(XmlLogger&)logger{
-    NSString *fileName = [NSString stringWithFormat:@"bin/field_%08d.bin", cycle];
+    NSString *fileName = [NSString stringWithFormat:@"bin/field_restart2_%08d.bin", cycle];
     const char *filePath = [fileName UTF8String];
 
     // metalバッファの内容を取得
@@ -802,12 +802,14 @@ static void writeField(FILE* fp, const char* name, int type_id, float* array, in
     // 4: potential
     fwrite(&type_id, sizeof(int), 1, fp);
     
-    // 配列本体
+    // 配列本体をスケーリングして出力
     float* output = (float *)malloc(sizeof(float)*arrSize);
     for (int i = 0; i < arrSize; ++i) {
         output[i] = array[i] * scale;
     }
     fwrite(output, sizeof(float), arrSize, fp);
+    // ここで必ず free する
+    free(output);
 }
 
 // 電荷密度へのアクセサ

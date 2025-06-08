@@ -5,10 +5,10 @@
     "MCCollision":      0
   },
   "ParamForTimeIntegration": {
-    "Start":            0,
+    "Start":            300,
     "End":              600,
-    "ParticleOutput":   300,
-    "FieldOutput":      300,
+    "ParticleOutput":   600,
+    "FieldOutput":      100,
     "ProgressOutput":   300,
     "TimeStep":         5e-12
   },

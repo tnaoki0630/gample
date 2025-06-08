@@ -47,6 +47,17 @@ struct SimulationParams {
     int BC_Ymax;
 };
 
+// 積分計算用構造体
+struct integrationParams {
+    uint pNum;
+    int ngx;
+    int ngy;
+    int ngb;
+    uint ppt;
+    int tgs;
+    int ics;
+};
+
 // 粒子更新カーネル
 kernel void updateParticles(
                         device ParticleState* ptcl          [[ buffer(0) ]],
@@ -57,10 +68,12 @@ kernel void updateParticles(
                         device const float* Bx              [[ buffer(5) ]],
                         device const float* By              [[ buffer(6) ]],
                         device const float* Bz              [[ buffer(7) ]],
+                        device float* print                 [[ buffer(8) ]],
                         uint id                             [[ thread_position_in_grid ]]
                         ) {
     if (id >= prm.pNum) return;
     
+    // get particle
     device ParticleState& p = ptcl[id];
 
     // electro-magnetic field on each ptcl
@@ -70,6 +83,7 @@ kernel void updateParticles(
     int j1 = int(p.y);
     int i2 = int(p.x);
     int j2 = int(yh);
+
     float hv[2][2] ;
     hv[0][0] = xh  - float(i1);
     hv[0][1] = p.y - float(j1);
@@ -107,14 +121,14 @@ kernel void updateParticles(
     const int nx = (prm.ngx + 2*prm.ngb);
     for (int i = 0; i < 6; i++) {
         for (int j = 0; j < 6; j++) {
-            ii = i1+(i-prm.ngb);
+            ii = i1+(i-prm.ngb+1);
             jj = j1+(j-prm.ngb);
             Epx += sf[i][0][0]*sf[j][0][1]*Ex[ii+jj*(nx+1)];
             ii = i2+(i-prm.ngb);
-            jj = j2+(j-prm.ngb);
+            jj = j2+(j-prm.ngb+1);
             Epy += sf[i][1][0]*sf[j][1][1]*Ey[ii+jj*(nx+1)];
-            ii = i1+(i-prm.ngb);
-            jj = j2+(j-prm.ngb);
+            ii = i1+(i-prm.ngb+1);
+            jj = j2+(j-prm.ngb+1);
             Bpz += sf[i][0][0]*sf[j][1][1]*Bz[ii+jj*(nx+1)];
         }
     }
@@ -161,37 +175,33 @@ kernel void updateParticles(
     }
 
     // delete boundary
-    if (prm.BC_Xmin == 1 && p.x - prm.ngb < 0.0f){
+    if (prm.BC_Xmin == 1 && int(p.x) < prm.ngb){
         p.piflag = 1;
     }
-    if (prm.BC_Xmax == 1 && p.x - prm.ngb > float(prm.ngx)){
+    if (prm.BC_Xmax == 1 && int(p.x) > prm.ngb+prm.ngx){
         p.piflag = 2;
     }
-    if (prm.BC_Ymin == 1 && p.y - prm.ngb < 0.0f){
+    if (prm.BC_Ymin == 1 && int(p.y) < prm.ngb){
         p.piflag = 3;
     }
-    if (prm.BC_Ymax == 1 && p.y - prm.ngb > float(prm.ngy)){
+    if (prm.BC_Ymax == 1 && int(p.y) > prm.ngb+prm.ngy){
         p.piflag = 4;
     }
+
 }
 
 // 電荷密度更新カーネル
 kernel void integrateChargeDensity(
                         device ParticleState* ptcl          [[ buffer(0) ]],
-                        constant SimulationParams& prm      [[ buffer(1) ]],
+                        constant integrationParams& prm     [[ buffer(1) ]],
                         device float* temp                  [[ buffer(2) ]],
                         device float* partial               [[ buffer(3) ]],
                         device float* print                 [[ buffer(4) ]],
-                        device int &arrSize                 [[ buffer(5) ]],
-                        device int &chunkSize               [[ buffer(6) ]],
-                        device int &pNumPerThread           [[ buffer(7) ]],
-                        device int &threadGroupSize         [[ buffer(8) ]],
-                        device float &constRho              [[ buffer(9) ]],
                         uint gid                            [[ thread_position_in_grid ]],
                         uint tid                            [[ thread_index_in_threadgroup ]],
                         uint groupID                        [[ threadgroup_position_in_grid ]]
                         ) {
-    // initialize(各スレッドがアクセスし得る範囲を初期化)
+    // initialize(自スレッドがアクセスし得る範囲だけ)
     const int nx = prm.ngx + 2*prm.ngb;
     const int ny = prm.ngy + 2*prm.ngb;
     const int ng = (nx+1)*(ny+1);
@@ -206,10 +216,13 @@ kernel void integrateChargeDensity(
     float sf[6][2];
     int ii, jj;
 
+    float max = -1.0;
+    float min = 10000;
+
     // 積分ループ
-    for (int i = 0; i < pNumPerThread; i++){
+    for (uint idx = 0; idx < prm.ppt; idx++){
         
-        uint pid = i + pNumPerThread*gid;
+        uint pid = idx + gid*prm.ppt;
         if (pid > prm.pNum) {
             // pNum を超えたら積分処理をスキップ
             break;
@@ -221,6 +234,7 @@ kernel void integrateChargeDensity(
         // electro-magnetic field on each ptcl
         i1 = int(p.x);
         j1 = int(p.y);
+
         hv[0] = p.x - float(i1);
         hv[1] = p.y - float(j1);
         
@@ -246,20 +260,20 @@ kernel void integrateChargeDensity(
                 ii = i1+(i-prm.ngb);
                 jj = j1+(j-prm.ngb);
                 int idx_out = ii+jj*(nx+1) + gid*ng;
-                temp[idx_out] += sf[i][0]*sf[j][1]*constRho;
+                temp[idx_out] += sf[i][0]*sf[j][1];
             }
         }
     
     }
 
-    // スレッドグループ内で同期
+    // スレッドグループ内で同期（未初期化値の参照を防ぐ）
     threadgroup_barrier(mem_flags::mem_threadgroup);
 
     // reduction
-    for (int i = 0; i < arrSize; i++){
-        for (uint stride = threadGroupSize / 2; stride > 0; stride /= 2) {
+    for (int i = 0; i < ng; i++){
+        for (uint stride = prm.tgs / 2; stride > 0; stride /= 2) {
             if (tid < stride) {
-                uint offset = groupID*threadGroupSize;
+                uint offset = groupID*prm.tgs;
                 int idx_in = i + (tid + stride + offset)*ng;
                 int idx_out = i + (tid + offset)*ng;
                 temp[idx_out] += temp[idx_in];
@@ -270,12 +284,14 @@ kernel void integrateChargeDensity(
     
     // output partialSum
     if (tid == 0) {
-        for (int i = 0; i < arrSize; i++){
-            int idx_in = i + (0 + groupID*threadGroupSize)*ng;
+        for (int i = 0; i < ng; i++){
+            int idx_in = i + (0 + groupID*prm.tgs)*ng;
             int idx_out = i + groupID*ng;
             partial[idx_out] = temp[idx_in];
         }
     }
+
+    // print[gid] = min;
     
 }
 )";
@@ -386,6 +402,18 @@ kernel void integrateChargeDensity(
             }
         }
 
+        // 定数パラメータ格納バッファ
+        buffSize = sizeof(integrationParams);
+        _integrationParamsBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
+        integrationParams* intgPrm = (integrationParams*)[_integrationParamsBuffer contents];
+        intgPrm->ngx  = fieldParam.ngx;
+        intgPrm->ngy  = fieldParam.ngy;
+        intgPrm->ngb  = fieldParam.ngb;
+        intgPrm->tgs  = _threadGroupSize;
+        intgPrm->ics  = _integrationChunkSize;
+        intgPrm->pNum = 0; // 都度計算
+        intgPrm->ppt  = 0; // 都度計算
+
         // 粒子バッファ
         if(particleParam[s].pNum > _pNumMax){
             NSLog(@"pNum > pNumMax: pName = %@, pNum = %d, pNumMax = %d", _pName, particleParam[s].pNum, _pNumMax);
@@ -410,6 +438,12 @@ kernel void integrateChargeDensity(
             Ly = particleParam[s].genY[1] - particleParam[s].genY[0];
             Ymin = particleParam[s].genY[0];
         }
+        // // prevent overflow
+        // float eps = 1e-3;
+        // Lx *= (1-eps);
+        // Ly *= (1-eps);
+        // Xmin += eps;
+        // Ymin += eps;
         // 乱数生成器
         std::random_device seed_gen;
         std::default_random_engine engine(seed_gen());
@@ -419,10 +453,13 @@ kernel void integrateChargeDensity(
         // 粒子の初期化
         ParticleState *p = (ParticleState *)self.particleBuffer.contents;
         for (int i = 0; i < particleParam[s].pNum; i++) {
+            float rx, ry;
             if ([particleParam[s].genType isEqualToString:@"uniform-Gaussian"]){
                 // uniform distribution for position
-                p[i].x = Xmin + (float)unif_dist(engine)*Lx;
-                p[i].y = Ymin + (float)unif_dist(engine)*Ly;
+                rx = (float)unif_dist(engine)*Lx;
+                ry = (float)unif_dist(engine)*Ly;
+                p[i].x = Xmin + rx;
+                p[i].y = Ymin + ry;
                 // Maxwellian for velocity 
                 p[i].vx = (float)particleParam[s].genU[0] + (float)norm_dist(engine);
                 p[i].vy = (float)particleParam[s].genU[1] + (float)norm_dist(engine);
@@ -448,7 +485,7 @@ kernel void integrateChargeDensity(
 
 
 // 時間更新
-- (void)update:(double)dt withEMField:(EMField*)fld withLogger:(XmlLogger&)logger{
+- (void)update:(double)dt withEMField:(EMField*)fld withMom:(Moment*)mom withLogger:(XmlLogger&)logger{
     // シミュレーションパラメータの更新
     SimulationParams* prm = (SimulationParams*)[_paramsBuffer contents];
     prm->constE = 0.5*_q*dt/_m;
@@ -468,6 +505,9 @@ kernel void integrateChargeDensity(
     id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
     id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
     
+    // Moment のバッファを使用
+    id<MTLBuffer> printBuffer = [mom printBuffer];
+
     // パイプラインとバッファの設定
     [computeEncoder setComputePipelineState:_updateParticlesPipeline];
     [computeEncoder setBuffer:_particleBuffer   offset:0 atIndex:0];
@@ -478,6 +518,8 @@ kernel void integrateChargeDensity(
     [computeEncoder setBuffer:BxBuffer          offset:0 atIndex:5];
     [computeEncoder setBuffer:ByBuffer          offset:0 atIndex:6];
     [computeEncoder setBuffer:BzBuffer          offset:0 atIndex:7];
+    [computeEncoder setBuffer:printBuffer       offset:0 atIndex:8];
+
     
     // グリッドとスレッドグループのサイズ設定
     uint gridSize = prm->pNum;
@@ -489,28 +531,38 @@ kernel void integrateChargeDensity(
     [computeEncoder dispatchThreadgroups:gridSizeMetalStyle
                             threadsPerThreadgroup:threadGroupSize];
 
-    // // 粒子状態取得
-    // ParticleState* p = (ParticleState*)[_particleBuffer contents];
-    // for (int idx = 0; idx < 10; idx++){
-    //     NSLog(@"before update(%@): p.x[%d]: %f, p.vx[%d]: %f", _pName, idx, p[idx].x, idx, p[idx].vx);
-    // }
-
     // エンコーディングと実行
     [computeEncoder endEncoding];
     [commandBuffer commit];
     [commandBuffer waitUntilCompleted];
 
-    // // 粒子状態取得
-    // p = (ParticleState*)[_particleBuffer contents];
-    // for (int idx = 0; idx < 10; idx++){
-    //     NSLog(@"after update(%@): p.x[%d]: %f, p.vx[%d]: %f", _pName, idx, p[idx].x, idx, p[idx].vx);
+    // デバッグ出力
+    // ParticleState* p = (ParticleState*)[_particleBuffer contents];
+    // float* prt = (float*)printBuffer.contents;
+    // float min_x = 1e20, max_x = -1e20;
+    // float min_y = 1e20, max_y = -1e20;
+    // float min_e = 1e20, max_e = -1e20;
+    // float min = 1e20, max = -1e20;
+    // for (int idx = 0; idx < prm->pNum; idx++){
+    //     if(p[idx].piflag == 0){
+    //         // debug print
+    //         if (min > prt[idx]){ min = prt[idx]; }
+    //         if (max < prt[idx]){ max = prt[idx]; }
+    //         // position
+    //         if (min_x > p[idx].x){ min_x = p[idx].x; }
+    //         if (max_x < p[idx].x){ max_x = p[idx].x; }
+    //         if (min_y > p[idx].y){ min_y = p[idx].y; }
+    //         if (max_y < p[idx].y){ max_y = p[idx].y; }
+    //         // energy
+    //         if (min_e > p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz){ 
+    //             min_e = p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz; 
+    //         }
+    //         if (max_e < p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz){ 
+    //             max_e = p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz; 
+    //         }
+    //     }
     // }
-
-    // // デバッグ出力
-    // float* prt = (float*)_printBuffer.contents;
-    // for (int idx = 0; idx < 10; idx++){
-    //     NSLog(@"debug print(%@): val[%d]: %f", _pName, idx, prt[idx]);
-    // }
+    // NSLog(@"debug print(%@): pNum = %d, min = %e, max = %e", _pName, prm->pNum, min, max);
 
 }
 
@@ -576,37 +628,17 @@ kernel void integrateChargeDensity(
 
 - (void)integrateChargeDensity:(EMField*)fld withMoment:(Moment*)mom withLogger:(XmlLogger&)logger{
     // obtain objects
-    SimulationParams* prm = (SimulationParams*)[_paramsBuffer contents];
-    int ng = (fld.nx+1)*(fld.ny+1);
-    id<MTLBuffer> rhoBuffer = [fld rhoBuffer];
-    float* rho = (float*)rhoBuffer.contents;
+    SimulationParams* prmPtcl = (SimulationParams*)[_paramsBuffer contents];
+    integrationParams* prm = (integrationParams*)[_integrationParamsBuffer contents];
+    prm->pNum = prmPtcl->pNum;
+    uint pNumPerThread = (prmPtcl->pNum + _integrationChunkSize - 1) / _integrationChunkSize;
+    prm->ppt  = pNumPerThread;
 
     // Momentのバッファを使用
     id<MTLBuffer> integrateTemporaryBuffer = [mom integrateTemporaryBuffer];
     id<MTLBuffer> integratePartialBuffer   = [mom integratePartialBuffer  ];
     id<MTLBuffer> printBuffer = [mom printBuffer];
-
-    // constant 引数バッファ
-    id<MTLBuffer> chunkSizeBuffer = [_device newBufferWithBytes:&_integrationChunkSize
-                                                length:sizeof(int)
-                                                options:MTLResourceStorageModeShared];
-    id<MTLBuffer> arrSizeBuffer = [_device newBufferWithBytes:&ng
-                                                length:sizeof(int)
-                                                options:MTLResourceStorageModeShared];
-    id<MTLBuffer> threadGroupSizeBuffer = [_device newBufferWithBytes:&_threadGroupSize
-                                                length:sizeof(int)
-                                                options:MTLResourceStorageModeShared];
-    // constant
-    float constRho = _q * _w / (fld.dx * fld.dy);
-    id<MTLBuffer> constRhoBuffer = [_device newBufferWithBytes:&constRho
-                                                length:sizeof(int)
-                                                options:MTLResourceStorageModeShared];
-    // 分割して積分
-    uint pNumPerThread = (prm->pNum + _integrationChunkSize - 1) / _integrationChunkSize;
-    id<MTLBuffer> pNumPerThreadBuffer = [_device newBufferWithBytes:&pNumPerThread
-                                            length:sizeof(uint)
-                                            options:MTLResourceStorageModeShared];
-
+    
     // コマンドバッファとエンコーダの作成
     id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
     id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
@@ -614,37 +646,46 @@ kernel void integrateChargeDensity(
     // パイプラインとバッファの設定
     [computeEncoder setComputePipelineState:_integrateChargeDensityPipeline];
     [computeEncoder setBuffer:_particleBuffer           offset:0 atIndex:0];
-    [computeEncoder setBuffer:_paramsBuffer             offset:0 atIndex:1];
-    [computeEncoder setBuffer:integrateTemporaryBuffer  offset:0 atIndex:2];
-    [computeEncoder setBuffer:integratePartialBuffer    offset:0 atIndex:3];
-    [computeEncoder setBuffer:printBuffer               offset:0 atIndex:4];
-    [computeEncoder setBuffer:arrSizeBuffer             offset:0 atIndex:5];
-    [computeEncoder setBuffer:chunkSizeBuffer           offset:0 atIndex:6];
-    [computeEncoder setBuffer:pNumPerThreadBuffer       offset:0 atIndex:7];
-    [computeEncoder setBuffer:threadGroupSizeBuffer     offset:0 atIndex:8];
-    [computeEncoder setBuffer:constRhoBuffer            offset:0 atIndex:9];
+    [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
+    [computeEncoder setBuffer:integrateTemporaryBuffer offset:0 atIndex:2];
+    [computeEncoder setBuffer:integratePartialBuffer   offset:0 atIndex:3];
+    [computeEncoder setBuffer:printBuffer              offset:0 atIndex:4];
 
     // グリッドとスレッドグループのサイズ設定
     uint threadGroupNum = _integrationChunkSize/_threadGroupSize;
     MTLSize gridSizeMetalStyle = MTLSizeMake(threadGroupNum, 1, 1);
     MTLSize threadGroupSize = MTLSizeMake(_threadGroupSize, 1, 1);
 
-    // ディスパッチ
-    [computeEncoder dispatchThreadgroups:gridSizeMetalStyle
-                            threadsPerThreadgroup:threadGroupSize];
-
-    // エンコーディングと実行
+    // ディスパッチ/エンコーディング/実行
+    [computeEncoder dispatchThreadgroups:gridSizeMetalStyle threadsPerThreadgroup:threadGroupSize];
     [computeEncoder endEncoding];
     [commandBuffer commit];
     [commandBuffer waitUntilCompleted];
 
+    // rho を取得
+    id<MTLBuffer> rhoBuffer = [fld rhoBuffer];
+    float* rho = (float*)rhoBuffer.contents;
+
     // スレッドグループごとの部分和を加算
+    int ng = (fld.nx+1)*(fld.ny+1);
     float* partialSums = (float*)integratePartialBuffer.contents;
+    float constRho = _q * _w / (fld.dx * fld.dy);   // constant weight and chargedensity
     for (int j = 0; j < threadGroupNum; j++){
         for (int i = 0; i < ng; i++){
-            rho[i] += partialSums[i + j*ng];
+            rho[i] += partialSums[i + j*ng]*constRho;
         }
     }
+
+    // デバッグ出力
+    // float* prt = (float*)printBuffer.contents;
+    // float min = 1e20, max = -1e20;
+    // for (int idx = 0; idx < threadGroupNum; idx++){
+    //     // debug print
+    //     if (min > prt[idx]){ min = prt[idx]; }
+    //     if (max < prt[idx]){ max = prt[idx]; }
+    // }
+    // NSLog(@"debug print(%@): pNum = %d, min = %e, max = %e", _pName, prm->pNum, min, max);
+
 };
 
 - (void)outputPhaseSpace:(int)cycle withEMField:(EMField*)fld withLogger:(XmlLogger&)logger{
@@ -655,7 +696,7 @@ kernel void integrateChargeDensity(
     float x,y;
     // 各粒子についてバイナリファイルに出力する 
     for (int idx = 0; idx < 20; idx++) {
-        NSString *filePath = [NSString stringWithFormat:@"bin/PhaseSpace_%@_%d.bin", _pName, idx];
+        NSString *filePath = [NSString stringWithFormat:@"bin/PhaseSpace_restart2_%@_%d.bin", _pName, idx];
         // バイナリ書き出し
         std::ofstream ofs([filePath UTF8String], std::ios::binary | std::ios::app);
         if (!ofs) {
@@ -766,7 +807,7 @@ kernel void integrateChargeDensity(
                 } else if ([sources[i].genType isEqualToString:@"Ysinusoidal-Gaussian"]){
                     // uniform distribution for position
                     p[idx].x = Xmin + (float)unif_dist(engine)*Lx;
-                    p[idx].y = (Ymin+Ymax)/2 + Ly/PI*sin(2*unif_dist(engine)-1.0);
+                    p[idx].y = (Ymin+Ymax)/2 + Ly/PI*asin(2*unif_dist(engine)-1.0);
                     // Maxwellian for velocity 
                     p[idx].vx = (float)sources[i].genU[0] + (float)norm_dist(engine);
                     p[idx].vy = (float)sources[i].genU[1] + (float)norm_dist(engine);

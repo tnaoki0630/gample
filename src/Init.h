@@ -17,6 +17,7 @@ struct ParamForTimeIntegration {
     int End;
     int ParticleOutput;
     int FieldOutput;
+    int ProgressOutput;
     double TimeStep;
 };
 

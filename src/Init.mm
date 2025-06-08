@@ -78,6 +78,7 @@
         _timeIntegration.End            = [mergedTimeD[@"End"] integerValue];
         _timeIntegration.ParticleOutput = [mergedTimeD[@"ParticleOutput"] integerValue];
         _timeIntegration.FieldOutput    = [mergedTimeD[@"FieldOutput"] integerValue];
+        _timeIntegration.ProgressOutput = [mergedTimeD[@"ProgressOutput"] integerValue];
         _timeIntegration.TimeStep       = [mergedTimeD[@"TimeStep"] doubleValue];
         
         // ParamForComputing
@@ -287,6 +288,7 @@
         @"End":             @0,
         @"ParticleOutput":  @0,
         @"FieldOutput":     @0,
+        @"ProgressOutput":     @0,
         @"TimeStep":        @0
     } mutableCopy];
 }

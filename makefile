@@ -4,7 +4,7 @@ CXXFLAGS = -std=c++17 \
            -x objective-c++ \
            -isysroot $(shell xcrun --show-sdk-path)\
            -I/Users/$(shell whoami)/Library/amgcl\
-           -I/opt/homebrew/Cellar/boost/1.87.0/include\
+           -I/opt/homebrew/Cellar/boost/1.87.0/include
 
 # リンカフラグ
 LDFLAGS = -framework Metal \
@@ -12,7 +12,7 @@ LDFLAGS = -framework Metal \
           -framework MetalKit \
           -fobjc-arc\
           -L$(shell xcrun --show-sdk-path)/usr/lib\
-          -F$(shell xcrun --show-sdk-path)/System/Library/Frameworks
+          -F$(shell xcrun --show-sdk-path)/System/Library/Frameworks 
 
 # ディレクトリ設定
 SRC_DIR = src
@@ -25,6 +25,7 @@ SOURCES_COMMON = $(SRC_DIR)/main.mm \
                  $(SRC_DIR)/Init.mm \
                  $(SRC_DIR)/EMField.mm \
                  $(SRC_DIR)/Moment.mm \
+                 $(SRC_DIR)/FileIO.mm \
 
 # EXEC の値によって Particle ソースを切り替え
 ifeq ($(EXEC), mpi)

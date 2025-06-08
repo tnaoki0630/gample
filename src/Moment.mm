@@ -55,9 +55,9 @@ kernel void integrateNumDens(
     int ii, jj;
 
     // 積分ループ
-    for (int i = 0; i < prm.ppt; i++){
+    for (uint idx = 0; idx < prm.ppt; idx++){
         
-        uint pid = i + gid*prm.ppt;
+        uint pid = idx + gid*prm.ppt;
         if (pid > prm.pNum) {
             // pNum を超えたら積分処理をスキップ
             break;
@@ -69,6 +69,7 @@ kernel void integrateNumDens(
         // electro-magnetic field on each ptcl
         i1 = int(p.x);
         j1 = int(p.y);
+
         hv[0] = p.x - float(i1);
         hv[1] = p.y - float(j1);
         
@@ -154,9 +155,9 @@ kernel void integrateMeanVelX(
     int ii, jj;
 
     // 積分ループ
-    for (int i = 0; i < prm.ppt; i++){
+    for (uint idx = 0; idx < prm.ppt; idx++){
         
-        uint pid = i + gid*prm.ppt;
+        uint pid = idx + gid*prm.ppt;
         if (pid > prm.pNum) {
             // pNum を超えたら積分処理をスキップ
             break;
@@ -168,6 +169,7 @@ kernel void integrateMeanVelX(
         // electro-magnetic field on each ptcl
         i1 = int(p.x);
         j1 = int(p.y);
+
         hv[0] = p.x - float(i1);
         hv[1] = p.y - float(j1);
         
@@ -253,9 +255,9 @@ kernel void integrateMeanVelY(
     int ii, jj;
 
     // 積分ループ
-    for (int i = 0; i < prm.ppt; i++){
+    for (uint idx = 0; idx < prm.ppt; idx++){
         
-        uint pid = i + gid*prm.ppt;
+        uint pid = idx + gid*prm.ppt;
         if (pid > prm.pNum) {
             // pNum を超えたら積分処理をスキップ
             break;
@@ -267,6 +269,7 @@ kernel void integrateMeanVelY(
         // electro-magnetic field on each ptcl
         i1 = int(p.x);
         j1 = int(p.y);
+
         hv[0] = p.x - float(i1);
         hv[1] = p.y - float(j1);
         
@@ -352,9 +355,9 @@ kernel void integrateMeanVelZ(
     int ii, jj;
 
     // 積分ループ
-    for (int i = 0; i < prm.ppt; i++){
+    for (uint idx = 0; idx < prm.ppt; idx++){
         
-        uint pid = i + gid*prm.ppt;
+        uint pid = idx + gid*prm.ppt;
         if (pid > prm.pNum) {
             // pNum を超えたら積分処理をスキップ
             break;
@@ -366,6 +369,7 @@ kernel void integrateMeanVelZ(
         // electro-magnetic field on each ptcl
         i1 = int(p.x);
         j1 = int(p.y);
+
         hv[0] = p.x - float(i1);
         hv[1] = p.y - float(j1);
         
@@ -451,9 +455,9 @@ kernel void integratePressureXX(
     int ii, jj;
 
     // 積分ループ
-    for (int i = 0; i < prm.ppt; i++){
+    for (uint idx = 0; idx < prm.ppt; idx++){
         
-        uint pid = i + gid*prm.ppt;
+        uint pid = idx + gid*prm.ppt;
         if (pid > prm.pNum) {
             // pNum を超えたら積分処理をスキップ
             break;
@@ -465,6 +469,7 @@ kernel void integratePressureXX(
         // electro-magnetic field on each ptcl
         i1 = int(p.x);
         j1 = int(p.y);
+
         hv[0] = p.x - float(i1);
         hv[1] = p.y - float(j1);
         
@@ -550,9 +555,9 @@ kernel void integratePressureXY(
     int ii, jj;
 
     // 積分ループ
-    for (int i = 0; i < prm.ppt; i++){
+    for (uint idx = 0; idx < prm.ppt; idx++){
         
-        uint pid = i + gid*prm.ppt;
+        uint pid = idx + gid*prm.ppt;
         if (pid > prm.pNum) {
             // pNum を超えたら積分処理をスキップ
             break;
@@ -564,6 +569,7 @@ kernel void integratePressureXY(
         // electro-magnetic field on each ptcl
         i1 = int(p.x);
         j1 = int(p.y);
+
         hv[0] = p.x - float(i1);
         hv[1] = p.y - float(j1);
         
@@ -649,9 +655,9 @@ kernel void integratePressureXZ(
     int ii, jj;
 
     // 積分ループ
-    for (int i = 0; i < prm.ppt; i++){
+    for (uint idx = 0; idx < prm.ppt; idx++){
         
-        uint pid = i + gid*prm.ppt;
+        uint pid = idx + gid*prm.ppt;
         if (pid > prm.pNum) {
             // pNum を超えたら積分処理をスキップ
             break;
@@ -663,6 +669,7 @@ kernel void integratePressureXZ(
         // electro-magnetic field on each ptcl
         i1 = int(p.x);
         j1 = int(p.y);
+
         hv[0] = p.x - float(i1);
         hv[1] = p.y - float(j1);
         
@@ -748,9 +755,9 @@ kernel void integratePressureYY(
     int ii, jj;
 
     // 積分ループ
-    for (int i = 0; i < prm.ppt; i++){
+    for (uint idx = 0; idx < prm.ppt; idx++){
         
-        uint pid = i + gid*prm.ppt;
+        uint pid = idx + gid*prm.ppt;
         if (pid > prm.pNum) {
             // pNum を超えたら積分処理をスキップ
             break;
@@ -762,6 +769,7 @@ kernel void integratePressureYY(
         // electro-magnetic field on each ptcl
         i1 = int(p.x);
         j1 = int(p.y);
+
         hv[0] = p.x - float(i1);
         hv[1] = p.y - float(j1);
         
@@ -847,9 +855,9 @@ kernel void integratePressureYZ(
     int ii, jj;
 
     // 積分ループ
-    for (int i = 0; i < prm.ppt; i++){
+    for (uint idx = 0; idx < prm.ppt; idx++){
         
-        uint pid = i + gid*prm.ppt;
+        uint pid = idx + gid*prm.ppt;
         if (pid > prm.pNum) {
             // pNum を超えたら積分処理をスキップ
             break;
@@ -861,6 +869,7 @@ kernel void integratePressureYZ(
         // electro-magnetic field on each ptcl
         i1 = int(p.x);
         j1 = int(p.y);
+
         hv[0] = p.x - float(i1);
         hv[1] = p.y - float(j1);
         
@@ -946,9 +955,9 @@ kernel void integratePressureZZ(
     int ii, jj;
 
     // 積分ループ
-    for (int i = 0; i < prm.ppt; i++){
+    for (uint idx = 0; idx < prm.ppt; idx++){
         
-        uint pid = i + gid*prm.ppt;
+        uint pid = idx + gid*prm.ppt;
         if (pid > prm.pNum) {
             // pNum を超えたら積分処理をスキップ
             break;
@@ -960,6 +969,7 @@ kernel void integratePressureZZ(
         // electro-magnetic field on each ptcl
         i1 = int(p.x);
         j1 = int(p.y);
+
         hv[0] = p.x - float(i1);
         hv[1] = p.y - float(j1);
         
@@ -1098,7 +1108,7 @@ kernel void integratePressureZZ(
         int ny = fieldParam.ngy + 2*fieldParam.ngb;
         int ng = (nx+1)*(ny+1);
         buffSize = sizeof(float)*ng*_integrationChunkSize;
-        _integrateTemporaryBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
+        _integrateTemporaryBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModePrivate];
         buffSize = sizeof(float)*ng*(_integrationChunkSize/_threadGroupSize);
         _integratePartialBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
 
@@ -1400,9 +1410,8 @@ kernel void integratePressureZZ(
 
 };
 
-
 - (void)outputMoments:(int)cycle withPtclName:(NSString*)pName withEMField:(EMField*)fld withLogger:(XmlLogger&)logger{
-    NSString *fileName = [NSString stringWithFormat:@"bin/moments_%@_%08d.bin", pName, cycle];
+    NSString *fileName = [NSString stringWithFormat:@"bin/moments_restart_%@_%08d.bin", pName, cycle];
     const char *filePath = [fileName UTF8String];
 
     // グリッド情報取得
@@ -1465,16 +1474,16 @@ kernel void integratePressureZZ(
     fwrite(&dy, sizeof(float), 1, fp);
     
     // フィールドデータを書き出す: name,type,array
-    writeField(fp, [[pName stringByAppendingString:@"_n"] UTF8String], 0, _n, ng, 1.0f);
-    writeField(fp, [[pName stringByAppendingString:@"_ux"] UTF8String], 0, _ux, ng, 1.0f);
-    writeField(fp, [[pName stringByAppendingString:@"_uy"] UTF8String], 0, _uy, ng, 1.0f);
-    writeField(fp, [[pName stringByAppendingString:@"_uz"] UTF8String], 0, _uz, ng, 1.0f);
-    writeField(fp, [[pName stringByAppendingString:@"_Pxx"] UTF8String], 0, _Pxx, ng, 0.1f);
-    writeField(fp, [[pName stringByAppendingString:@"_Pxy"] UTF8String], 0, _Pxy, ng, 0.1f);
-    writeField(fp, [[pName stringByAppendingString:@"_Pxz"] UTF8String], 0, _Pxz, ng, 0.1f);
-    writeField(fp, [[pName stringByAppendingString:@"_Pyy"] UTF8String], 0, _Pyy, ng, 0.1f);
-    writeField(fp, [[pName stringByAppendingString:@"_Pyz"] UTF8String], 0, _Pyz, ng, 0.1f);
-    writeField(fp, [[pName stringByAppendingString:@"_Pzz"] UTF8String], 0, _Pzz, ng, 0.1f);
+    writeField(fp, [[pName stringByAppendingString:@"_n"] UTF8String], 0, _n, ng, 1.0f);        // 1/cm3
+    writeField(fp, [[pName stringByAppendingString:@"_ux"] UTF8String], 0, _ux, ng, 1.0f);      // cm/s
+    writeField(fp, [[pName stringByAppendingString:@"_uy"] UTF8String], 0, _uy, ng, 1.0f);      // cm/s
+    writeField(fp, [[pName stringByAppendingString:@"_uz"] UTF8String], 0, _uz, ng, 1.0f);      // cm/s
+    writeField(fp, [[pName stringByAppendingString:@"_Pxx"] UTF8String], 0, _Pxx, ng, 0.1f);    // Pa
+    writeField(fp, [[pName stringByAppendingString:@"_Pxy"] UTF8String], 0, _Pxy, ng, 0.1f);    // Pa
+    writeField(fp, [[pName stringByAppendingString:@"_Pxz"] UTF8String], 0, _Pxz, ng, 0.1f);    // Pa
+    writeField(fp, [[pName stringByAppendingString:@"_Pyy"] UTF8String], 0, _Pyy, ng, 0.1f);    // Pa
+    writeField(fp, [[pName stringByAppendingString:@"_Pyz"] UTF8String], 0, _Pyz, ng, 0.1f);    // Pa
+    writeField(fp, [[pName stringByAppendingString:@"_Pzz"] UTF8String], 0, _Pzz, ng, 0.1f);    // Pa
     
     fclose(fp);
     NSLog(@"Field data successfully written to %s", filePath);
@@ -1492,12 +1501,14 @@ static void writeField(FILE* fp, const char* name, int type_id, float* array, in
     // 4: potential
     fwrite(&type_id, sizeof(int), 1, fp);
     
-    // 配列本体
+    // 配列本体をスケーリングして出力
     float* output = (float *)malloc(sizeof(float)*arrSize);
     for (int i = 0; i < arrSize; ++i) {
         output[i] = array[i] * scale;
     }
     fwrite(output, sizeof(float), arrSize, fp);
+    // ここで必ず free する
+    free(output);
 }
 
 // 積分計算用バッファへのアクセサ

@@ -106,10 +106,10 @@ def plot_2values(
 
 
 if __name__ == '__main__':
-    cycles, memUsage_physFP = parseXML('result/execLargeJob/log.xml', 'memoryUsage', 'physicalFootprint')
-    cycles, memUsage_resiSS = parseXML('result/execLargeJob/log.xml', 'memoryUsage', 'residentSetSize')
-    cycles, pNum_electron = parseXML('result/execLargeJob/log.xml', 'flowout_electron', 'particleNumber')
-    cycles, pNum_ion_Xe1 = parseXML('result/execLargeJob/log.xml', 'flowout_ion_Xe1', 'particleNumber')
+    cycles, memUsage_physFP = parseXML('log_cp.xml', 'memoryUsage', 'physicalFootprint')
+    cycles, memUsage_resiSS = parseXML('log_cp.xml', 'memoryUsage', 'residentSetSize')
+    cycles, pNum_electron = parseXML('log_cp.xml', 'flowout_electron', 'particleNumber')
+    cycles, pNum_ion_Xe1 = parseXML('log_cp.xml', 'flowout_ion_Xe1', 'particleNumber')
     values = [memUsage_physFP, memUsage_resiSS]
     values2 = [pNum_electron, pNum_ion_Xe1]
     labels =   ["memUsage_physFP", "memUsage_resiSS"]

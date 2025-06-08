@@ -55,9 +55,8 @@ struct SimulationParams {
 @property (nonatomic, strong) id<MTLComputePipelineState> updateParticlesPipeline;
 @property (nonatomic, strong) id<MTLComputePipelineState> integrateChargeDensityPipeline;
 @property (nonatomic, strong) id<MTLBuffer> particleBuffer;
-// @property (nonatomic, strong) id<MTLBuffer> integrateTemporaryBuffer;
-// @property (nonatomic, strong) id<MTLBuffer> integratePartialBuffer;
 @property (nonatomic, strong) id<MTLBuffer> paramsBuffer;
+@property (nonatomic, strong) id<MTLBuffer> integrationParamsBuffer;
 @property (nonatomic, strong) id<MTLBuffer> printBuffer;
 // スカラー変数
 @property (nonatomic) uint threadGroupSize;
@@ -66,7 +65,7 @@ struct SimulationParams {
 // 初期設定
 - (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam specimen:(int)s withLogger:(XmlLogger&)logger;
 // 時間更新
-- (void)update:(double)dt withEMField:(EMField*)fld withLogger:(XmlLogger&)logger;
+- (void)update:(double)dt withEMField:(EMField*)fld withMom:(Moment*)mom withLogger:(XmlLogger&)logger;
 // 粒子境界処理
 - (void)reduce:(XmlLogger&)logger;
 // 電荷密度更新
