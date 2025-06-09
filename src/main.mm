@@ -39,7 +39,7 @@ int main(int argc, const char * argv[]) {
         // I/O チェック
         auto args = parseArgs(argc, argv);
         NSString* inputPath;
-        if (args.count("-i") == 1 && args.count("-o") == 1) {
+        if (args.count("-i") == 1) {
             inputPath = [NSString stringWithUTF8String:args["-i"].c_str()];
             // ファイルの存在確認
             if (![[NSFileManager defaultManager] fileExistsAtPath:inputPath]) {
@@ -47,15 +47,16 @@ int main(int argc, const char * argv[]) {
                 return 1;
             }
         }else{
-            NSLog(@"Usage: %s -i inputfile.txt -o outputfile.xml", argv[0]);
+            NSLog(@"Usage: %s -i inputfile.json", argv[0]);
             return 1;
         }
 
-        // logger の作成
-        XmlLogger logger(args["-o"].c_str());
-
         // 初期化パラメータクラス作成
         Init *init = [[Init alloc] parseInputFile:inputPath];
+
+        // logger の作成
+        struct ParamForTimeIntegration timeParam = init.paramForTimeIntegration;
+        XmlLogger logger([[NSString stringWithFormat:@"%@_log.xml", timeParam.ProjectName] UTF8String]);
 
         // パース結果の出力(debugprint.mm)
         printInitContents(init, logger);
@@ -77,7 +78,6 @@ int main(int argc, const char * argv[]) {
         Moment *mom = [[Moment alloc] initWithDevice:device withParam:init withLogger:logger];
 
         // 時間更新パラメータ
-        struct ParamForTimeIntegration timeParam = init.paramForTimeIntegration;
         int StartCycle = timeParam.Start;
         int intCurrent = 0;
         // リスタート
@@ -86,12 +86,6 @@ int main(int argc, const char * argv[]) {
                 NSLog(@"restart failed.");
                 return 1;
             };
-            // チェック用
-            for (int s = 0; s < EqFlags.Particle; s++) {
-                Particle *ptcl = [ptclArr objectAtIndex:s];
-                [ptcl outputPhaseSpace:StartCycle withEMField:fld withLogger:logger];
-            }
-            [fld outputField:StartCycle withLogger:logger];
         }
         double dt = timeParam.TimeStep;
         double time = StartCycle*dt;
@@ -101,7 +95,7 @@ int main(int argc, const char * argv[]) {
         for (int cycle = StartCycle+1; cycle <= timeParam.End; cycle++) {
             @autoreleasepool {
                 // ログ出力のオンオフ
-                if(cycle%100 == 0){ logger.swichLog(true); 
+                if(cycle%timeParam.LogOutput == 0){ logger.swichLog(true); 
                 }else{ logger.swichLog(false); }
                 // 時間計算
                 y = dt - comp;
@@ -141,12 +135,12 @@ int main(int argc, const char * argv[]) {
                     }
                     // 粒子軌道の出力
                     if (timeParam.ParticleOutput != 0 && cycle%timeParam.ParticleOutput == 0){
-                        [ptcl outputPhaseSpace:cycle withEMField:fld withLogger:logger];
+                        outputPhaseSpace(cycle, ptcl, init, logger);
                     }
                     // モーメントの出力
                     if (timeParam.FieldOutput != 0 && cycle%timeParam.FieldOutput == 0){
                         [mom integrateMoments:ptcl withEMField:fld withLogger:logger];
-                        [mom outputMoments:cycle withPtclName:particles[s].pName withEMField:fld withLogger:logger];
+                        outputMoments(cycle, mom, particles[s].pName, init, logger);
                     }
                 }
 
@@ -155,7 +149,7 @@ int main(int argc, const char * argv[]) {
                     MEASURE("solvePoisson", [fld solvePoisson:logger], dataElapsedTime);
                     // 場の出力
                     if (timeParam.FieldOutput != 0 && cycle%timeParam.FieldOutput == 0){
-                        [fld outputField:cycle withLogger:logger];
+                        outputField(cycle, fld, init, logger);
                     }
                 }
 

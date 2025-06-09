@@ -47,15 +47,14 @@ def plot_values(cycles, arr_values, labels, title="", scale=1.0):
     plt.legend(loc='lower right')
     plt.ylabel(title)
     plt.xlabel('Cycle')
-    plt.xlim(left=0)
+    # plt.xlim(left=0)
     plt.ylim(bottom=0)
     plt.tight_layout()
     plt.show()
 
 if __name__ == '__main__':
-    cycles, timeICDE_reduceInCPU = parseXML('result/culcOrderForCDens/reduceInCPU.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, timeICDE_reduceInMtl = parseXML('result/culcOrderForCDens/reduceInMtl.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, timeICDE_arrIdxMajor = parseXML('result/culcOrderForCDens/arrIdxMajor.xml', 'elapsedTime', 'integCDens_electron')
-    timeICDE = [timeICDE_reduceInCPU, timeICDE_reduceInMtl, timeICDE_arrIdxMajor]
-    labels =   ["timeICDE_reduceInCPU", "timeICDE_reduceInMtl", "timeICDE_arrIdxMajor"]
-    plot_values(cycles, timeICDE, labels, "elapsed time [msec]", 1e-3)
+    cycles, flowout_electron = parseXML('proj2_log.xml', 'flowout_electron', 'Xmin')
+    cycles, flowout_ion = parseXML('proj2_log.xml', 'flowout_ion_Xe1', 'Xmin')
+    values = [flowout_electron, flowout_ion]
+    labels = ["flowout_electron", "flowout_ion"]
+    plot_values(cycles, values, labels, "flowout particles", 1)

@@ -1410,85 +1410,6 @@ kernel void integratePressureZZ(
 
 };
 
-- (void)outputMoments:(int)cycle withPtclName:(NSString*)pName withEMField:(EMField*)fld withLogger:(XmlLogger&)logger{
-    NSString *fileName = [NSString stringWithFormat:@"bin/moments_restart_%@_%08d.bin", pName, cycle];
-    const char *filePath = [fileName UTF8String];
-
-    // グリッド情報取得
-    int ngx = fld.ngx;
-    int ngy = fld.ngy;
-    int ngb = fld.ngb;
-    int ng = (ngx+2*ngb+1)*(ngy+2*ngb+1);
-    float dx = fld.dx;
-    float dy = fld.dy;
-
-    // minmax
-    float min_n = 1e20, max_n = -1e20;
-    float min_ux = 1e20, max_ux = -1e20;
-    float min_uy = 1e20, max_uy = -1e20;
-    float min_uz = 1e20, max_uz = -1e20;
-    float min_Pxx = 1e20, max_Pxx = -1e20;
-    float min_Pxy = 1e20, max_Pxy = -1e20;
-    float min_Pxz = 1e20, max_Pxz = -1e20;
-    float min_Pyy = 1e20, max_Pyy = -1e20;
-    float min_Pyz = 1e20, max_Pyz = -1e20;
-    float min_Pzz = 1e20, max_Pzz = -1e20;
-    for(int i = 0; i < ng; i++){
-        if (_n[i] < min_n) { min_n = _n[i]; } else if (_n[i] > max_n) { max_n = _n[i]; }
-        if (_ux[i] < min_ux) { min_ux = _ux[i]; } else if (_ux[i] > max_ux) { max_ux = _ux[i]; }
-        if (_uy[i] < min_uy) { min_uy = _uy[i]; } else if (_uy[i] > max_uy) { max_uy = _uy[i]; }
-        if (_uy[i] < min_uy) { min_uy = _uy[i]; } else if (_uy[i] > max_uy) { max_uy = _uy[i]; }
-        if (_Pxx[i] < min_Pxx) { min_Pxx = _Pxx[i]; } else if (_Pxx[i] > max_Pxx) { max_Pxx = _Pxx[i]; }
-        if (_Pxy[i] < min_Pxy) { min_Pxy = _Pxy[i]; } else if (_Pxy[i] > max_Pxy) { max_Pxy = _Pxy[i]; }
-        if (_Pxz[i] < min_Pxz) { min_Pxz = _Pxz[i]; } else if (_Pxz[i] > max_Pxz) { max_Pxz = _Pxz[i]; }
-        if (_Pyy[i] < min_Pyy) { min_Pyy = _Pyy[i]; } else if (_Pyy[i] > max_Pyy) { max_Pyy = _Pyy[i]; }
-        if (_Pyz[i] < min_Pyz) { min_Pyz = _Pyz[i]; } else if (_Pyz[i] > max_Pyz) { max_Pyz = _Pyz[i]; }
-        if (_Pzz[i] < min_Pzz) { min_Pzz = _Pzz[i]; } else if (_Pzz[i] > max_Pzz) { max_Pzz = _Pzz[i]; }
-    }
-    std::map<std::string, std::string> data ={
-        {"n_min", fmtSci(min_n, 6)}, {"n_max", fmtSci(max_n, 6)},
-        {"ux_min", fmtSci(min_ux, 6)}, {"ux_max", fmtSci(max_ux, 6)},
-        {"uy_min", fmtSci(min_uy, 6)}, {"uy_max", fmtSci(max_uy, 6)},
-        {"uz_min", fmtSci(min_uz, 6)}, {"uz_max", fmtSci(max_uz, 6)},
-        {"Pxx_min", fmtSci(min_Pxx*0.1, 6)}, {"Pxx_max", fmtSci(max_Pxx*0.1, 6)},
-        {"Pxy_min", fmtSci(min_Pxy*0.1, 6)}, {"Pxy_max", fmtSci(max_Pxy*0.1, 6)},
-        {"Pxz_min", fmtSci(min_Pxz*0.1, 6)}, {"Pxz_max", fmtSci(max_Pxz*0.1, 6)},
-        {"Pyy_min", fmtSci(min_Pyy*0.1, 6)}, {"Pyy_max", fmtSci(max_Pyy*0.1, 6)},
-        {"Pyz_min", fmtSci(min_Pyz*0.1, 6)}, {"Pyz_max", fmtSci(max_Pyz*0.1, 6)},
-        {"Pzz_min", fmtSci(min_Pzz*0.1, 6)}, {"Pzz_max", fmtSci(max_Pzz*0.1, 6)},
-    };
-    std::string pName_str = [pName UTF8String];
-    logger.logSection("outputMoment_"+pName_str, data);
-
-    FILE *fp = fopen(filePath, "wb");
-    if (!fp) {
-        NSLog(@"Error: Unable to open file %s for writing", filePath);
-        return;
-    }
-    
-    // ヘッダ情報としてメッシュ情報を出力
-    fwrite(&ngx, sizeof(int), 1, fp);
-    fwrite(&ngy, sizeof(int), 1, fp);
-    fwrite(&ngb, sizeof(int), 1, fp);
-    fwrite(&dx, sizeof(float), 1, fp);
-    fwrite(&dy, sizeof(float), 1, fp);
-    
-    // フィールドデータを書き出す: name,type,array
-    writeField(fp, [[pName stringByAppendingString:@"_n"] UTF8String], 0, _n, ng, 1.0f);        // 1/cm3
-    writeField(fp, [[pName stringByAppendingString:@"_ux"] UTF8String], 0, _ux, ng, 1.0f);      // cm/s
-    writeField(fp, [[pName stringByAppendingString:@"_uy"] UTF8String], 0, _uy, ng, 1.0f);      // cm/s
-    writeField(fp, [[pName stringByAppendingString:@"_uz"] UTF8String], 0, _uz, ng, 1.0f);      // cm/s
-    writeField(fp, [[pName stringByAppendingString:@"_Pxx"] UTF8String], 0, _Pxx, ng, 0.1f);    // Pa
-    writeField(fp, [[pName stringByAppendingString:@"_Pxy"] UTF8String], 0, _Pxy, ng, 0.1f);    // Pa
-    writeField(fp, [[pName stringByAppendingString:@"_Pxz"] UTF8String], 0, _Pxz, ng, 0.1f);    // Pa
-    writeField(fp, [[pName stringByAppendingString:@"_Pyy"] UTF8String], 0, _Pyy, ng, 0.1f);    // Pa
-    writeField(fp, [[pName stringByAppendingString:@"_Pyz"] UTF8String], 0, _Pyz, ng, 0.1f);    // Pa
-    writeField(fp, [[pName stringByAppendingString:@"_Pzz"] UTF8String], 0, _Pzz, ng, 0.1f);    // Pa
-    
-    fclose(fp);
-    NSLog(@"Field data successfully written to %s", filePath);
-}
-
 static void writeField(FILE* fp, const char* name, int type_id, float* array, int arrSize, float scale) {
     // 変数名（固定長32文字）
     char name_buf[32] = {};
@@ -1515,5 +1436,16 @@ static void writeField(FILE* fp, const char* name, int type_id, float* array, in
 - (id<MTLBuffer>)integrateTemporaryBuffer { return _integrateTemporaryBuffer; }
 - (id<MTLBuffer>)integratePartialBuffer { return _integratePartialBuffer; }
 - (id<MTLBuffer>)printBuffer { return _printBuffer; }
+// モーメント配列へのアクセサ
+- (float*)n { return _n; }
+- (float*)ux { return _ux; }
+- (float*)uy { return _uy; }
+- (float*)uz { return _uz; }
+- (float*)Pxx { return _Pxx; }
+- (float*)Pxy { return _Pxy; }
+- (float*)Pxz { return _Pxz; }
+- (float*)Pyy { return _Pyy; }
+- (float*)Pyz { return _Pyz; }
+- (float*)Pzz { return _Pzz; }
 
 @end

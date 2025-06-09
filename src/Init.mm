@@ -76,10 +76,13 @@
         [mergedTimeD addEntriesFromDictionary:timeD];
         _timeIntegration.Start          = [mergedTimeD[@"Start"] integerValue];
         _timeIntegration.End            = [mergedTimeD[@"End"] integerValue];
+        _timeIntegration.TimeStep       = [mergedTimeD[@"TimeStep"] doubleValue];
+        _timeIntegration.LogOutput      = [mergedTimeD[@"LogOutput"] integerValue];
         _timeIntegration.ParticleOutput = [mergedTimeD[@"ParticleOutput"] integerValue];
         _timeIntegration.FieldOutput    = [mergedTimeD[@"FieldOutput"] integerValue];
         _timeIntegration.ProgressOutput = [mergedTimeD[@"ProgressOutput"] integerValue];
-        _timeIntegration.TimeStep       = [mergedTimeD[@"TimeStep"] doubleValue];
+        _timeIntegration.ProjectName    = mergedTimeD[@"ProjectName"];
+        _timeIntegration.RestartName    = mergedTimeD[@"RestartName"];
         
         // ParamForComputing
         NSDictionary *compD = root[@"ParamForComputing"];
@@ -286,10 +289,13 @@
     return [@{
         @"Start":           @0,
         @"End":             @0,
+        @"TimeStep":        @0,
+        @"LogOutput":       @0,
         @"ParticleOutput":  @0,
         @"FieldOutput":     @0,
-        @"ProgressOutput":     @0,
-        @"TimeStep":        @0
+        @"ProgressOutput":  @0,
+        @"ProjectName":     @"undefined",
+        @"RestartName":     @"undefined"
     } mutableCopy];
 }
 - (NSMutableDictionary*)ParamForComputingDefault{

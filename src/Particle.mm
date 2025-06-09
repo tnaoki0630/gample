@@ -688,38 +688,6 @@ kernel void integrateChargeDensity(
 
 };
 
-- (void)outputPhaseSpace:(int)cycle withEMField:(EMField*)fld withLogger:(XmlLogger&)logger{
-    // obtain objects
-    ParticleState *p = (ParticleState*)[_particleBuffer contents];
-    SimulationParams *prm = (SimulationParams*)[_paramsBuffer contents];
-
-    float x,y;
-    // 各粒子についてバイナリファイルに出力する 
-    for (int idx = 0; idx < 20; idx++) {
-        NSString *filePath = [NSString stringWithFormat:@"bin/PhaseSpace_restart2_%@_%d.bin", _pName, idx];
-        // バイナリ書き出し
-        std::ofstream ofs([filePath UTF8String], std::ios::binary | std::ios::app);
-        if (!ofs) {
-            NSLog(@"Failed to open file: %@", filePath);
-            continue;
-        }
-
-        // 位置を物理次元に戻す
-        x = (p[idx].x - float(prm->ngb))*fld.dx;
-        y = (p[idx].y - float(prm->ngb))*fld.dy;
-        
-        // phasespace を出力
-        ofs.write(reinterpret_cast<const char*>(&cycle), sizeof(int));
-        ofs.write(reinterpret_cast<const char*>(&x), sizeof(float));
-        ofs.write(reinterpret_cast<const char*>(&y), sizeof(float));
-        ofs.write(reinterpret_cast<const char*>(&p[idx].vx), sizeof(float));
-        ofs.write(reinterpret_cast<const char*>(&p[idx].vy), sizeof(float));
-        ofs.write(reinterpret_cast<const char*>(&p[idx].vz), sizeof(float));
-        
-        ofs.close();
-    }
-}
-
 - (int)injection:(double)dt withParam:(Init*)initParam withCurrent:(int&)current withLogger:(XmlLogger&)logger{
     // パラメータ取得
     struct ParamForField fieldParam = initParam.paramForField;

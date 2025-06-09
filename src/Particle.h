@@ -70,8 +70,6 @@ struct SimulationParams {
 - (void)reduce:(XmlLogger&)logger;
 // 電荷密度更新
 - (void)integrateChargeDensity:(EMField*)fld withMoment:(Moment*)mom withLogger:(XmlLogger&)logger;
-// 粒子軌道出力
-- (void)outputPhaseSpace:(int)cycle withEMField:(EMField*)fld withLogger:(XmlLogger&)logger;
 // 粒子注入
 - (int)injection:(double)dt withParam:(Init*)initParam withCurrent:(int&)current withLogger:(XmlLogger&)logger;
 // アクセサ

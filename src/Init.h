@@ -15,10 +15,13 @@ struct FlagForEquation {
 struct ParamForTimeIntegration {
     int Start;
     int End;
+    double TimeStep;
+    int LogOutput;
     int ParticleOutput;
     int FieldOutput;
     int ProgressOutput;
-    double TimeStep;
+    NSString* ProjectName;
+    NSString* RestartName;
 };
 
 struct ParamForComputing {

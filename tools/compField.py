@@ -37,18 +37,23 @@ def getFields(filename):
 
             # タプルに格納
             fields.append((name, type_id, arr))
+            print(name, type_id, arrSize, arr)
     return fields
 
 if __name__ == '__main__':
 
     cycle = 600
-    filename = f"bin/field_restart_{cycle:08}.bin"
+    filename = f"bin/proj1_EMField_{cycle:08}.bin"
+    filename = f"bin/proj1_Moments_electron_{cycle:08}.bin"
+    filename = f"bin/proj1_Moments_ion_Xe1_{cycle:08}.bin"
     fields = getFields(filename)
-    filename = f"bin/field_restart2_{cycle:08}.bin"
+    filename = f"bin/proj1_restart_EMField_{cycle:08}.bin"
+    filename = f"bin/proj1_restart_Moments_electron_{cycle:08}.bin"
+    filename = f"bin/proj1_restart_Moments_ion_Xe1_{cycle:08}.bin"
     fields_restart = getFields(filename)
     
     for (name, type_id, arr), (name_r, type_id_r, arr_r) in zip(fields, fields_restart):
-        diff = arr-arr_r
+        diff = abs(arr-arr_r)/abs(arr)
         print(f"[org]     name: {name}, arr.min = {arr.min()}, arr.max = {arr.max()}")
         print(f"[restart] name: {name_r}, arr.min = {arr_r.min()}, arr.max = {arr_r.max()}")
         print(f"[diff]    name: {name}, diff.min = {diff.min()}, diff.max = {diff.max()}")

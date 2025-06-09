@@ -46,7 +46,7 @@ def plotField2d(field, title, figname, type_id, bool_buff):
     ax.set_xlim(-(ngb+2)*dx, (ngx+ngb+2)*dx)
     ax.set_ylim(-(ngb+2)*dy, (ngy+ngb+2)*dy)
     ax.set_title(title)
-    ax.set_aspect('equal', adjustable='box')  # 軸のスケールを等しくする
+    ax.set_aspect('equal', adjustable='box')
     # メッシュの描画
     if (nx < 50 or ny < 50):
         for i in range(ngx+1):
@@ -98,9 +98,9 @@ def plotField1dx(field, title, figname, type_id, j):
 
 if __name__ == '__main__':
 
-    cycle = 40000
-    # filename = f"bin/field_{cycle:08}.bin"
-    filename = f"bin/moments_electron_{cycle:08}.bin"
+    cycle = 90000
+    filename = f"bin/proj2_restart_EMField_{cycle:08}.bin"
+    #filename = f"bin/proj2_restart_Moments_electron_{cycle:08}.bin"
     #filename = f"bin/moments_ion_Xe1_{cycle:08}.bin"
 
     with open(filename, 'rb') as f:

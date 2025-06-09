@@ -44,9 +44,18 @@ struct integrationParams {
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam withLogger:(XmlLogger&)logger;
 - (void)integrateMoments:(Particle*)ptcl withEMField:(EMField*)fld withLogger:(XmlLogger&)logger;
-- (void)outputMoments:(int)cycle withPtclName:(NSString*)pName withEMField:(EMField*)fld withLogger:(XmlLogger&)logger;
 - (id<MTLBuffer>)integrateTemporaryBuffer;
 - (id<MTLBuffer>)integratePartialBuffer;
 - (id<MTLBuffer>)printBuffer;
+- (float*)n;
+- (float*)ux;
+- (float*)uy;
+- (float*)uz;
+- (float*)Pxx;
+- (float*)Pxy;
+- (float*)Pxz;
+- (float*)Pyy;
+- (float*)Pyz;
+- (float*)Pzz;
 
 @end
