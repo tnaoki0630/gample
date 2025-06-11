@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SimulationLog>
+<![CDATA[
+--- FlagForEquation ---
+Particle: 2
+EMField: 1
+MCCollision: 0
+--- ParamForTimeIntegration ---
+End: 200000
+ParticleOutput: 0
+FieldOutput: 10000
+TimeStep: 5.000000e-12
+--- ParamForComputing ---
+MaxParticleNumber: 5000000
+threadGroupSize: 1
+integrationChunkSize: 128
+maxiter: 200
+tolerance: 1.000000e-06
+--- ParamForParticle (2 entries) ---
+[Particle 1]
+  Name: electron
+  InitialParticleNumber: 2000000
+  Charge: -4.803204e-10
+  Mass: 9.109382e-28
+  Weight: 6.250000e+04
+  genType: uniform-Gaussian
+  initialT: 1.160400e+05
+[Particle 2]
+  Name: ion_Xe1
+  InitialParticleNumber: 2000000
+  Charge: 4.803204e-10
+  Mass: 2.180171e-22
+  Weight: 6.250000e+04
+  genType: uniform-Gaussian
+  initialT: 5.802000e+03
+--- BoundaryConditionForParticle (4 entries) ---
+[pBC 1]
+  Position: Xmin
+  Type: Delete
+[pBC 2]
+  Position: Xmax
+  Type: Delete
+[pBC 3]
+  Position: Ymin
+  Type: periodic
+[pBC 4]
+  Position: Ymax
+  Type: periodic
+--- SourceForParticle (3 entries) ---
+[Source 1]
+  pName: electron
+  genType: Xsinusoidal-Gaussian
+  src: 2.496604e+17
+  genXmin: 2.500000e-01
+  genXmax: 1.000000e+00
+  genYmin: -1.000000e+00
+  genYmax: -1.000000e+00
+  genU: 0.000000e+00
+  genV: 0.000000e+00
+  genW: 0.000000e+00
+  genT: 1.160400e+05
+[Source 2]
+  pName: ion_Xe1
+  genType: Xsinusoidal-Gaussian
+  src: 2.496604e+17
+  genXmin: 2.500000e-01
+  genXmax: 1.000000e+00
+  genYmin: -1.000000e+00
+  genYmax: -1.000000e+00
+  genU: 0.000000e+00
+  genV: 0.000000e+00
+  genW: 0.000000e+00
+  genT: 5.802000e+03
+[Source 3]
+  pName: electron
+  genType: hollow-cathode
+  src: 0.000000e+00
+  genXmin: 2.400000e+00
+  genXmax: 2.400000e+00
+  genYmin: -1.000000e+00
+  genYmax: -1.000000e+00
+  genU: 0.000000e+00
+  genV: 0.000000e+00
+  genW: 0.000000e+00
+  genT: 1.160400e+05
+--- ParamForField ---
+ngx: 500
+ngy: 200
+ngb: 2
+dx: 5.000000e-03
+dy: 5.000000e-03
+--- BoundaryConditionForField (5 entries) ---
+[Boundary 1]
+  Position: Xmin
+  Type: Dirichlet
+  Value: 2.000000e+02
+[Boundary 2]
+  Position: Xmax
+  Type: Dirichlet
+  Value: 0.000000e+00
+[Boundary 3]
+  Position: Ymin
+  Type: periodic
+  Value: 0.000000e+00
+[Boundary 4]
+  Position: Ymax
+  Type: periodic
+  Value: 0.000000e+00
+[Boundary 5]
+  Position: hollow-cathode
+  Type: undefined
+  Value: 2.400000e+00
+]]>
+  <Section Name="solvePoisson">
+   <error>8.974486e-07</error>
+   <iteration>5</iteration>
+   <meanCathode>7.599964e+00</meanCathode>
+  </Section>
+</SimulationLog>

@@ -98,9 +98,9 @@ def plotField1dx(field, title, figname, type_id, j):
 
 if __name__ == '__main__':
 
-    cycle = 90000
-    filename = f"bin/proj2_restart_EMField_{cycle:08}.bin"
-    #filename = f"bin/proj2_restart_Moments_electron_{cycle:08}.bin"
+    cycle = 150000
+    #filename = f"bin/proj2_restart2_EMField_{cycle:08}.bin"
+    filename = f"bin/proj2_restart2_Moments_electron_{cycle:08}.bin"
     #filename = f"bin/moments_ion_Xe1_{cycle:08}.bin"
 
     with open(filename, 'rb') as f:

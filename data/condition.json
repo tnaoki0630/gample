@@ -6,13 +6,13 @@
   },
   "ParamForTimeIntegration": {
     "Start":            0,
-    "End":              600,
+    "End":              2000,
     "TimeStep":         5e-12,
-    "LogOutput":        10,
-    "ParticleOutput":   10,
-    "FieldOutput":      300,
-    "ProgressOutput":   300,
-    "ProjectName":      "proj1"
+    "LogOutput":        0,
+    "ParticleOutput":   0,
+    "FieldOutput":      0,
+    "ProgressOutput":   0,
+    "ProjectName":      "tgs1_ics128"
   },
   "ParamForComputing": {
     "MaximumParticleNumber":  5000000,
@@ -38,7 +38,7 @@
     {
       "ParticleName":       "electron",
       "pNumSetMethod":      "PtclNumPerCell",
-      "pNumValue":          20,
+      "pNumValue":          50,
       "Charge":             -4.803204197e-10,
       "Mass":               9.10938188e-28,
       "WeightSetMethod":    "InitialNumDens",
@@ -49,7 +49,7 @@
     {
       "ParticleName":       "ion_Xe1",
       "pNumSetMethod":      "PtclNumPerCell",
-      "pNumValue":          20,
+      "pNumValue":          50,
       "Charge":             4.803204197e-10,
       "Mass":               2.1801714e-22,
       "WeightSetMethod":    "InitialNumDens",

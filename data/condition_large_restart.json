@@ -5,15 +5,15 @@
     "MCCollision":      0
   },
   "ParamForTimeIntegration": {
-    "Start":            60000,
-    "End":              120000,
+    "Start":            120000,
+    "End":              200000,
     "TimeStep":         5e-12,
     "LogOutput":        100,
     "ParticleOutput":   0,
     "FieldOutput":      10000,
-    "ProgressOutput":   60000,
-    "ProjectName":      "proj2_restart",
-    "RestartName":      "proj2"
+    "ProgressOutput":   100000,
+    "ProjectName":      "proj2_restart2",
+    "RestartName":      "proj2_restart"
   },
   "ParamForComputing": {
     "MaximumParticleNumber":  5000000,
