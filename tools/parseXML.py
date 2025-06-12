@@ -54,12 +54,24 @@ def plot_values(cycles, arr_values, labels, title="", scale=1.0):
     plt.show()
 
 if __name__ == '__main__':
-    cycles, O0_poisson = parseXML('CG_org_log.xml', 'elapsedTime', 'solvePoisson')
-    cycles, O3_poisson = parseXML('CG_O3_log.xml', 'elapsedTime', 'solvePoisson')
-    cycles, O0_ICDE = parseXML('CG_org_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, O3_ICDE = parseXML('CG_O3_log.xml', 'elapsedTime', 'integCDens_electron')
-    values = [O0_poisson, O3_poisson, O0_ICDE, O3_ICDE]
-    labels = ["O0_poisson", "O3_poisson", "O0_ICDE", "O3_ICDE"]
+    cycles, OMP1 = parseXML('CG_OMP1_log.xml', 'elapsedTime', 'solvePoisson')
+    cycles, OMP2 = parseXML('CG_OMP2_log.xml', 'elapsedTime', 'solvePoisson')
+    cycles, OMP3 = parseXML('CG_OMP3_log.xml', 'elapsedTime', 'solvePoisson')
+    cycles, OMP4 = parseXML('CG_OMP4_log.xml', 'elapsedTime', 'solvePoisson')
+    cycles, OMP5 = parseXML('CG_OMP5_log.xml', 'elapsedTime', 'solvePoisson')
+    cycles, OMP6 = parseXML('CG_OMP6_log.xml', 'elapsedTime', 'solvePoisson')
+    values = [OMP1, OMP2, OMP3, OMP4, OMP5, OMP6]
+    labels = ["CG_OMP1", "CG_OMP2", "CG_OMP3", "CG_OMP4", "CG_OMP5", "CG_OMP6"]
+    plot_values(cycles, values, labels, "elapsed time [ms]", 1e-3)
+    
+    cycles, OMP1 = parseXML('CG_OMP1_log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, OMP2 = parseXML('CG_OMP2_log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, OMP3 = parseXML('CG_OMP3_log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, OMP4 = parseXML('CG_OMP4_log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, OMP5 = parseXML('CG_OMP5_log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, OMP6 = parseXML('CG_OMP6_log.xml', 'elapsedTime', 'integCDens_electron')
+    values = [OMP1, OMP2, OMP3, OMP4, OMP5, OMP6]
+    labels = ["CG_OMP1", "CG_OMP2", "CG_OMP3", "CG_OMP4", "CG_OMP5", "CG_OMP6"]
     plot_values(cycles, values, labels, "elapsed time [ms]", 1e-3)
     
     # cycles, CG = parseXML('CG_log.xml', 'solvePoisson', 'iteration')

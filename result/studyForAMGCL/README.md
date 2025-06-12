@@ -39,3 +39,17 @@
 - ICDE も多少軽くなってるので、単一 CPU でのループがあるところの負荷バランスが変わってる。
 - ICDE は GPU 内で reduction しているが、CPU 側でやるのも検討の余地がありそう。
 <br>![](time_optimization.png)
+
+## OpenMP for integrate charge density
+- OpenMP で電荷密度積分の partialSum を足しあわせる部分を並列化してみた。
+- 色々やり方はあるが、OpenMP を使わないコードを上回るパターンは見つからなかった。
+- jループの中だけ並列化
+<br>![](time_integCDens_OpenMP_insideJ.png)
+- atomic 演算
+<br>![](time_integCDens_OpenMP_atomic.png)
+- ローカルバッファ
+<br>![](time_integCDens_OpenMP_localBuffer.png)
+- 和の順序変更
+<br>![](time_integCDens_OpenMP_sumorder.png)
+- reduction 演算
+<br>![](time_integCDens_OpenMP_reduction.png)

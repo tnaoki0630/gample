@@ -670,10 +670,13 @@ kernel void integrateChargeDensity(
     int ng = (fld.nx+1)*(fld.ny+1);
     float* partialSums = (float*)integratePartialBuffer.contents;
     float constRho = _q * _w / (fld.dx * fld.dy);   // constant weight and chargedensity
-    for (int j = 0; j < threadGroupNum; j++){
-        for (int i = 0; i < ng; i++){
-            rho[i] += partialSums[i + j*ng]*constRho;
+    #pragma omp parallel for schedule(static)
+    for (int i = 0; i < ng; ++i) {
+        double sum = 0.0;
+        for (int j = 0; j < threadGroupNum; ++j) {
+            sum += partialSums[i + j*ng];
         }
+        rho[i] += sum * constRho;
     }
 
     // デバッグ出力
