@@ -1,10 +1,17 @@
+# require `brew install libomp`
+OMP_INC = $(shell brew --prefix libomp)/include
+OMP_LIB = $(shell brew --prefix libomp)/lib
+BOOST_INC = $(shell brew --prefix boost)/include
+
 # コンパイラとフラグの設定
 CXX = clang++
-CXXFLAGS = -std=c++17 \
+CXXFLAGS = -std=c++17 -O3\
            -x objective-c++ \
            -isysroot $(shell xcrun --show-sdk-path)\
            -I/Users/$(shell whoami)/Library/amgcl\
-           -I/opt/homebrew/Cellar/boost/1.87.0/include
+           -I/opt/homebrew/Cellar/boost/1.87.0/include\
+           -Xpreprocessor -fopenmp \
+           -I$(OMP_INC) -I$(BOOST_INC)
 
 # リンカフラグ
 LDFLAGS = -framework Metal \
@@ -12,7 +19,8 @@ LDFLAGS = -framework Metal \
           -framework MetalKit \
           -fobjc-arc\
           -L$(shell xcrun --show-sdk-path)/usr/lib\
-          -F$(shell xcrun --show-sdk-path)/System/Library/Frameworks 
+          -F$(shell xcrun --show-sdk-path)/System/Library/Frameworks\
+          -lomp -L$(OMP_LIB)
 
 # ディレクトリ設定
 SRC_DIR = src

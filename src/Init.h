@@ -28,6 +28,9 @@ struct ParamForComputing {
     uint pNumMax;
     int threadGroupSize;
     int integrationChunkSize;
+    float aggrThreshold;
+    int chebDegree;
+    int amgCycleType;
     int maxiter;
     float tolerance;
 };

@@ -3,10 +3,13 @@
 #import "Constant.h"
 #import "XmlLogger.h"
 #include <amgcl/make_solver.hpp>
+#include <amgcl/backend/builtin.hpp>
 #include <amgcl/solver/bicgstab.hpp>
+#include <amgcl/solver/cg.hpp>
 #include <amgcl/amg.hpp>
 #include <amgcl/coarsening/smoothed_aggregation.hpp>
 #include <amgcl/relaxation/spai0.hpp>
+#include <amgcl/relaxation/chebyshev.hpp>
 #include <amgcl/adapter/crs_tuple.hpp>
 
 # define PI 3.141592653589793
@@ -19,8 +22,8 @@ typedef amgcl::make_solver<
         amgcl::coarsening::smoothed_aggregation,
         amgcl::relaxation::spai0
     >,
-    amgcl::solver::bicgstab<Backend>
-> Solver;
+    amgcl::solver::cg<Backend>
+>  Solver;
 
 @interface EMField () {
     id<MTLDevice> _device;
@@ -352,18 +355,46 @@ typedef amgcl::make_solver<
                 ptr.push_back(ptr.back() + row_entries);
             }
         }
+        // csr 行列の出力（対称性チェック用）
+        [self outputCSRmtx:arrSize row:ptr collumn:col value:val];
 
         // 初期解
         _phi_sol.assign(arrSize, 0.0);
 
         // --- amgcl の設定 ---
-        Solver::params prm;
-        prm.solver.maxiter = compParam.maxiter;
-        prm.solver.tol = compParam.tolerance;
-        // _solver を生成してインスタンス変数として確保
-        _solver = std::unique_ptr<Solver>(
-            new Solver( std::tie(arrSize, ptr, col, val), prm )
-        );
+        if (![_BC_Xmin isEqualToString:@"Neumann"] && ![_BC_Xmin isEqualToString:@"Neumann"]
+        &&  ![_BC_Ymin isEqualToString:@"Neumann"] && ![_BC_Ymin isEqualToString:@"Neumann"]){
+            // 1) Prepare the single params object:
+            Solver::params prm;
+
+            // 2) AMG (preconditioner) parameters live in prm.precond:
+            //   2a) Smoothed aggregation settings:
+            prm.precond.coarsening.aggr.eps_strong  = compParam.aggrThreshold;  // 強結合判定しきい値（大きくすると粗グリッドが粗くなる）
+            //   2b) AMG Cycle
+            prm.precond.ncycle                      = compParam.amgCycleType; // サイクルタイプ（1: V-cycle, 2: W-cycle）
+
+            // 3) Krylov‐solver (CG) parameters live in prm.solver:
+            prm.solver.maxiter                = compParam.maxiter;
+            prm.solver.tol                    = compParam.tolerance;
+
+            // 4) Construct the solver once (setup), reuse later in your time‐loop:
+            _solver = std::make_unique<Solver>(
+                std::tie(arrSize, ptr, col, val),
+                prm
+            );
+        }else{
+            // Neumann 境界が一つでもあればエラー終了。_solver を使い回すので、メンバ変数の型定義を変更する必要がある。面倒なのでいったん非対応。
+            NSLog(@"Neumann boundary condition is included. Switch solver typedef from CG to BiCGStab.");
+            return nil;
+            // Neumann 境界が一つでもあれば BiCGStab を使用（node-center での離散化なので）
+            // Solver::params prm;
+            // prm.solver.maxiter = compParam.maxiter;
+            // prm.solver.tol = compParam.tolerance;
+            // // _solver を生成してインスタンス変数として確保
+            // _solver = std::unique_ptr<Solver>(
+            //     new Solver( std::tie(arrSize, ptr, col, val), prm )
+            // );
+        }
     }
     return self;
 }
@@ -430,6 +461,29 @@ typedef amgcl::make_solver<
 
     std::fclose(fp);
     return true;
+}
+
+- (void)outputCSRmtx:(int)n row:(std::vector<int>)row_ptr collumn:(std::vector<int>)col_idx value:(std::vector<float>)val{
+    // MM 形式でファイルに書き出し (coordinate 形式)
+    std::ofstream ofs("poisson.mtx");
+    ofs << "%%MatrixMarket matrix coordinate real general\n";
+    int nz = 0;
+    for (int i = 0; i < n; ++i) {
+        for (int idx = row_ptr[i]; idx < row_ptr[i+1]; ++idx) {
+            ++nz;
+        }
+    }
+    ofs << n << " " << n << " " << nz << "\n";
+
+    for (int i = 0; i < n; ++i) {
+        for (int idx = row_ptr[i]; idx < row_ptr[i+1]; ++idx) {
+            int j = col_idx[idx];
+            float v = val[idx];
+            // MM 形式は 1-based index
+            ofs << (i+1) << " " << (j+1) << " " << v << "\n";
+        }
+    }
+    ofs.close();
 }
 
 - (void)solvePoisson:(XmlLogger&)logger{

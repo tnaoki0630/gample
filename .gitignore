@@ -42,6 +42,8 @@ main
 *.vtp
 *.bin
 *.zip
+*_log.xml
 
 # debug directory
 gample_xcode/
+*/__pycache__/

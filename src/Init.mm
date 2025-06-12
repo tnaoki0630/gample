@@ -97,6 +97,9 @@
         _computing.pNumMax                  = [mergedCompD[@"MaximumParticleNumber"] integerValue];
         _computing.threadGroupSize          = [mergedCompD[@"ThreadGroupSize"] integerValue];
         _computing.integrationChunkSize     = [mergedCompD[@"IntegrationChunkSize"] integerValue];
+        _computing.aggrThreshold            = [mergedCompD[@"AggregationThreshold"] doubleValue];
+        _computing.chebDegree               = [mergedCompD[@"ChebyshevDegree"] integerValue];
+        _computing.amgCycleType             = [mergedCompD[@"AMGCycleType"] integerValue];
         _computing.maxiter                  = [mergedCompD[@"MaxiterForPoisson"] integerValue];
         _computing.tolerance                = [mergedCompD[@"ToleranceForPoisson"] doubleValue];
         
@@ -300,9 +303,12 @@
 }
 - (NSMutableDictionary*)ParamForComputingDefault{
     return [@{
-        @"MaximumParticleNumber":   @0,
+        @"MaximumParticleNumber":   @0.08,
         @"ThreadGroupSize":         @256,
         @"IntegrationChunkSize":    @256,
+        @"AggregationThreshold":    @0.1,
+        @"ChebyshevDegree":         @5,
+        @"AMGCycleType":            @1,
         @"MaxiterForPoisson":       @200,
         @"ToleranceForPoisson":     @(1e-7)
     } mutableCopy];

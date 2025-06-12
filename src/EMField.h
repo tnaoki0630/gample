@@ -8,6 +8,7 @@
 @interface EMField : NSObject
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam withLogger:(XmlLogger&)logger;
+- (void)outputCSRmtx:(int)n row:(std::vector<int>)row_ptr collumn:(std::vector<int>)col_idx value:(std::vector<float>)val;
 - (void)solvePoisson:(XmlLogger&)logger;
 - (void)resetChargeDensity;
 - (bool)load1dField:(std::vector<float>&)field withFilePath:(NSString*)filePath;

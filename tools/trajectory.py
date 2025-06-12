@@ -14,9 +14,9 @@ record_dtype = np.dtype([
 ])
 
 # ファイル名のパターンに合わせて全粒子のファイルを取得
-files = sorted(glob.glob("bin/PhaseSpace_electron_*.bin"))
+files = sorted(glob.glob("bin/proj1_PhaseSpace_electron_*.bin"))
 if not files:
-    raise FileNotFoundError("PhaseSpace_electron_*.bin が見つかりません。")
+    raise FileNotFoundError("*.bin が見つかりません。")
 
 # 各粒子のデータを読み込み（各ファイルは1粒子分の時系列データ）
 particle_data = [np.fromfile(f, dtype=record_dtype) for f in files]

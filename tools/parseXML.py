@@ -45,6 +45,7 @@ def plot_values(cycles, arr_values, labels, title="", scale=1.0):
     for values, label_values in zip(arr_values, labels):
         plt.plot(cycles, [val*scale for val in values], label=label_values)
     plt.legend(loc='lower right')
+    plt.margins(x=0.0, y=0.30)
     plt.ylabel(title)
     plt.xlabel('Cycle')
     # plt.xlim(left=0)
@@ -53,8 +54,16 @@ def plot_values(cycles, arr_values, labels, title="", scale=1.0):
     plt.show()
 
 if __name__ == '__main__':
-    cycles, flowout_electron = parseXML('proj2_log.xml', 'flowout_electron', 'Xmin')
-    cycles, flowout_ion = parseXML('proj2_log.xml', 'flowout_ion_Xe1', 'Xmin')
-    values = [flowout_electron, flowout_ion]
-    labels = ["flowout_electron", "flowout_ion"]
-    plot_values(cycles, values, labels, "flowout particles", 1)
+    cycles, O0_poisson = parseXML('CG_org_log.xml', 'elapsedTime', 'solvePoisson')
+    cycles, O3_poisson = parseXML('CG_O3_log.xml', 'elapsedTime', 'solvePoisson')
+    cycles, O0_ICDE = parseXML('CG_org_log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, O3_ICDE = parseXML('CG_O3_log.xml', 'elapsedTime', 'integCDens_electron')
+    values = [O0_poisson, O3_poisson, O0_ICDE, O3_ICDE]
+    labels = ["O0_poisson", "O3_poisson", "O0_ICDE", "O3_ICDE"]
+    plot_values(cycles, values, labels, "elapsed time [ms]", 1e-3)
+    
+    # cycles, CG = parseXML('CG_log.xml', 'solvePoisson', 'iteration')
+    # cycles, BiCGStab = parseXML('BiCGStab_log.xml', 'solvePoisson', 'iteration')
+    # values = [CG, BiCGStab]
+    # labels = ["CG", "BiCGStab"]
+    # plot_values(cycles, values, labels, "iterations", 1.0)
