@@ -101,25 +101,29 @@ typedef amgcl::make_solver<
         NSUInteger bufferSize = sizeof(float) * arrSize;
         
         // Metal バッファの作成
-        _rhoBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
-        _ExBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
-        _EyBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
-        _EzBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
-        _BxBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
-        _ByBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
-        _BzBuffer = [device newBufferWithLength:bufferSize options:MTLResourceStorageModeShared];
+        _rhoBuffer = [device newBufferWithLength:sizeof(float)*(_nx+1)*(_ny+1) options:MTLResourceStorageModeShared];
+        _ExBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+2)*(_ny+1) options:MTLResourceStorageModeShared];
+        _EyBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+1)*(_ny+2) options:MTLResourceStorageModeShared];
+        _EzBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+1)*(_ny+1) options:MTLResourceStorageModeShared];
+        _BxBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+1)*(_ny+2) options:MTLResourceStorageModeShared];
+        _ByBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+2)*(_ny+1) options:MTLResourceStorageModeShared];
+        _BzBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+2)*(_ny+2) options:MTLResourceStorageModeShared];
         
         // malloc
-        _phi = (float *)malloc(sizeof(float) * (_nx+2)*(_ny+2) );
+        _phi = (float *)malloc(sizeof(float) * (_nx+3)*(_ny+3) );
         
         // initialize E
         float* Ex = (float*)_ExBuffer.contents;
         float* Ey = (float*)_EyBuffer.contents;
         float* Ez = (float*)_EzBuffer.contents;
         if ([fieldParam.InitTypeE isEqualToString:@"Uniform"]){
-            for (int i = 0; i < arrSize; i++) {
+            for (int i = 0; i < (_nx+2)*(_ny+1); i++) {
                 Ex[i] = fieldParam.ampE[0];
+            }
+            for (int i = 0; i < (_nx+1)*(_ny+2); i++) {
                 Ey[i] = fieldParam.ampE[1];
+            }
+            for (int i = 0; i < (_nx+1)*(_ny+1); i++) {
                 Ez[i] = fieldParam.ampE[2];
             }
         }
@@ -128,9 +132,13 @@ typedef amgcl::make_solver<
         float* By = (float*)_ByBuffer.contents;
         float* Bz = (float*)_BzBuffer.contents;
         if ([fieldParam.InitTypeB isEqualToString:@"Uniform"]){
-            for (int i = 0; i < arrSize; i++) {
+            for (int i = 0; i < (_nx+1)*(_ny+2); i++) {
                 Bx[i] = fieldParam.ampB[0];
+            }
+            for (int i = 0; i < (_nx+1)*(_ny+2); i++) {
                 By[i] = fieldParam.ampB[1];
+            }
+            for (int i = 0; i < (_nx+2)*(_ny+2); i++) {
                 Bz[i] = fieldParam.ampB[2];
             }
         }else if ([fieldParam.InitTypeB isEqualToString:@"From1dXFile"]){
@@ -141,10 +149,18 @@ typedef amgcl::make_solver<
             [self load1dField:By_input withFilePath:fieldParam.FilePathBy];
             [self load1dField:Bz_input withFilePath:fieldParam.FilePathBz];
             for (int i = 0; i <= _nx; i++) {
-                for (int j = 0; j <= _ny; j++) {
+                for (int j = 0; j <= _ny+1; j++) {
                     Bx[i+j*(_nx+1)] = Bx_input[i]*TtoG;
-                    By[i+j*(_nx+1)] = By_input[i]*TtoG;
-                    Bz[i+j*(_nx+1)] = Bz_input[i]*TtoG;
+                }
+            }
+            for (int i = 0; i <= _nx+1; i++) {
+                for (int j = 0; j <= _ny; j++) {
+                    By[i+j*(_nx+2)] = By_input[i]*TtoG;
+                }
+            }
+            for (int i = 0; i <= _nx+1; i++) {
+                for (int j = 0; j <= _ny+1; j++) {
+                    Bz[i+j*(_nx+2)] = Bz_input[i]*TtoG;
                 }
             }
         }
@@ -356,7 +372,7 @@ typedef amgcl::make_solver<
             }
         }
         // csr 行列の出力（対称性チェック用）
-        [self outputCSRmtx:arrSize row:ptr collumn:col value:val];
+        // [self outputCSRmtx:arrSize row:ptr collumn:col value:val];
 
         // 初期解
         _phi_sol.assign(arrSize, 0.0);
@@ -571,7 +587,7 @@ typedef amgcl::make_solver<
     float dphidx, dphidy;
 
     // phi の全セルを走査して埋める
-    for (int j = 0; j <= _ny+1; ++j) {
+    for (int j = 0; j <= _ny+2; ++j) {
         // Ey11[0:1,0:2]
         if ([_BC_Ymin isEqualToString:@"Dirichlet"]){
             isBottom = (j <= _ngb+1);
@@ -584,7 +600,7 @@ typedef amgcl::make_solver<
             isTop = false;
             idx_in_j = (j-(_ngb+2)+_ngy)%_ngy;
         }
-        // Ey13[0:1,0:1]
+        // Ey13[0:1,0:2]
         if ([_BC_Ymax isEqualToString:@"Dirichlet"]){
             isTop = (j >= _ngb+1+_ngy);
         } else if ([_BC_Ymax isEqualToString:@"Neumann"]){
@@ -605,7 +621,7 @@ typedef amgcl::make_solver<
                 isRight = false;
                 idx_in_i = (i-(_ngb+2)+_ngx)%_ngx;
             }
-            // Ex13[0:1,0:1]
+            // Ex13[0:2,0:1]
             if ([_BC_Xmax isEqualToString:@"Dirichlet"]){
                 isRight = (i >= _ngb+1+_ngx);
             } else if ([_BC_Xmax isEqualToString:@"Neumann"]){
@@ -613,7 +629,7 @@ typedef amgcl::make_solver<
             }
 
             // 出力先アドレス
-            idx_out = i + j*(_nx+2);
+            idx_out = i + j*(_nx+3);
             // 領域内の値をコピー
             if (!isLeft && !isRight && !isBottom && !isTop){
                 idx_in = idx_in_i + idx_in_j*(_nkx+1);
@@ -763,10 +779,14 @@ typedef amgcl::make_solver<
     float* Ex = (float*)_ExBuffer.contents;
     float* Ey = (float*)_EyBuffer.contents;
     // 勾配計算
-    for (int i = 0; i <= _nx; ++i) {
+    for (int i = 0; i <= _nx+1; ++i) {
         for (int j = 0; j <= _ny; ++j) {
-            Ex[i + j*(_nx+1)] = -(_phi[i+1 + (j+1)*(_nx+2)] - _phi[i   + (j+1)*(_nx+2)])/_dx;
-            Ey[i + j*(_nx+1)] = -(_phi[i+1 + (j+1)*(_nx+2)] - _phi[i+1 + (j  )*(_nx+2)])/_dy;
+            Ex[i + j*(_nx+2)] = -(_phi[i+1 + (j+1)*(_nx+3)] - _phi[i   + (j+1)*(_nx+3)])/_dx;
+        }
+    }
+    for (int i = 0; i <= _nx; ++i) {
+        for (int j = 0; j <= _ny+1; ++j) {
+            Ey[i + j*(_nx+1)] = -(_phi[i+1 + (j+1)*(_nx+3)] - _phi[i+1 + (j  )*(_nx+3)])/_dy;
         }
     }
 

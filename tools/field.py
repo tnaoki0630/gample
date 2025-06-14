@@ -14,16 +14,16 @@ def plotField2d(field, title, figname, type_id, bool_buff):
         y = np.linspace(-buff*dy, (ngy+ngb)*dy, ngy+ngb+buff+1)
     elif type_id == 1:
         ## shifted to left
-        x = np.linspace(-(buff+0.5)*dx, (ngx+ngb-0.5)*dx, ngx+ngb+buff+1)
+        x = np.linspace(-(buff+0.5)*dx, (ngx+ngb-0.5)*dx, ngx+ngb+buff+2)
         y = np.linspace(-buff*dy, (ngy+ngb)*dy, ngy+ngb+buff+1)
     elif type_id == 2:
         ## shifted to bottom
         x = np.linspace(-buff*dx, (ngx+ngb)*dx, ngx+ngb+buff+1)
-        y = np.linspace(-(buff+0.5)*dy, (ngy+ngb-0.5)*dy, ngy+ngb+buff+1)
+        y = np.linspace(-(buff+0.5)*dy, (ngy+ngb-0.5)*dy, ngy+ngb+buff+2)
     elif type_id == 3:
         ## shifted to left and bottom
-        x = np.linspace(-(buff+0.5)*dx, (ngx+ngb-0.5)*dx, ngx+ngb+buff+1)
-        y = np.linspace(-(buff+0.5)*dy, (ngy+ngb-0.5)*dy, ngy+ngb+buff+1)
+        x = np.linspace(-(buff+0.5)*dx, (ngx+ngb-0.5)*dx, ngx+ngb+buff+2)
+        y = np.linspace(-(buff+0.5)*dy, (ngy+ngb-0.5)*dy, ngy+ngb+buff+2)
     # メッシュ作成
     X, Y = np.meshgrid(x, y)
 
@@ -70,13 +70,13 @@ def plotField1dx(field, title, figname, type_id, j):
         x = np.linspace(-buff*dx, (ngx+ngb)*dx, ngx+ngb+buff+1)
     elif type_id == 1:
         ## shifted to left
-        x = np.linspace(-(buff+0.5)*dx, (ngx+ngb-0.5)*dx, ngx+ngb+buff+1)
+        x = np.linspace(-(buff+0.5)*dx, (ngx+ngb-0.5)*dx, ngx+ngb+buff+2)
     elif type_id == 2:
         ## shifted to bottom
         x = np.linspace(-buff*dx, (ngx+ngb)*dx, ngx+ngb+buff+1)
     elif type_id == 3:
         ## shifted to left and bottom
-        x = np.linspace(-(buff+0.5)*dx, (ngx+ngb-0.5)*dx, ngx+ngb+buff+1)
+        x = np.linspace(-(buff+0.5)*dx, (ngx+ngb-0.5)*dx, ngx+ngb+buff+2)
 
     # プロット
     fig, ax = plt.subplots()
@@ -98,9 +98,9 @@ def plotField1dx(field, title, figname, type_id, j):
 
 if __name__ == '__main__':
 
-    cycle = 150000
-    #filename = f"bin/proj2_restart2_EMField_{cycle:08}.bin"
-    filename = f"bin/proj2_restart2_Moments_electron_{cycle:08}.bin"
+    cycle = 100
+    filename = f"bin/org_EMField_{cycle:08}.bin"
+    # filename = f"bin/proj2_restart2_Moments_electron_{cycle:08}.bin"
     #filename = f"bin/moments_ion_Xe1_{cycle:08}.bin"
 
     with open(filename, 'rb') as f:
@@ -128,8 +128,9 @@ if __name__ == '__main__':
             # 配列サイズの決定
             nx = ngx+2*ngb
             ny = ngy+2*ngb
-            if type_id == 4:
+            if type_id == 1 or type_id ==3 or type_id == 4:
                 nx +=1
+            if type_id == 2 or type_id ==3 or type_id == 4:
                 ny +=1
             
             # --- 3. 配列

@@ -67,6 +67,7 @@ def plot_variable_from_xml(xml_file, section_name, tag_name, ):
     else:
         plt.plot(cycle_ids, values)
         plt.ylabel(tag_name)
+    plt.legend(loc='lower right')
     plt.xlabel('Cycle ID')
     plt.title(f'{section_name} : {tag_name} vs Cycle ID')
     plt.tight_layout()

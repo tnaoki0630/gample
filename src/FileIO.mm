@@ -106,9 +106,9 @@ void outputField(int cycle, EMField* fld, Init* init, XmlLogger& logger){
     // フィールドデータを書き出す: name,type,array
     writeField(fp, "rho", 0, rho, (nx+1)*(ny+1), 1.0f);
     writeField(fp, "phi", 4, phi, (nx+2)*(ny+2), sVtoV);
-    writeField(fp, "Ex", 1, Ex, (nx+1)*(ny+1), GtoV);
-    writeField(fp, "Ey", 2, Ey, (nx+1)*(ny+1), GtoV);
-    writeField(fp, "Bz", 3, Bz, (nx+1)*(ny+1), GtoT);
+    writeField(fp, "Ex", 1, Ex, (nx+2)*(ny+1), GtoV);
+    writeField(fp, "Ey", 2, Ey, (nx+1)*(ny+2), GtoV);
+    writeField(fp, "Bz", 3, Bz, (nx+2)*(ny+2), GtoT);
     
     fclose(fp);
     NSLog(@"Field data successfully written to %s", filePath);

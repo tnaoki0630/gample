@@ -54,28 +54,10 @@ def plot_values(cycles, arr_values, labels, title="", scale=1.0):
     plt.show()
 
 if __name__ == '__main__':
-    cycles, OMP1 = parseXML('CG_OMP1_log.xml', 'elapsedTime', 'solvePoisson')
-    cycles, OMP2 = parseXML('CG_OMP2_log.xml', 'elapsedTime', 'solvePoisson')
-    cycles, OMP3 = parseXML('CG_OMP3_log.xml', 'elapsedTime', 'solvePoisson')
-    cycles, OMP4 = parseXML('CG_OMP4_log.xml', 'elapsedTime', 'solvePoisson')
-    cycles, OMP5 = parseXML('CG_OMP5_log.xml', 'elapsedTime', 'solvePoisson')
-    cycles, OMP6 = parseXML('CG_OMP6_log.xml', 'elapsedTime', 'solvePoisson')
-    values = [OMP1, OMP2, OMP3, OMP4, OMP5, OMP6]
-    labels = ["CG_OMP1", "CG_OMP2", "CG_OMP3", "CG_OMP4", "CG_OMP5", "CG_OMP6"]
+    cycles, ICDE_org = parseXML('org_log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, ICDI_org = parseXML('org_log.xml', 'elapsedTime', 'integCDens_ion_Xe1')
+    cycles, ICDE_frac = parseXML('frac_log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, ICDI_frac = parseXML('frac_log.xml', 'elapsedTime', 'integCDens_ion_Xe1')
+    values = [ICDE_org ,ICDI_org ,ICDE_frac ,ICDI_frac]
+    labels = ["ICDE_org" ,"ICDI_org" ,"ICDE_frac" ,"ICDI_frac"]
     plot_values(cycles, values, labels, "elapsed time [ms]", 1e-3)
-    
-    cycles, OMP1 = parseXML('CG_OMP1_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, OMP2 = parseXML('CG_OMP2_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, OMP3 = parseXML('CG_OMP3_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, OMP4 = parseXML('CG_OMP4_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, OMP5 = parseXML('CG_OMP5_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, OMP6 = parseXML('CG_OMP6_log.xml', 'elapsedTime', 'integCDens_electron')
-    values = [OMP1, OMP2, OMP3, OMP4, OMP5, OMP6]
-    labels = ["CG_OMP1", "CG_OMP2", "CG_OMP3", "CG_OMP4", "CG_OMP5", "CG_OMP6"]
-    plot_values(cycles, values, labels, "elapsed time [ms]", 1e-3)
-    
-    # cycles, CG = parseXML('CG_log.xml', 'solvePoisson', 'iteration')
-    # cycles, BiCGStab = parseXML('BiCGStab_log.xml', 'solvePoisson', 'iteration')
-    # values = [CG, BiCGStab]
-    # labels = ["CG", "BiCGStab"]
-    # plot_values(cycles, values, labels, "iterations", 1.0)

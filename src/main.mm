@@ -122,13 +122,6 @@ int main(int argc, const char * argv[]) {
                     MEASURE("reduce_"+pName, [ptcl reduce:logger], dataElapsedTime);
                     // 流出電流の計算
                     intCurrent += ptcl.pinum_Xmin;
-                    std::map<std::string, std::string> data ={
-                        {"Xmin", std::to_string(ptcl.pinum_Xmin)},
-                        {"Xmax", std::to_string(ptcl.pinum_Xmax)},
-                        {"Ymin", std::to_string(ptcl.pinum_Ymin)},
-                        {"Ymax", std::to_string(ptcl.pinum_Ymax)},
-                    };
-                    logger.logSection("flowout_"+pName, data);
                     // 電荷密度の更新
                     if (EqFlags.EMField == 1){
                         MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld  withMoment:mom withLogger:logger], dataElapsedTime);

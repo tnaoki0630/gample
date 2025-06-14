@@ -1,4 +1,4 @@
-#import "Particle.h"
+ #import "Particle.h"
 #import "Init.h"
 #import "Constant.h"
 #import <random>
@@ -123,15 +123,17 @@ kernel void updateParticles(
         for (int j = 0; j < 6; j++) {
             ii = i1+(i-prm.ngb+1);
             jj = j1+(j-prm.ngb);
-            Epx += sf[i][0][0]*sf[j][0][1]*Ex[ii+jj*(nx+1)];
+            Epx += sf[i][0][0]*sf[j][0][1]*Ex[ii+jj*(nx+2)];
             ii = i2+(i-prm.ngb);
             jj = j2+(j-prm.ngb+1);
             Epy += sf[i][1][0]*sf[j][1][1]*Ey[ii+jj*(nx+1)];
             ii = i1+(i-prm.ngb+1);
             jj = j2+(j-prm.ngb+1);
-            Bpz += sf[i][0][0]*sf[j][1][1]*Bz[ii+jj*(nx+1)];
+            Bpz += sf[i][0][0]*sf[j][1][1]*Bz[ii+jj*(nx+2)];
         }
     }
+    // print[id] = i1+1-prm.ngb+5+(j2+1-prm.ngb+5)*(nx+2);
+    // print[id] = i1-prm.ngb+1+5;
     
     // acceleration by electric field
     float umx = p.vx + prm.constE*Epx;
@@ -234,6 +236,18 @@ kernel void integrateChargeDensity(
         // electro-magnetic field on each ptcl
         i1 = int(p.x);
         j1 = int(p.y);
+
+        // 桁落ちによる配列外参照を防止 //
+        if (i1 < prm.ngb){
+            i1 = prm.ngb;
+        }else if (i1 > prm.ngx+prm.ngb){
+            i1 = prm.ngx+prm.ngb;
+        }
+        if (j1 < prm.ngb){
+            j1 = prm.ngb;
+        }else if (j1 > prm.ngy+prm.ngb){
+            j1 = prm.ngy+prm.ngb;
+        }
 
         hv[0] = p.x - float(i1);
         hv[1] = p.y - float(j1);
@@ -438,12 +452,7 @@ kernel void integrateChargeDensity(
             Ly = particleParam[s].genY[1] - particleParam[s].genY[0];
             Ymin = particleParam[s].genY[0];
         }
-        // // prevent overflow
-        // float eps = 1e-3;
-        // Lx *= (1-eps);
-        // Ly *= (1-eps);
-        // Xmin += eps;
-        // Ymin += eps;
+
         // 乱数生成器
         std::random_device seed_gen;
         std::default_random_engine engine(seed_gen());
@@ -544,7 +553,7 @@ kernel void integrateChargeDensity(
     // float min_e = 1e20, max_e = -1e20;
     // float min = 1e20, max = -1e20;
     // for (int idx = 0; idx < prm->pNum; idx++){
-    //     if(p[idx].piflag == 0){
+    //     // if(p[idx].piflag == 0){
     //         // debug print
     //         if (min > prt[idx]){ min = prt[idx]; }
     //         if (max < prt[idx]){ max = prt[idx]; }
@@ -560,7 +569,7 @@ kernel void integrateChargeDensity(
     //         if (max_e < p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz){ 
     //             max_e = p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz; 
     //         }
-    //     }
+    //     // }
     // }
     // NSLog(@"debug print(%@): pNum = %d, min = %e, max = %e", _pName, prm->pNum, min, max);
 
@@ -584,7 +593,7 @@ kernel void integrateChargeDensity(
     for (int k1 = 0; k1 < prm->pNum; k1++){
         // reached max
         if (k1 == kmax){
-            if (p[k1].piflag == 1){
+            if (p[k1].piflag > 1){
                 pulln++;
             }
             break;
@@ -604,7 +613,7 @@ kernel void integrateChargeDensity(
             // keep kmax
             kend = kmax;
             // scan alive particle
-            for (int k2 = kend; k2 > k1; k2--){
+            for (int k2 = kend-1; k2 > k1; k2--){
                 kmax--;
                 pulln++;
                 // copy
@@ -617,10 +626,25 @@ kernel void integrateChargeDensity(
     }
     // update
     prm->pNum -= pulln;
+    // check reduction
+    for (int k1 = 0; k1 < prm->pNum; k1++){
+        if (p[k1].piflag > 0){
+            NSLog(@"reduction failed: pName = %@, idx = %d", _pName, k1);
+        }else if( int(p[k1].x) < prm->ngb
+               || int(p[k1].x) > prm->ngb+prm->ngx
+               || int(p[k1].y) < prm->ngb
+               || int(p[k1].y) > prm->ngb+prm->ngy ){
+            NSLog(@"spilled particle detected: pName = %@, idx = %d, p.x = %e, p.y = %e", _pName, k1, p[k1].x, p[k1].y);
+        }
+    }
     // output log
     std::map<std::string, std::string>data ={
         {"particleNumber", std::to_string(prm->pNum)},
         {"pulledPtclNum", std::to_string(pulln)},
+        {"Xmin", std::to_string(_pinum_Xmin)},
+        {"Xmax", std::to_string(_pinum_Xmax)},
+        {"Ymin", std::to_string(_pinum_Ymin)},
+        {"Ymax", std::to_string(_pinum_Ymax)},
     };
     NSString* secName = [NSString stringWithFormat:@"flowout_%@", _pName];
     logger.logSection([secName UTF8String], data);
@@ -670,24 +694,11 @@ kernel void integrateChargeDensity(
     int ng = (fld.nx+1)*(fld.ny+1);
     float* partialSums = (float*)integratePartialBuffer.contents;
     float constRho = _q * _w / (fld.dx * fld.dy);   // constant weight and chargedensity
-    #pragma omp parallel for schedule(static)
-    for (int i = 0; i < ng; ++i) {
-        double sum = 0.0;
-        for (int j = 0; j < threadGroupNum; ++j) {
-            sum += partialSums[i + j*ng];
+    for (int j = 0; j < threadGroupNum; j++){
+        for (int i = 0; i < ng; i++){
+            rho[i] += partialSums[i + j*ng]*constRho;
         }
-        rho[i] += sum * constRho;
     }
-
-    // デバッグ出力
-    // float* prt = (float*)printBuffer.contents;
-    // float min = 1e20, max = -1e20;
-    // for (int idx = 0; idx < threadGroupNum; idx++){
-    //     // debug print
-    //     if (min > prt[idx]){ min = prt[idx]; }
-    //     if (max < prt[idx]){ max = prt[idx]; }
-    // }
-    // NSLog(@"debug print(%@): pNum = %d, min = %e, max = %e", _pName, prm->pNum, min, max);
 
 };
 
