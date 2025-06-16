@@ -58,15 +58,15 @@ if __name__ == "__main__":
     aa2 = (bm_max-bm_2)/(1-math.exp(-0.5*(x_max-x_2)**2/sgm2**2))
     bb2 = bm_max - aa2
     ## create mesh
-    i = np.arange(nx+1)
+    i = np.arange(nx+2)
     bmx = (i + 0.5) * dx
     bs1d = np.where(
         bmx < x_max,
         aa1 * np.exp(-0.5 * (bmx - x_max)**2 / (sgm1**2)) + bb1,
         aa2 * np.exp(-0.5 * (bmx - x_max)**2 / (sgm2**2)) + bb2
     )
-    write_1d_field("data/Bz.bin", nx, dx, bs1d)
+    write_1d_field("data/Bz.bin", nx+1, dx, bs1d)
     ## output zeros
     write_1d_field("data/Bx.bin", nx, dx, np.zeros(nx+1))
-    write_1d_field("data/By.bin", nx, dx, np.zeros(nx+1))
+    write_1d_field("data/By.bin", nx+1, dx, np.zeros(nx+2))
     print("done")

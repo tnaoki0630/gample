@@ -12,21 +12,18 @@ with input_file.open(encoding="utf-8") as f:
 
 # 0～8 のループ
 for i in range(9):
-    for j in range(i+1):
-        tgs = 2**j
-        ics = 2**i
-        proj = f"tgs{tgs}ics{ics}"
+    tgs = 2**i
+    proj = f"tgs{tgs}"
 
-        # テンプレートを深いコピーして書き換え
-        cfg = copy.deepcopy(template)
-        cfg["ParamForTimeIntegration"]["ProjectName"]    = proj
-        cfg["ParamForComputing"]["ThreadGroupSize"]       = tgs
-        cfg["ParamForComputing"]["IntegrationChunkSize"]  = ics
+    # テンプレートを deepcopy して書き換え
+    cfg = copy.deepcopy(template)
+    cfg["ParamForTimeIntegration"]["ProjectName"]    = proj
+    cfg["ParamForComputing"]["ThreadGroupSize"]       = tgs
 
-        # ファイルに書き出し
-        out_path = Path(f"{proj}.json")
-        with out_path.open("w", encoding="utf-8") as wf:
-            json.dump(cfg, wf, indent=2, ensure_ascii=False)
+    # ファイルに書き出し
+    out_path = Path(f"{proj}.json")
+    with out_path.open("w", encoding="utf-8") as wf:
+        json.dump(cfg, wf, indent=2, ensure_ascii=False)
 
-        print(f"Generated: {out_path}")
+    print(f"Generated: {out_path}")
 

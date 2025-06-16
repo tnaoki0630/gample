@@ -54,25 +54,17 @@ struct SimulationParams {
 @property (nonatomic, strong) id<MTLCommandQueue> commandQueue;
 @property (nonatomic, strong) id<MTLComputePipelineState> updateParticlesPipeline;
 @property (nonatomic, strong) id<MTLComputePipelineState> integrateChargeDensityPipeline;
-@property (nonatomic, strong) id<MTLComputePipelineState> integrateChargeDensityPipeline_atomic;
 @property (nonatomic, strong) id<MTLBuffer> particleBuffer;
 @property (nonatomic, strong) id<MTLBuffer> paramsBuffer;
 @property (nonatomic, strong) id<MTLBuffer> integrationParamsBuffer;
 @property (nonatomic, strong) id<MTLBuffer> printBuffer;
-// スカラー変数
 @property (nonatomic) uint threadGroupSize;
 @property (nonatomic) uint integrationChunkSize;
-
-// 初期設定
+// 関数
 - (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam specimen:(int)s withLogger:(XmlLogger&)logger;
-// 時間更新
 - (void)update:(double)dt withEMField:(EMField*)fld withMom:(Moment*)mom withLogger:(XmlLogger&)logger;
-// 粒子境界処理
 - (void)reduce:(XmlLogger&)logger;
-// 電荷密度更新
 - (void)integrateChargeDensity:(EMField*)fld withMoment:(Moment*)mom withLogger:(XmlLogger&)logger;
-- (void)integrateChargeDensity_atomic:(EMField*)fld withMoment:(Moment*)mom withLogger:(XmlLogger&)logger;
-// 粒子注入
 - (int)injection:(double)dt withParam:(Init*)initParam withCurrent:(int&)current withLogger:(XmlLogger&)logger;
 // アクセサ
 - (NSString*)pName;

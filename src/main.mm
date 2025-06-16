@@ -124,9 +124,7 @@ int main(int argc, const char * argv[]) {
                     intCurrent += ptcl.pinum_Xmin;
                     // 電荷密度の更新
                     if (EqFlags.EMField == 1){
-                        // MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld  withMoment:mom withLogger:logger], dataElapsedTime);
-                        MEASURE("integCDensAtomic_"+pName, [ptcl integrateChargeDensity_atomic:fld  withMoment:mom withLogger:logger], dataElapsedTime);
-                        // [fld checkChargeDensity];
+                        MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld  withMoment:mom withLogger:logger], dataElapsedTime);
                     }
                     // 粒子軌道の出力
                     if (timeParam.ParticleOutput != 0 && cycle%timeParam.ParticleOutput == 0){

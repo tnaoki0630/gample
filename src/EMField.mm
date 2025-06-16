@@ -103,7 +103,6 @@ typedef amgcl::make_solver<
         
         // Metal バッファの作成
         _rhoBuffer = [device newBufferWithLength:sizeof(float)*(_nx+1)*(_ny+1) options:MTLResourceStorageModeShared];
-        _atomicRhoBuffer = [device newBufferWithLength:sizeof(float)*(_nx+1)*(_ny+1) options:MTLResourceStorageModeShared];
         _ExBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+2)*(_ny+1) options:MTLResourceStorageModeShared];
         _EyBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+1)*(_ny+2) options:MTLResourceStorageModeShared];
         _EzBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+1)*(_ny+1) options:MTLResourceStorageModeShared];
@@ -507,7 +506,6 @@ typedef amgcl::make_solver<
 - (void)solvePoisson:(XmlLogger&)logger{
     // 電荷密度の取得
     float* rho = (float*)_rhoBuffer.contents;
-    float* arho = (float*)_atomicRhoBuffer.contents;
 
     // 周期境界の処理
     int idx_in, idx_out;
@@ -518,14 +516,12 @@ typedef amgcl::make_solver<
                 idx_in = i + j*(_nx+1);
                 idx_out = _ngx+i + j*(_nx+1); // _ngb+_ngx-_ngb+i のように、オフセット分が打ち消しあう
                 rho[idx_out] += rho[idx_in];
-                arho[idx_out] += arho[idx_in];
             }
             // max側（境界の値は持たない）
             for (int i = 0; i <= _ngb; i++){
                 idx_in = _ngb+_ngx+i + j*(_nx+1);
                 idx_out = _ngb+i + j*(_nx+1);
                 rho[idx_out] += rho[idx_in];
-                arho[idx_out] += arho[idx_in];
             }
         }
     }
@@ -536,14 +532,12 @@ typedef amgcl::make_solver<
                 idx_in = i + j*(_nx+1);
                 idx_out = i + (_ngy+j)*(_nx+1);
                 rho[idx_out] += rho[idx_in];
-                arho[idx_out] += arho[idx_in];
             }
             // max側（境界の値は持たない）
             for (int j = 0; j <= _ngb; j++){
                 idx_in = i + (_ngb+_ngy+j)*(_nx+1);
                 idx_out = i + (_ngb+j)*(_nx+1);
                 rho[idx_out] += rho[idx_in];
-                arho[idx_out] += arho[idx_in];
             }
         }
     }
@@ -556,7 +550,7 @@ typedef amgcl::make_solver<
     for (int j = 0; j <= _nky; j++){
         for (int i = 0; i <= _nkx; i++){
             int k = i + j*(_nkx+1);
-            rhs.push_back(_rhs_BC[k] -4*PI*arho[(i+_ikmin)+(j+_jkmin)*(_nx+1)]);
+            rhs.push_back(_rhs_BC[k] -4*PI*rho[(i+_ikmin)+(j+_jkmin)*(_nx+1)]);
         }
     }
 
@@ -802,12 +796,10 @@ typedef amgcl::make_solver<
 - (void)resetChargeDensity{
     // 電荷密度の取得
     float* rho = (float*)_rhoBuffer.contents;
-    float* arho = (float*)_atomicRhoBuffer.contents;
     // 電荷密度の初期化
     int arrSize = (_nx+1) * (_ny+1);
     for (int i = 0; i < arrSize; i++){
         rho[i] = 0.0f;
-        arho[i] = 0.0f;
     }
 }
 

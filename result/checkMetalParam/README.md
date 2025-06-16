@@ -28,3 +28,5 @@
 <br>![](comp_ics128_OMP4.png)
 <br>![](comp_tgs1_OMP4.png)
 <br>![](comp_tgs2_OMP4.png)
+- integCDens_v2 後に再計測。icsは廃止され、特にtgsへの依存は見られなかった。
+<br>![](time_post_integCDens_v2.png)

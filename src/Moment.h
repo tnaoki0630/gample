@@ -14,9 +14,7 @@ struct integrationParams {
     int ngx;
     int ngy;
     int ngb;
-    uint ppt;
-    int tgs;
-    int ics;
+    float scale;
 };
 
 @interface Moment : NSObject
@@ -24,38 +22,34 @@ struct integrationParams {
 // metal関連
 @property (nonatomic, strong) id<MTLDevice> device;
 @property (nonatomic, strong) id<MTLCommandQueue> commandQueue;
-@property (nonatomic, strong) id<MTLComputePipelineState> integrateNumDensPipeline;
-@property (nonatomic, strong) id<MTLComputePipelineState> integrateMeanVelXPipeline;
-@property (nonatomic, strong) id<MTLComputePipelineState> integrateMeanVelYPipeline;
-@property (nonatomic, strong) id<MTLComputePipelineState> integrateMeanVelZPipeline;
-@property (nonatomic, strong) id<MTLComputePipelineState> integratePressureXXPipeline;
-@property (nonatomic, strong) id<MTLComputePipelineState> integratePressureXYPipeline;
-@property (nonatomic, strong) id<MTLComputePipelineState> integratePressureXZPipeline;
-@property (nonatomic, strong) id<MTLComputePipelineState> integratePressureYYPipeline;
-@property (nonatomic, strong) id<MTLComputePipelineState> integratePressureYZPipeline;
-@property (nonatomic, strong) id<MTLComputePipelineState> integratePressureZZPipeline;
+@property (nonatomic, strong) id<MTLComputePipelineState> integrateMomentsPipeline;
 @property (nonatomic, strong) id<MTLBuffer> integrationParamsBuffer;
-@property (nonatomic, strong) id<MTLBuffer> integrateTemporaryBuffer;
-@property (nonatomic, strong) id<MTLBuffer> integratePartialBuffer;
+@property (nonatomic, strong) id<MTLBuffer> nBuffer;
+@property (nonatomic, strong) id<MTLBuffer> uxBuffer;
+@property (nonatomic, strong) id<MTLBuffer> uyBuffer;
+@property (nonatomic, strong) id<MTLBuffer> uzBuffer;
+@property (nonatomic, strong) id<MTLBuffer> PxxBuffer;
+@property (nonatomic, strong) id<MTLBuffer> PxyBuffer;
+@property (nonatomic, strong) id<MTLBuffer> PxzBuffer;
+@property (nonatomic, strong) id<MTLBuffer> PyyBuffer;
+@property (nonatomic, strong) id<MTLBuffer> PyzBuffer;
+@property (nonatomic, strong) id<MTLBuffer> PzzBuffer;
 @property (nonatomic, strong) id<MTLBuffer> printBuffer;
-// スカラー変数
 @property (nonatomic) uint threadGroupSize;
 @property (nonatomic) uint integrationChunkSize;
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam withLogger:(XmlLogger&)logger;
 - (void)integrateMoments:(Particle*)ptcl withEMField:(EMField*)fld withLogger:(XmlLogger&)logger;
-- (id<MTLBuffer>)integrateTemporaryBuffer;
-- (id<MTLBuffer>)integratePartialBuffer;
+- (id<MTLBuffer>)nBuffer;
+- (id<MTLBuffer>)uxBuffer;
+- (id<MTLBuffer>)uyBuffer;
+- (id<MTLBuffer>)uzBuffer;
+- (id<MTLBuffer>)PxxBuffer;
+- (id<MTLBuffer>)PxyBuffer;
+- (id<MTLBuffer>)PxzBuffer;
+- (id<MTLBuffer>)PyyBuffer;
+- (id<MTLBuffer>)PyzBuffer;
+- (id<MTLBuffer>)PzzBuffer;
 - (id<MTLBuffer>)printBuffer;
-- (float*)n;
-- (float*)ux;
-- (float*)uy;
-- (float*)uz;
-- (float*)Pxx;
-- (float*)Pxy;
-- (float*)Pxz;
-- (float*)Pyy;
-- (float*)Pyz;
-- (float*)Pzz;
 
 @end

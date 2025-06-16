@@ -12,12 +12,12 @@
     "ParticleOutput": 0,
     "FieldOutput": 0,
     "ProgressOutput": 0,
-    "ProjectName": "tgs2ics256"
+    "ProjectName": "tgs1"
   },
   "ParamForComputing": {
     "MaximumParticleNumber": 10000000,
-    "ThreadGroupSize": 2,
-    "IntegrationChunkSize": 256,
+    "ThreadGroupSize": 1,
+    "IntegrationChunkSize": 128,
     "MaxIterForPoisson": 200,
     "ToleranceForPoisson": 1e-06
   },

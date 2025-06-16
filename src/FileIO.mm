@@ -47,7 +47,6 @@ void outputField(int cycle, EMField* fld, Init* init, XmlLogger& logger){
     // fld クラスの内容を取得
     float* phi = fld.phi;
     float* rho = (float *)[fld.rhoBuffer contents];
-    float* arho = (float *)[fld.atomicRhoBuffer contents];
     float* Ex  = (float *)[fld.ExBuffer  contents]; 
     float* Ey  = (float *)[fld.EyBuffer  contents]; 
     float* Bz  = (float *)[fld.BzBuffer  contents]; 
@@ -110,7 +109,6 @@ void outputField(int cycle, EMField* fld, Init* init, XmlLogger& logger){
     
     // フィールドデータを書き出す: name,type,array
     writeField(fp, "rho", 0, rho, (nx+1)*(ny+1), 1.0f);
-    writeField(fp, "arho", 0, arho, (nx+1)*(ny+1), 1.0f);
     writeField(fp, "phi", 4, phi, (nx+3)*(ny+3), sVtoV);
     writeField(fp, "Ex", 1, Ex, (nx+2)*(ny+1), GtoV);
     writeField(fp, "Ey", 2, Ey, (nx+1)*(ny+2), GtoV);
@@ -128,16 +126,16 @@ void outputMoments(int cycle, Moment* mom, NSString* pName, Init* init, XmlLogge
     const char *filePath = [fileName UTF8String];
 
     // 配列取得
-    float* n = mom.n;
-    float* ux = mom.ux;
-    float* uy = mom.uy;
-    float* uz = mom.uz;
-    float* Pxx = mom.Pxx;
-    float* Pxy = mom.Pxy;
-    float* Pxz = mom.Pxz;
-    float* Pyy = mom.Pyy;
-    float* Pyz = mom.Pyz;
-    float* Pzz = mom.Pzz;
+    float* n = (float*)[mom.nBuffer contents];
+    float* ux = (float*)[mom.uxBuffer contents];
+    float* uy = (float*)[mom.uyBuffer contents];
+    float* uz = (float*)[mom.uzBuffer contents];
+    float* Pxx = (float*)[mom.PxxBuffer contents];
+    float* Pxy = (float*)[mom.PxyBuffer contents];
+    float* Pxz = (float*)[mom.PxzBuffer contents];
+    float* Pyy = (float*)[mom.PyyBuffer contents];
+    float* Pyz = (float*)[mom.PyzBuffer contents];
+    float* Pzz = (float*)[mom.PzzBuffer contents];
 
     // グリッド情報取得
     int ngx = fldParam.ngx;
@@ -258,19 +256,20 @@ BOOL saveProgress(int cycle, NSMutableArray* ptclArr, EMField* fld, int current,
 
     // 電場出力
     if (EqFlags.EMField == 1){
-        uint ng = (fld.ngx + 2*fld.ngb + 1)*(fld.ngy + 2*fld.ngb + 1);
+        uint nx = fld.ngx + 2*fld.ngb;
+        uint ny = fld.ngy + 2*fld.ngb;
         NSString* fileNameEx = [NSString stringWithFormat:@"bin/%@_ProgressData_Ex_%08d.bin", timeParam.ProjectName, cycle];
         NSString* fileNameEy = [NSString stringWithFormat:@"bin/%@_ProgressData_Ey_%08d.bin", timeParam.ProjectName, cycle];
         NSString* fileNameEz = [NSString stringWithFormat:@"bin/%@_ProgressData_Ez_%08d.bin", timeParam.ProjectName, cycle];
         NSString* fileNameBx = [NSString stringWithFormat:@"bin/%@_ProgressData_Bx_%08d.bin", timeParam.ProjectName, cycle];
         NSString* fileNameBy = [NSString stringWithFormat:@"bin/%@_ProgressData_By_%08d.bin", timeParam.ProjectName, cycle];
         NSString* fileNameBz = [NSString stringWithFormat:@"bin/%@_ProgressData_Bz_%08d.bin", timeParam.ProjectName, cycle];
-        if( !saveBuffer(fld.ExBuffer, ng*sizeof(float), ng*sizeof(float), fileNameEx) ||
-            !saveBuffer(fld.EyBuffer, ng*sizeof(float), ng*sizeof(float), fileNameEy) ||
-            !saveBuffer(fld.EzBuffer, ng*sizeof(float), ng*sizeof(float), fileNameEz) ||
-            !saveBuffer(fld.BxBuffer, ng*sizeof(float), ng*sizeof(float), fileNameBx) ||
-            !saveBuffer(fld.ByBuffer, ng*sizeof(float), ng*sizeof(float), fileNameBy) ||
-            !saveBuffer(fld.BzBuffer, ng*sizeof(float), ng*sizeof(float), fileNameBz)){
+        if( !saveBuffer(fld.ExBuffer, (nx+2)*(ny+1)*sizeof(float), (nx+2)*(ny+1)*sizeof(float), fileNameEx) ||
+            !saveBuffer(fld.EyBuffer, (nx+1)*(ny+2)*sizeof(float), (nx+1)*(ny+2)*sizeof(float), fileNameEy) ||
+            !saveBuffer(fld.EzBuffer, (nx+1)*(ny+1)*sizeof(float), (nx+1)*(ny+1)*sizeof(float), fileNameEz) ||
+            !saveBuffer(fld.BxBuffer, (nx+1)*(ny+2)*sizeof(float), (nx+1)*(ny+2)*sizeof(float), fileNameBx) ||
+            !saveBuffer(fld.ByBuffer, (nx+2)*(ny+1)*sizeof(float), (nx+2)*(ny+1)*sizeof(float), fileNameBy) ||
+            !saveBuffer(fld.BzBuffer, (nx+2)*(ny+2)*sizeof(float), (nx+2)*(ny+2)*sizeof(float), fileNameBz)){
             NSLog(@"[Error] output progress for field is failed.");
             return NO;
         }
@@ -306,7 +305,8 @@ BOOL loadProgress(int cycle, NSMutableArray* ptclArr, EMField* fld, int& current
 
     // 電場読み込み
     if (EqFlags.EMField == 1){
-        uint ng = (fld.ngx + 2*fld.ngb + 1)*(fld.ngy + 2*fld.ngb + 1);
+        uint nx = fld.ngx + 2*fld.ngb;
+        uint ny = fld.ngy + 2*fld.ngb;
         uint ng_recv;
         NSString* fileNameEx = [NSString stringWithFormat:@"bin/%@_ProgressData_Ex_%08d.bin", timeParam.RestartName, cycle];
         NSString* fileNameEy = [NSString stringWithFormat:@"bin/%@_ProgressData_Ey_%08d.bin", timeParam.RestartName, cycle];
@@ -314,12 +314,12 @@ BOOL loadProgress(int cycle, NSMutableArray* ptclArr, EMField* fld, int& current
         NSString* fileNameBx = [NSString stringWithFormat:@"bin/%@_ProgressData_Bx_%08d.bin", timeParam.RestartName, cycle];
         NSString* fileNameBy = [NSString stringWithFormat:@"bin/%@_ProgressData_By_%08d.bin", timeParam.RestartName, cycle];
         NSString* fileNameBz = [NSString stringWithFormat:@"bin/%@_ProgressData_Bz_%08d.bin", timeParam.RestartName, cycle];
-        if( !loadBuffer(fld.ExBuffer, ng_recv, ng*sizeof(float), fileNameEx) ||
-            !loadBuffer(fld.EyBuffer, ng_recv, ng*sizeof(float), fileNameEy) ||
-            !loadBuffer(fld.EzBuffer, ng_recv, ng*sizeof(float), fileNameEz) ||
-            !loadBuffer(fld.BxBuffer, ng_recv, ng*sizeof(float), fileNameBx) ||
-            !loadBuffer(fld.ByBuffer, ng_recv, ng*sizeof(float), fileNameBy) ||
-            !loadBuffer(fld.BzBuffer, ng_recv, ng*sizeof(float), fileNameBz)){
+        if( !loadBuffer(fld.ExBuffer, ng_recv, (nx+2)*(ny+1)*sizeof(float), fileNameEx) ||
+            !loadBuffer(fld.EyBuffer, ng_recv, (nx+1)*(ny+2)*sizeof(float), fileNameEy) ||
+            !loadBuffer(fld.EzBuffer, ng_recv, (nx+1)*(ny+1)*sizeof(float), fileNameEz) ||
+            !loadBuffer(fld.BxBuffer, ng_recv, (nx+1)*(ny+2)*sizeof(float), fileNameBx) ||
+            !loadBuffer(fld.ByBuffer, ng_recv, (nx+2)*(ny+1)*sizeof(float), fileNameBy) ||
+            !loadBuffer(fld.BzBuffer, ng_recv, (nx+2)*(ny+2)*sizeof(float), fileNameBz)){
             NSLog(@"[Error] load progress for field is failed.");
             return NO;
         }

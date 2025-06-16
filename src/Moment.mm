@@ -23,1025 +23,94 @@ struct integrationParams {
     int ngx;
     int ngy;
     int ngb;
-    uint ppt;
-    int tgs;
-    int ics;
+    float scale;
 };
 
 // モーメント計算カーネル
-kernel void integrateNumDens(
+kernel void integrateMoments(
                         device ParticleState* ptcl          [[ buffer(0) ]],
                         constant integrationParams& prm     [[ buffer(1) ]],
-                        device float* temp                  [[ buffer(2) ]],
-                        device float* partial               [[ buffer(3) ]],
-                        device float* print                 [[ buffer(4) ]],
-                        uint gid                            [[ thread_position_in_grid ]],
-                        uint tid                            [[ thread_index_in_threadgroup ]],
-                        uint groupID                        [[ threadgroup_position_in_grid ]]
+                        device atomic_float* n              [[ buffer(2) ]],
+                        device atomic_float* ux             [[ buffer(3) ]],
+                        device atomic_float* uy             [[ buffer(4) ]],
+                        device atomic_float* uz             [[ buffer(5) ]],
+                        device atomic_float* Pxx            [[ buffer(6) ]],
+                        device atomic_float* Pxy            [[ buffer(7) ]],
+                        device atomic_float* Pxz            [[ buffer(8) ]],
+                        device atomic_float* Pyy            [[ buffer(9) ]],
+                        device atomic_float* Pyz            [[ buffer(10) ]],
+                        device atomic_float* Pzz            [[ buffer(11) ]],
+                        device float* print                 [[ buffer(12) ]],
+                        uint gid                            [[ thread_position_in_grid ]]
                         ) {
-    // initialize(自スレッドがアクセスし得る範囲だけ)
+    
+    // 粒子数を超えたらスキップ
+    if(gid >= prm.pNum) return;
+
+    // 変数定義
     const int nx = prm.ngx + 2*prm.ngb;
     const int ny = prm.ngy + 2*prm.ngb;
     const int ng = (nx+1)*(ny+1);
-    for (int i = 0; i < ng; i++){
-        temp[i + gid*ng] = 0.0f;
-    }
-
-    // 変数定義
     int i1, j1;
     float hv[2];
     float sc;
     float sf[6][2];
-    int ii, jj;
+    int ii, jj, idx_out;
 
-    // 積分ループ
-    for (uint idx = 0; idx < prm.ppt; idx++){
-        
-        uint pid = idx + gid*prm.ppt;
-        if (pid > prm.pNum) {
-            // pNum を超えたら積分処理をスキップ
-            break;
-        }
+    // 粒子を取得
+    device ParticleState& p = ptcl[gid];
 
-        // 粒子を取得
-        device ParticleState& p = ptcl[pid];
-
-        // electro-magnetic field on each ptcl
-        i1 = int(p.x);
-        j1 = int(p.y);
-
-        hv[0] = p.x - float(i1);
-        hv[1] = p.y - float(j1);
-        
-        // 5th-order weighting
-        for (int i = 0; i < 2; i++) {
-            sc = 2.0 + hv[i];
-            sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
-            sc = 1.0 + hv[i];
-            sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = hv[i];
-            sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 1.0 - hv[i];
-            sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 2.0 - hv[i];
-            sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = 3.0 - hv[i];
-            sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
-        }
-
-        // accumulation
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
-                ii = i1+(i-prm.ngb);
-                jj = j1+(j-prm.ngb);
-                int idx_out = ii+jj*(nx+1) + gid*ng;
-                temp[idx_out] += sf[i][0]*sf[j][1];
-            }
-        }
+    // electro-magnetic field on each ptcl
+    i1 = int(p.x);
+    j1 = int(p.y);
     
-    }
+    // protect
+    if (i1 < prm.ngb-1) i1 = prm.ngb-1;
+    if (i1 > prm.ngb-1+prm.ngx) i1 = prm.ngb-1+prm.ngx;
+    if (j1 < prm.ngb) j1 = prm.ngb;
+    if (j1 >= prm.ngb+prm.ngy) j1 = prm.ngb+prm.ngy-1;
 
-    // スレッドグループ内で同期（未初期化値の参照を防ぐ）
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-
-    // reduction
-    for (int i = 0; i < ng; i++){
-        for (uint stride = prm.tgs / 2; stride > 0; stride /= 2) {
-            if (tid < stride) {
-                uint offset = groupID*prm.tgs;
-                int idx_in = i + (tid + stride + offset)*ng;
-                int idx_out = i + (tid + offset)*ng;
-                temp[idx_out] += temp[idx_in];
-            }
-            threadgroup_barrier(mem_flags::mem_threadgroup);
-        }
-    }
+    hv[0] = p.x - float(i1);
+    hv[1] = p.y - float(j1);
     
-    // output partialSum
-    if (tid == 0) {
-        for (int i = 0; i < ng; i++){
-            int idx_in = i + (0 + groupID*prm.tgs)*ng;
-            int idx_out = i + groupID*ng;
-            partial[idx_out] = temp[idx_in];
-        }
-    }
-    
-}
-
-// モーメント計算カーネル
-kernel void integrateMeanVelX(
-                        device ParticleState* ptcl          [[ buffer(0) ]],
-                        constant integrationParams& prm     [[ buffer(1) ]],
-                        device float* temp                  [[ buffer(2) ]],
-                        device float* partial               [[ buffer(3) ]],
-                        device float* print                 [[ buffer(4) ]],
-                        uint gid                            [[ thread_position_in_grid ]],
-                        uint tid                            [[ thread_index_in_threadgroup ]],
-                        uint groupID                        [[ threadgroup_position_in_grid ]]
-                        ) {
-    // initialize(自スレッドがアクセスし得る範囲だけ)
-    const int nx = prm.ngx + 2*prm.ngb;
-    const int ny = prm.ngy + 2*prm.ngb;
-    const int ng = (nx+1)*(ny+1);
-    for (int i = 0; i < ng; i++){
-        temp[i + gid*ng] = 0.0f;
+    // 5th-order weighting
+    for (int i = 0; i < 2; i++) {
+        sc = 2.0 + hv[i];
+        sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
+        sc = 1.0 + hv[i];
+        sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+        sc = hv[i];
+        sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+        sc = 1.0 - hv[i];
+        sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+        sc = 2.0 - hv[i];
+        sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+        sc = 3.0 - hv[i];
+        sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
     }
 
-    // 変数定義
-    int i1, j1;
-    float hv[2];
-    float sc;
-    float sf[6][2];
-    int ii, jj;
-
-    // 積分ループ
-    for (uint idx = 0; idx < prm.ppt; idx++){
-        
-        uint pid = idx + gid*prm.ppt;
-        if (pid > prm.pNum) {
-            // pNum を超えたら積分処理をスキップ
-            break;
-        }
-
-        // 粒子を取得
-        device ParticleState& p = ptcl[pid];
-
-        // electro-magnetic field on each ptcl
-        i1 = int(p.x);
-        j1 = int(p.y);
-
-        hv[0] = p.x - float(i1);
-        hv[1] = p.y - float(j1);
-        
-        // 5th-order weighting
-        for (int i = 0; i < 2; i++) {
-            sc = 2.0 + hv[i];
-            sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
-            sc = 1.0 + hv[i];
-            sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = hv[i];
-            sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 1.0 - hv[i];
-            sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 2.0 - hv[i];
-            sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = 3.0 - hv[i];
-            sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
-        }
-
-        // accumulation
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
-                ii = i1+(i-prm.ngb);
-                jj = j1+(j-prm.ngb);
-                int idx_out = ii+jj*(nx+1) + gid*ng;
-                temp[idx_out] += sf[i][0]*sf[j][1]*p.vx;
-            }
-        }
-    
-    }
-
-    // スレッドグループ内で同期（未初期化値の参照を防ぐ）
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-
-    // reduction
-    for (int i = 0; i < ng; i++){
-        for (uint stride = prm.tgs / 2; stride > 0; stride /= 2) {
-            if (tid < stride) {
-                uint offset = groupID*prm.tgs;
-                int idx_in = i + (tid + stride + offset)*ng;
-                int idx_out = i + (tid + offset)*ng;
-                temp[idx_out] += temp[idx_in];
-            }
-            threadgroup_barrier(mem_flags::mem_threadgroup);
+    // accumulation
+    for (int i = 0; i < 6; i++) {
+        for (int j = 0; j < 6; j++) {
+            ii = i1+(i-prm.ngb);
+            jj = j1+(j-prm.ngb);
+            idx_out = ii+jj*(nx+1);
+            atomic_fetch_add_explicit(&( n[idx_out]   ), sf[i][0]*sf[j][1]*prm.scale , memory_order_relaxed);
+            atomic_fetch_add_explicit(&( ux[idx_out]  ), sf[i][0]*sf[j][1]*p.vx      , memory_order_relaxed);
+            atomic_fetch_add_explicit(&( uy[idx_out]  ), sf[i][0]*sf[j][1]*p.vy      , memory_order_relaxed);
+            atomic_fetch_add_explicit(&( uz[idx_out]  ), sf[i][0]*sf[j][1]*p.vz      , memory_order_relaxed);
+            atomic_fetch_add_explicit(&( Pxx[idx_out] ), sf[i][0]*sf[j][1]*p.vx*p.vx , memory_order_relaxed);
+            atomic_fetch_add_explicit(&( Pxy[idx_out] ), sf[i][0]*sf[j][1]*p.vx*p.vy , memory_order_relaxed);
+            atomic_fetch_add_explicit(&( Pxz[idx_out] ), sf[i][0]*sf[j][1]*p.vx*p.vz , memory_order_relaxed);
+            atomic_fetch_add_explicit(&( Pyy[idx_out] ), sf[i][0]*sf[j][1]*p.vy*p.vy , memory_order_relaxed);
+            atomic_fetch_add_explicit(&( Pyz[idx_out] ), sf[i][0]*sf[j][1]*p.vy*p.vz , memory_order_relaxed);
+            atomic_fetch_add_explicit(&( Pzz[idx_out] ), sf[i][0]*sf[j][1]*p.vz*p.vz , memory_order_relaxed);
         }
     }
-    
-    // output partialSum
-    if (tid == 0) {
-        for (int i = 0; i < ng; i++){
-            int idx_in = i + (0 + groupID*prm.tgs)*ng;
-            int idx_out = i + groupID*ng;
-            partial[idx_out] = temp[idx_in];
-        }
-    }
-    
-}
-
-// モーメント計算カーネル
-kernel void integrateMeanVelY(
-                        device ParticleState* ptcl          [[ buffer(0) ]],
-                        constant integrationParams& prm     [[ buffer(1) ]],
-                        device float* temp                  [[ buffer(2) ]],
-                        device float* partial               [[ buffer(3) ]],
-                        device float* print                 [[ buffer(4) ]],
-                        uint gid                            [[ thread_position_in_grid ]],
-                        uint tid                            [[ thread_index_in_threadgroup ]],
-                        uint groupID                        [[ threadgroup_position_in_grid ]]
-                        ) {
-    // initialize(自スレッドがアクセスし得る範囲だけ)
-    const int nx = prm.ngx + 2*prm.ngb;
-    const int ny = prm.ngy + 2*prm.ngb;
-    const int ng = (nx+1)*(ny+1);
-    for (int i = 0; i < ng; i++){
-        temp[i + gid*ng] = 0.0f;
-    }
-
-    // 変数定義
-    int i1, j1;
-    float hv[2];
-    float sc;
-    float sf[6][2];
-    int ii, jj;
-
-    // 積分ループ
-    for (uint idx = 0; idx < prm.ppt; idx++){
-        
-        uint pid = idx + gid*prm.ppt;
-        if (pid > prm.pNum) {
-            // pNum を超えたら積分処理をスキップ
-            break;
-        }
-
-        // 粒子を取得
-        device ParticleState& p = ptcl[pid];
-
-        // electro-magnetic field on each ptcl
-        i1 = int(p.x);
-        j1 = int(p.y);
-
-        hv[0] = p.x - float(i1);
-        hv[1] = p.y - float(j1);
-        
-        // 5th-order weighting
-        for (int i = 0; i < 2; i++) {
-            sc = 2.0 + hv[i];
-            sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
-            sc = 1.0 + hv[i];
-            sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = hv[i];
-            sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 1.0 - hv[i];
-            sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 2.0 - hv[i];
-            sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = 3.0 - hv[i];
-            sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
-        }
-
-        // accumulation
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
-                ii = i1+(i-prm.ngb);
-                jj = j1+(j-prm.ngb);
-                int idx_out = ii+jj*(nx+1) + gid*ng;
-                temp[idx_out] += sf[i][0]*sf[j][1]*p.vy;
-            }
-        }
-    
-    }
-
-    // スレッドグループ内で同期（未初期化値の参照を防ぐ）
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-
-    // reduction
-    for (int i = 0; i < ng; i++){
-        for (uint stride = prm.tgs / 2; stride > 0; stride /= 2) {
-            if (tid < stride) {
-                uint offset = groupID*prm.tgs;
-                int idx_in = i + (tid + stride + offset)*ng;
-                int idx_out = i + (tid + offset)*ng;
-                temp[idx_out] += temp[idx_in];
-            }
-            threadgroup_barrier(mem_flags::mem_threadgroup);
-        }
-    }
-    
-    // output partialSum
-    if (tid == 0) {
-        for (int i = 0; i < ng; i++){
-            int idx_in = i + (0 + groupID*prm.tgs)*ng;
-            int idx_out = i + groupID*ng;
-            partial[idx_out] = temp[idx_in];
-        }
-    }
-    
-}
-
-// モーメント計算カーネル
-kernel void integrateMeanVelZ(
-                        device ParticleState* ptcl          [[ buffer(0) ]],
-                        constant integrationParams& prm     [[ buffer(1) ]],
-                        device float* temp                  [[ buffer(2) ]],
-                        device float* partial               [[ buffer(3) ]],
-                        device float* print                 [[ buffer(4) ]],
-                        uint gid                            [[ thread_position_in_grid ]],
-                        uint tid                            [[ thread_index_in_threadgroup ]],
-                        uint groupID                        [[ threadgroup_position_in_grid ]]
-                        ) {
-    // initialize(自スレッドがアクセスし得る範囲だけ)
-    const int nx = prm.ngx + 2*prm.ngb;
-    const int ny = prm.ngy + 2*prm.ngb;
-    const int ng = (nx+1)*(ny+1);
-    for (int i = 0; i < ng; i++){
-        temp[i + gid*ng] = 0.0f;
-    }
-
-    // 変数定義
-    int i1, j1;
-    float hv[2];
-    float sc;
-    float sf[6][2];
-    int ii, jj;
-
-    // 積分ループ
-    for (uint idx = 0; idx < prm.ppt; idx++){
-        
-        uint pid = idx + gid*prm.ppt;
-        if (pid > prm.pNum) {
-            // pNum を超えたら積分処理をスキップ
-            break;
-        }
-
-        // 粒子を取得
-        device ParticleState& p = ptcl[pid];
-
-        // electro-magnetic field on each ptcl
-        i1 = int(p.x);
-        j1 = int(p.y);
-
-        hv[0] = p.x - float(i1);
-        hv[1] = p.y - float(j1);
-        
-        // 5th-order weighting
-        for (int i = 0; i < 2; i++) {
-            sc = 2.0 + hv[i];
-            sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
-            sc = 1.0 + hv[i];
-            sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = hv[i];
-            sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 1.0 - hv[i];
-            sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 2.0 - hv[i];
-            sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = 3.0 - hv[i];
-            sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
-        }
-
-        // accumulation
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
-                ii = i1+(i-prm.ngb);
-                jj = j1+(j-prm.ngb);
-                int idx_out = ii+jj*(nx+1) + gid*ng;
-                temp[idx_out] += sf[i][0]*sf[j][1]*p.vz;
-            }
-        }
-    
-    }
-
-    // スレッドグループ内で同期（未初期化値の参照を防ぐ）
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-
-    // reduction
-    for (int i = 0; i < ng; i++){
-        for (uint stride = prm.tgs / 2; stride > 0; stride /= 2) {
-            if (tid < stride) {
-                uint offset = groupID*prm.tgs;
-                int idx_in = i + (tid + stride + offset)*ng;
-                int idx_out = i + (tid + offset)*ng;
-                temp[idx_out] += temp[idx_in];
-            }
-            threadgroup_barrier(mem_flags::mem_threadgroup);
-        }
-    }
-    
-    // output partialSum
-    if (tid == 0) {
-        for (int i = 0; i < ng; i++){
-            int idx_in = i + (0 + groupID*prm.tgs)*ng;
-            int idx_out = i + groupID*ng;
-            partial[idx_out] = temp[idx_in];
-        }
-    }
-    
-}
-
-// モーメント計算カーネル
-kernel void integratePressureXX(
-                        device ParticleState* ptcl          [[ buffer(0) ]],
-                        constant integrationParams& prm     [[ buffer(1) ]],
-                        device float* temp                  [[ buffer(2) ]],
-                        device float* partial               [[ buffer(3) ]],
-                        device float* print                 [[ buffer(4) ]],
-                        uint gid                            [[ thread_position_in_grid ]],
-                        uint tid                            [[ thread_index_in_threadgroup ]],
-                        uint groupID                        [[ threadgroup_position_in_grid ]]
-                        ) {
-    // initialize(自スレッドがアクセスし得る範囲だけ)
-    const int nx = prm.ngx + 2*prm.ngb;
-    const int ny = prm.ngy + 2*prm.ngb;
-    const int ng = (nx+1)*(ny+1);
-    for (int i = 0; i < ng; i++){
-        temp[i + gid*ng] = 0.0f;
-    }
-
-    // 変数定義
-    int i1, j1;
-    float hv[2];
-    float sc;
-    float sf[6][2];
-    int ii, jj;
-
-    // 積分ループ
-    for (uint idx = 0; idx < prm.ppt; idx++){
-        
-        uint pid = idx + gid*prm.ppt;
-        if (pid > prm.pNum) {
-            // pNum を超えたら積分処理をスキップ
-            break;
-        }
-
-        // 粒子を取得
-        device ParticleState& p = ptcl[pid];
-
-        // electro-magnetic field on each ptcl
-        i1 = int(p.x);
-        j1 = int(p.y);
-
-        hv[0] = p.x - float(i1);
-        hv[1] = p.y - float(j1);
-        
-        // 5th-order weighting
-        for (int i = 0; i < 2; i++) {
-            sc = 2.0 + hv[i];
-            sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
-            sc = 1.0 + hv[i];
-            sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = hv[i];
-            sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 1.0 - hv[i];
-            sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 2.0 - hv[i];
-            sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = 3.0 - hv[i];
-            sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
-        }
-
-        // accumulation
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
-                ii = i1+(i-prm.ngb);
-                jj = j1+(j-prm.ngb);
-                int idx_out = ii+jj*(nx+1) + gid*ng;
-                temp[idx_out] += sf[i][0]*sf[j][1]*p.vx*p.vx;
-            }
-        }
-    
-    }
-
-    // スレッドグループ内で同期（未初期化値の参照を防ぐ）
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-
-    // reduction
-    for (int i = 0; i < ng; i++){
-        for (uint stride = prm.tgs / 2; stride > 0; stride /= 2) {
-            if (tid < stride) {
-                uint offset = groupID*prm.tgs;
-                int idx_in = i + (tid + stride + offset)*ng;
-                int idx_out = i + (tid + offset)*ng;
-                temp[idx_out] += temp[idx_in];
-            }
-            threadgroup_barrier(mem_flags::mem_threadgroup);
-        }
-    }
-    
-    // output partialSum
-    if (tid == 0) {
-        for (int i = 0; i < ng; i++){
-            int idx_in = i + (0 + groupID*prm.tgs)*ng;
-            int idx_out = i + groupID*ng;
-            partial[idx_out] = temp[idx_in];
-        }
-    }
-    
-}
-
-// モーメント計算カーネル
-kernel void integratePressureXY(
-                        device ParticleState* ptcl          [[ buffer(0) ]],
-                        constant integrationParams& prm     [[ buffer(1) ]],
-                        device float* temp                  [[ buffer(2) ]],
-                        device float* partial               [[ buffer(3) ]],
-                        device float* print                 [[ buffer(4) ]],
-                        uint gid                            [[ thread_position_in_grid ]],
-                        uint tid                            [[ thread_index_in_threadgroup ]],
-                        uint groupID                        [[ threadgroup_position_in_grid ]]
-                        ) {
-    // initialize(自スレッドがアクセスし得る範囲だけ)
-    const int nx = prm.ngx + 2*prm.ngb;
-    const int ny = prm.ngy + 2*prm.ngb;
-    const int ng = (nx+1)*(ny+1);
-    for (int i = 0; i < ng; i++){
-        temp[i + gid*ng] = 0.0f;
-    }
-
-    // 変数定義
-    int i1, j1;
-    float hv[2];
-    float sc;
-    float sf[6][2];
-    int ii, jj;
-
-    // 積分ループ
-    for (uint idx = 0; idx < prm.ppt; idx++){
-        
-        uint pid = idx + gid*prm.ppt;
-        if (pid > prm.pNum) {
-            // pNum を超えたら積分処理をスキップ
-            break;
-        }
-
-        // 粒子を取得
-        device ParticleState& p = ptcl[pid];
-
-        // electro-magnetic field on each ptcl
-        i1 = int(p.x);
-        j1 = int(p.y);
-
-        hv[0] = p.x - float(i1);
-        hv[1] = p.y - float(j1);
-        
-        // 5th-order weighting
-        for (int i = 0; i < 2; i++) {
-            sc = 2.0 + hv[i];
-            sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
-            sc = 1.0 + hv[i];
-            sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = hv[i];
-            sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 1.0 - hv[i];
-            sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 2.0 - hv[i];
-            sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = 3.0 - hv[i];
-            sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
-        }
-
-        // accumulation
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
-                ii = i1+(i-prm.ngb);
-                jj = j1+(j-prm.ngb);
-                int idx_out = ii+jj*(nx+1) + gid*ng;
-                temp[idx_out] += sf[i][0]*sf[j][1]*p.vx*p.vy;
-            }
-        }
-    
-    }
-
-    // スレッドグループ内で同期（未初期化値の参照を防ぐ）
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-
-    // reduction
-    for (int i = 0; i < ng; i++){
-        for (uint stride = prm.tgs / 2; stride > 0; stride /= 2) {
-            if (tid < stride) {
-                uint offset = groupID*prm.tgs;
-                int idx_in = i + (tid + stride + offset)*ng;
-                int idx_out = i + (tid + offset)*ng;
-                temp[idx_out] += temp[idx_in];
-            }
-            threadgroup_barrier(mem_flags::mem_threadgroup);
-        }
-    }
-    
-    // output partialSum
-    if (tid == 0) {
-        for (int i = 0; i < ng; i++){
-            int idx_in = i + (0 + groupID*prm.tgs)*ng;
-            int idx_out = i + groupID*ng;
-            partial[idx_out] = temp[idx_in];
-        }
-    }
-    
-}
-
-// モーメント計算カーネル
-kernel void integratePressureXZ(
-                        device ParticleState* ptcl          [[ buffer(0) ]],
-                        constant integrationParams& prm     [[ buffer(1) ]],
-                        device float* temp                  [[ buffer(2) ]],
-                        device float* partial               [[ buffer(3) ]],
-                        device float* print                 [[ buffer(4) ]],
-                        uint gid                            [[ thread_position_in_grid ]],
-                        uint tid                            [[ thread_index_in_threadgroup ]],
-                        uint groupID                        [[ threadgroup_position_in_grid ]]
-                        ) {
-    // initialize(自スレッドがアクセスし得る範囲だけ)
-    const int nx = prm.ngx + 2*prm.ngb;
-    const int ny = prm.ngy + 2*prm.ngb;
-    const int ng = (nx+1)*(ny+1);
-    for (int i = 0; i < ng; i++){
-        temp[i + gid*ng] = 0.0f;
-    }
-
-    // 変数定義
-    int i1, j1;
-    float hv[2];
-    float sc;
-    float sf[6][2];
-    int ii, jj;
-
-    // 積分ループ
-    for (uint idx = 0; idx < prm.ppt; idx++){
-        
-        uint pid = idx + gid*prm.ppt;
-        if (pid > prm.pNum) {
-            // pNum を超えたら積分処理をスキップ
-            break;
-        }
-
-        // 粒子を取得
-        device ParticleState& p = ptcl[pid];
-
-        // electro-magnetic field on each ptcl
-        i1 = int(p.x);
-        j1 = int(p.y);
-
-        hv[0] = p.x - float(i1);
-        hv[1] = p.y - float(j1);
-        
-        // 5th-order weighting
-        for (int i = 0; i < 2; i++) {
-            sc = 2.0 + hv[i];
-            sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
-            sc = 1.0 + hv[i];
-            sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = hv[i];
-            sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 1.0 - hv[i];
-            sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 2.0 - hv[i];
-            sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = 3.0 - hv[i];
-            sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
-        }
-
-        // accumulation
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
-                ii = i1+(i-prm.ngb);
-                jj = j1+(j-prm.ngb);
-                int idx_out = ii+jj*(nx+1) + gid*ng;
-                temp[idx_out] += sf[i][0]*sf[j][1]*p.vx*p.vz;
-            }
-        }
-    
-    }
-
-    // スレッドグループ内で同期（未初期化値の参照を防ぐ）
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-
-    // reduction
-    for (int i = 0; i < ng; i++){
-        for (uint stride = prm.tgs / 2; stride > 0; stride /= 2) {
-            if (tid < stride) {
-                uint offset = groupID*prm.tgs;
-                int idx_in = i + (tid + stride + offset)*ng;
-                int idx_out = i + (tid + offset)*ng;
-                temp[idx_out] += temp[idx_in];
-            }
-            threadgroup_barrier(mem_flags::mem_threadgroup);
-        }
-    }
-    
-    // output partialSum
-    if (tid == 0) {
-        for (int i = 0; i < ng; i++){
-            int idx_in = i + (0 + groupID*prm.tgs)*ng;
-            int idx_out = i + groupID*ng;
-            partial[idx_out] = temp[idx_in];
-        }
-    }
-    
-}
-
-// モーメント計算カーネル
-kernel void integratePressureYY(
-                        device ParticleState* ptcl          [[ buffer(0) ]],
-                        constant integrationParams& prm     [[ buffer(1) ]],
-                        device float* temp                  [[ buffer(2) ]],
-                        device float* partial               [[ buffer(3) ]],
-                        device float* print                 [[ buffer(4) ]],
-                        uint gid                            [[ thread_position_in_grid ]],
-                        uint tid                            [[ thread_index_in_threadgroup ]],
-                        uint groupID                        [[ threadgroup_position_in_grid ]]
-                        ) {
-    // initialize(自スレッドがアクセスし得る範囲だけ)
-    const int nx = prm.ngx + 2*prm.ngb;
-    const int ny = prm.ngy + 2*prm.ngb;
-    const int ng = (nx+1)*(ny+1);
-    for (int i = 0; i < ng; i++){
-        temp[i + gid*ng] = 0.0f;
-    }
-
-    // 変数定義
-    int i1, j1;
-    float hv[2];
-    float sc;
-    float sf[6][2];
-    int ii, jj;
-
-    // 積分ループ
-    for (uint idx = 0; idx < prm.ppt; idx++){
-        
-        uint pid = idx + gid*prm.ppt;
-        if (pid > prm.pNum) {
-            // pNum を超えたら積分処理をスキップ
-            break;
-        }
-
-        // 粒子を取得
-        device ParticleState& p = ptcl[pid];
-
-        // electro-magnetic field on each ptcl
-        i1 = int(p.x);
-        j1 = int(p.y);
-
-        hv[0] = p.x - float(i1);
-        hv[1] = p.y - float(j1);
-        
-        // 5th-order weighting
-        for (int i = 0; i < 2; i++) {
-            sc = 2.0 + hv[i];
-            sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
-            sc = 1.0 + hv[i];
-            sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = hv[i];
-            sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 1.0 - hv[i];
-            sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 2.0 - hv[i];
-            sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = 3.0 - hv[i];
-            sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
-        }
-
-        // accumulation
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
-                ii = i1+(i-prm.ngb);
-                jj = j1+(j-prm.ngb);
-                int idx_out = ii+jj*(nx+1) + gid*ng;
-                temp[idx_out] += sf[i][0]*sf[j][1]*p.vy*p.vy;
-            }
-        }
-    
-    }
-
-    // スレッドグループ内で同期（未初期化値の参照を防ぐ）
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-
-    // reduction
-    for (int i = 0; i < ng; i++){
-        for (uint stride = prm.tgs / 2; stride > 0; stride /= 2) {
-            if (tid < stride) {
-                uint offset = groupID*prm.tgs;
-                int idx_in = i + (tid + stride + offset)*ng;
-                int idx_out = i + (tid + offset)*ng;
-                temp[idx_out] += temp[idx_in];
-            }
-            threadgroup_barrier(mem_flags::mem_threadgroup);
-        }
-    }
-    
-    // output partialSum
-    if (tid == 0) {
-        for (int i = 0; i < ng; i++){
-            int idx_in = i + (0 + groupID*prm.tgs)*ng;
-            int idx_out = i + groupID*ng;
-            partial[idx_out] = temp[idx_in];
-        }
-    }
-    
-}
-
-// モーメント計算カーネル
-kernel void integratePressureYZ(
-                        device ParticleState* ptcl          [[ buffer(0) ]],
-                        constant integrationParams& prm     [[ buffer(1) ]],
-                        device float* temp                  [[ buffer(2) ]],
-                        device float* partial               [[ buffer(3) ]],
-                        device float* print                 [[ buffer(4) ]],
-                        uint gid                            [[ thread_position_in_grid ]],
-                        uint tid                            [[ thread_index_in_threadgroup ]],
-                        uint groupID                        [[ threadgroup_position_in_grid ]]
-                        ) {
-    // initialize(自スレッドがアクセスし得る範囲だけ)
-    const int nx = prm.ngx + 2*prm.ngb;
-    const int ny = prm.ngy + 2*prm.ngb;
-    const int ng = (nx+1)*(ny+1);
-    for (int i = 0; i < ng; i++){
-        temp[i + gid*ng] = 0.0f;
-    }
-
-    // 変数定義
-    int i1, j1;
-    float hv[2];
-    float sc;
-    float sf[6][2];
-    int ii, jj;
-
-    // 積分ループ
-    for (uint idx = 0; idx < prm.ppt; idx++){
-        
-        uint pid = idx + gid*prm.ppt;
-        if (pid > prm.pNum) {
-            // pNum を超えたら積分処理をスキップ
-            break;
-        }
-
-        // 粒子を取得
-        device ParticleState& p = ptcl[pid];
-
-        // electro-magnetic field on each ptcl
-        i1 = int(p.x);
-        j1 = int(p.y);
-
-        hv[0] = p.x - float(i1);
-        hv[1] = p.y - float(j1);
-        
-        // 5th-order weighting
-        for (int i = 0; i < 2; i++) {
-            sc = 2.0 + hv[i];
-            sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
-            sc = 1.0 + hv[i];
-            sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = hv[i];
-            sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 1.0 - hv[i];
-            sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 2.0 - hv[i];
-            sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = 3.0 - hv[i];
-            sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
-        }
-
-        // accumulation
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
-                ii = i1+(i-prm.ngb);
-                jj = j1+(j-prm.ngb);
-                int idx_out = ii+jj*(nx+1) + gid*ng;
-                temp[idx_out] += sf[i][0]*sf[j][1]*p.vy*p.vz;
-            }
-        }
-    
-    }
-
-    // スレッドグループ内で同期（未初期化値の参照を防ぐ）
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-
-    // reduction
-    for (int i = 0; i < ng; i++){
-        for (uint stride = prm.tgs / 2; stride > 0; stride /= 2) {
-            if (tid < stride) {
-                uint offset = groupID*prm.tgs;
-                int idx_in = i + (tid + stride + offset)*ng;
-                int idx_out = i + (tid + offset)*ng;
-                temp[idx_out] += temp[idx_in];
-            }
-            threadgroup_barrier(mem_flags::mem_threadgroup);
-        }
-    }
-    
-    // output partialSum
-    if (tid == 0) {
-        for (int i = 0; i < ng; i++){
-            int idx_in = i + (0 + groupID*prm.tgs)*ng;
-            int idx_out = i + groupID*ng;
-            partial[idx_out] = temp[idx_in];
-        }
-    }
-    
-}
-
-// モーメント計算カーネル
-kernel void integratePressureZZ(
-                        device ParticleState* ptcl          [[ buffer(0) ]],
-                        constant integrationParams& prm     [[ buffer(1) ]],
-                        device float* temp                  [[ buffer(2) ]],
-                        device float* partial               [[ buffer(3) ]],
-                        device float* print                 [[ buffer(4) ]],
-                        uint gid                            [[ thread_position_in_grid ]],
-                        uint tid                            [[ thread_index_in_threadgroup ]],
-                        uint groupID                        [[ threadgroup_position_in_grid ]]
-                        ) {
-    // initialize(自スレッドがアクセスし得る範囲だけ)
-    const int nx = prm.ngx + 2*prm.ngb;
-    const int ny = prm.ngy + 2*prm.ngb;
-    const int ng = (nx+1)*(ny+1);
-    for (int i = 0; i < ng; i++){
-        temp[i + gid*ng] = 0.0f;
-    }
-
-    // 変数定義
-    int i1, j1;
-    float hv[2];
-    float sc;
-    float sf[6][2];
-    int ii, jj;
-
-    // 積分ループ
-    for (uint idx = 0; idx < prm.ppt; idx++){
-        
-        uint pid = idx + gid*prm.ppt;
-        if (pid > prm.pNum) {
-            // pNum を超えたら積分処理をスキップ
-            break;
-        }
-
-        // 粒子を取得
-        device ParticleState& p = ptcl[pid];
-
-        // electro-magnetic field on each ptcl
-        i1 = int(p.x);
-        j1 = int(p.y);
-
-        hv[0] = p.x - float(i1);
-        hv[1] = p.y - float(j1);
-        
-        // 5th-order weighting
-        for (int i = 0; i < 2; i++) {
-            sc = 2.0 + hv[i];
-            sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
-            sc = 1.0 + hv[i];
-            sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = hv[i];
-            sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 1.0 - hv[i];
-            sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 2.0 - hv[i];
-            sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = 3.0 - hv[i];
-            sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
-        }
-
-        // accumulation
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
-                ii = i1+(i-prm.ngb);
-                jj = j1+(j-prm.ngb);
-                int idx_out = ii+jj*(nx+1) + gid*ng;
-                temp[idx_out] += sf[i][0]*sf[j][1]*p.vz*p.vz;
-            }
-        }
-    
-    }
-
-    // スレッドグループ内で同期（未初期化値の参照を防ぐ）
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-
-    // reduction
-    for (int i = 0; i < ng; i++){
-        for (uint stride = prm.tgs / 2; stride > 0; stride /= 2) {
-            if (tid < stride) {
-                uint offset = groupID*prm.tgs;
-                int idx_in = i + (tid + stride + offset)*ng;
-                int idx_out = i + (tid + offset)*ng;
-                temp[idx_out] += temp[idx_in];
-            }
-            threadgroup_barrier(mem_flags::mem_threadgroup);
-        }
-    }
-    
-    // output partialSum
-    if (tid == 0) {
-        for (int i = 0; i < ng; i++){
-            int idx_in = i + (0 + groupID*prm.tgs)*ng;
-            int idx_out = i + groupID*ng;
-            partial[idx_out] = temp[idx_in];
-        }
-    }
-    
 }
 )";
 
-// プライベートインスタンス変数
-@implementation Moment {
-    float* _n;
-    float* _ux;
-    float* _uy;
-    float* _uz;
-    float* _Pxx;
-    float* _Pxy;
-    float* _Pxz;
-    float* _Pyy;
-    float* _Pyz;
-    float* _Pzz;
-}
+@implementation Moment
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam withLogger:(XmlLogger&)logger{
     self = [super init];
@@ -1054,7 +123,6 @@ kernel void integratePressureZZ(
         std::vector<struct BoundaryConditionForParticle> pBCs = initParam.particleBoundaries;
 
         // 並列計算パラメータ
-        _integrationChunkSize = compParam.integrationChunkSize;
         _threadGroupSize = compParam.threadGroupSize;
         
         // コマンドキューの作成
@@ -1070,26 +138,8 @@ kernel void integratePressureZZ(
         }
 
         // カーネルの取得
-        id<MTLFunction> integrateNumDensFunction = [library newFunctionWithName:@"integrateNumDens"];
-        _integrateNumDensPipeline = [device newComputePipelineStateWithFunction:integrateNumDensFunction error:&error];
-        id<MTLFunction> integrateMeanVelXFunction = [library newFunctionWithName:@"integrateMeanVelX"];
-        _integrateMeanVelXPipeline = [device newComputePipelineStateWithFunction:integrateMeanVelXFunction error:&error];
-        id<MTLFunction> integrateMeanVelYFunction = [library newFunctionWithName:@"integrateMeanVelY"];
-        _integrateMeanVelYPipeline = [device newComputePipelineStateWithFunction:integrateMeanVelYFunction error:&error];
-        id<MTLFunction> integrateMeanVelZFunction = [library newFunctionWithName:@"integrateMeanVelZ"];
-        _integrateMeanVelZPipeline = [device newComputePipelineStateWithFunction:integrateMeanVelZFunction error:&error];
-        id<MTLFunction> integratePressureXXFunction = [library newFunctionWithName:@"integratePressureXX"];
-        _integratePressureXXPipeline = [device newComputePipelineStateWithFunction:integratePressureXXFunction error:&error];
-        id<MTLFunction> integratePressureXYFunction = [library newFunctionWithName:@"integratePressureXY"];
-        _integratePressureXYPipeline = [device newComputePipelineStateWithFunction:integratePressureXYFunction error:&error];
-        id<MTLFunction> integratePressureXZFunction = [library newFunctionWithName:@"integratePressureXZ"];
-        _integratePressureXZPipeline = [device newComputePipelineStateWithFunction:integratePressureXZFunction error:&error];
-        id<MTLFunction> integratePressureYYFunction = [library newFunctionWithName:@"integratePressureYY"];
-        _integratePressureYYPipeline = [device newComputePipelineStateWithFunction:integratePressureYYFunction error:&error];
-        id<MTLFunction> integratePressureYZFunction = [library newFunctionWithName:@"integratePressureYZ"];
-        _integratePressureYZPipeline = [device newComputePipelineStateWithFunction:integratePressureYZFunction error:&error];
-        id<MTLFunction> integratePressureZZFunction = [library newFunctionWithName:@"integratePressureZZ"];
-        _integratePressureZZPipeline = [device newComputePipelineStateWithFunction:integratePressureZZFunction error:&error];
+        id<MTLFunction> integrateFunction = [library newFunctionWithName:@"integrateMoments"];
+        _integrateMomentsPipeline = [device newComputePipelineStateWithFunction:integrateFunction error:&error];
 
         // 定数パラメータ格納バッファ
         size_t buffSize = sizeof(integrationParams);
@@ -1098,35 +148,27 @@ kernel void integratePressureZZ(
         prm->ngx  = fieldParam.ngx;
         prm->ngy  = fieldParam.ngy;
         prm->ngb  = fieldParam.ngb;
-        prm->tgs  = _threadGroupSize;
-        prm->ics  = _integrationChunkSize;
         prm->pNum = 0; // ptclクラスごとに都度計算
-        prm->ppt  = 0; // ptclクラスごとに都度計算
+        prm->scale = 1.0; // ptclクラスごとに都度計算
 
         // 積分計算用バッファ
         int nx = fieldParam.ngx + 2*fieldParam.ngb;
         int ny = fieldParam.ngy + 2*fieldParam.ngb;
         int ng = (nx+1)*(ny+1);
-        buffSize = sizeof(float)*ng*_integrationChunkSize;
-        _integrateTemporaryBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModePrivate];
-        buffSize = sizeof(float)*ng*(_integrationChunkSize/_threadGroupSize);
-        _integratePartialBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
-
+        _nBuffer   = [device newBufferWithLength:sizeof(float)*ng options:MTLResourceStorageModeShared];
+        _uxBuffer  = [device newBufferWithLength:sizeof(float)*ng options:MTLResourceStorageModeShared];
+        _uyBuffer  = [device newBufferWithLength:sizeof(float)*ng options:MTLResourceStorageModeShared];
+        _uzBuffer  = [device newBufferWithLength:sizeof(float)*ng options:MTLResourceStorageModeShared];
+        _PxxBuffer = [device newBufferWithLength:sizeof(float)*ng options:MTLResourceStorageModeShared];
+        _PxyBuffer = [device newBufferWithLength:sizeof(float)*ng options:MTLResourceStorageModeShared];
+        _PxzBuffer = [device newBufferWithLength:sizeof(float)*ng options:MTLResourceStorageModeShared];
+        _PyyBuffer = [device newBufferWithLength:sizeof(float)*ng options:MTLResourceStorageModeShared];
+        _PyzBuffer = [device newBufferWithLength:sizeof(float)*ng options:MTLResourceStorageModeShared];
+        _PzzBuffer = [device newBufferWithLength:sizeof(float)*ng options:MTLResourceStorageModeShared];
+        
         // デバッグ出力用バッファ
         buffSize = sizeof(float)*compParam.pNumMax;
         _printBuffer = [device newBufferWithLength:buffSize options:MTLResourceStorageModeShared];
-
-        // malloc
-        _n = (float *)malloc(sizeof(float)*ng);
-        _ux = (float *)malloc(sizeof(float)*ng);
-        _uy = (float *)malloc(sizeof(float)*ng);
-        _uz = (float *)malloc(sizeof(float)*ng);
-        _Pxx = (float *)malloc(sizeof(float)*ng);
-        _Pxy = (float *)malloc(sizeof(float)*ng);
-        _Pxz = (float *)malloc(sizeof(float)*ng);
-        _Pyy = (float *)malloc(sizeof(float)*ng);
-        _Pyz = (float *)malloc(sizeof(float)*ng);
-        _Pzz = (float *)malloc(sizeof(float)*ng);
     }
     return self;
 }
@@ -1135,317 +177,124 @@ kernel void integratePressureZZ(
     // initialize
     integrationParams* prm = (integrationParams*)[_integrationParamsBuffer contents];
     int ng = (prm->ngx + 2*prm->ngb + 1)*(prm->ngy + 2*prm->ngb + 1);
+    float* n = (float*)[_nBuffer contents];
+    float* ux = (float*)[_uxBuffer contents];
+    float* uy = (float*)[_uyBuffer contents];
+    float* uz = (float*)[_uzBuffer contents];
+    float* Pxx = (float*)[_PxxBuffer contents];
+    float* Pxy = (float*)[_PxyBuffer contents];
+    float* Pxz = (float*)[_PxzBuffer contents];
+    float* Pyy = (float*)[_PyyBuffer contents];
+    float* Pyz = (float*)[_PyzBuffer contents];
+    float* Pzz = (float*)[_PzzBuffer contents];
     for (int i = 0; i < ng; i++){
-        _n[i] = 0.0;
-        _ux[i] = 0.0;
-        _uy[i] = 0.0;
-        _uz[i] = 0.0;
-        _Pxx[i] = 0.0;
-        _Pxy[i] = 0.0;
-        _Pxz[i] = 0.0;
-        _Pyy[i] = 0.0;
-        _Pyz[i] = 0.0;
-        _Pzz[i] = 0.0;
+        n[i] = 0.0;
+        ux[i] = 0.0;
+        uy[i] = 0.0;
+        uz[i] = 0.0;
+        Pxx[i] = 0.0;
+        Pxy[i] = 0.0;
+        Pxz[i] = 0.0;
+        Pyy[i] = 0.0;
+        Pyz[i] = 0.0;
+        Pzz[i] = 0.0;
     }
     
     // 粒子データは Particle クラスのバッファを使用
     id<MTLBuffer> particleBuffer = [ptcl particleBuffer];
     id<MTLBuffer> paramsBuffer = [ptcl paramsBuffer];
     SimulationParams* prmPtcl = (SimulationParams*)[paramsBuffer contents];
-    
     // 定数パラメータ更新
     prm->pNum = prmPtcl->pNum;
-    uint pNumPerThread = (prmPtcl->pNum + _integrationChunkSize - 1) / _integrationChunkSize;
-    prm->ppt  = pNumPerThread;
-
+    prm->scale = ptcl.w/(fld.dx*fld.dy);
+    
     // グリッドとスレッドグループのサイズ設定
-    uint threadGroupNum = _integrationChunkSize/_threadGroupSize;
+    uint threadGroupNum = (prm->pNum + _threadGroupSize - 1) / _threadGroupSize;
     MTLSize gridSizeMetalStyle = MTLSizeMake(threadGroupNum, 1, 1);
     MTLSize threadGroupSize = MTLSizeMake(_threadGroupSize, 1, 1);
-    
+
     // コマンドバッファとエンコーダ
     id<MTLCommandBuffer> commandBuffer;
     id<MTLComputeCommandEncoder> computeEncoder;
     
-    // 部分和取得
-    float* partialSums;
-
-    // 積分実行: n
+    // 積分実行
     commandBuffer = [_commandQueue commandBuffer];
     computeEncoder = [commandBuffer computeCommandEncoder];
-    [computeEncoder setComputePipelineState:_integrateNumDensPipeline];
+    [computeEncoder setComputePipelineState:_integrateMomentsPipeline];
     [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
     [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
-    [computeEncoder setBuffer:_integrateTemporaryBuffer offset:0 atIndex:2];
-    [computeEncoder setBuffer:_integratePartialBuffer   offset:0 atIndex:3];
-    [computeEncoder setBuffer:_printBuffer              offset:0 atIndex:4];
+    [computeEncoder setBuffer:_nBuffer                  offset:0 atIndex:2];
+    [computeEncoder setBuffer:_uxBuffer                 offset:0 atIndex:3];
+    [computeEncoder setBuffer:_uyBuffer                 offset:0 atIndex:4];
+    [computeEncoder setBuffer:_uzBuffer                 offset:0 atIndex:5];
+    [computeEncoder setBuffer:_PxxBuffer                offset:0 atIndex:6];
+    [computeEncoder setBuffer:_PxyBuffer                offset:0 atIndex:7];
+    [computeEncoder setBuffer:_PxzBuffer                offset:0 atIndex:8];
+    [computeEncoder setBuffer:_PyyBuffer                offset:0 atIndex:9];
+    [computeEncoder setBuffer:_PyzBuffer                offset:0 atIndex:10];
+    [computeEncoder setBuffer:_PzzBuffer                offset:0 atIndex:11];
+    [computeEncoder setBuffer:_printBuffer              offset:0 atIndex:12];
     [computeEncoder dispatchThreadgroups:gridSizeMetalStyle threadsPerThreadgroup:threadGroupSize];
     [computeEncoder endEncoding];
     [commandBuffer commit];
     [commandBuffer waitUntilCompleted];
-    partialSums = (float*)_integratePartialBuffer.contents;
-    for (int j = 0; j < threadGroupNum; j++){
-        for (int i = 0; i < ng; i++){
-            _n[i] += partialSums[i + j*ng];
-        }
-    }
-    
-    // 積分実行: ux
-    commandBuffer = [_commandQueue commandBuffer];
-    computeEncoder = [commandBuffer computeCommandEncoder];
-    [computeEncoder setComputePipelineState:_integrateMeanVelXPipeline];
-    [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
-    [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
-    [computeEncoder setBuffer:_integrateTemporaryBuffer offset:0 atIndex:2];
-    [computeEncoder setBuffer:_integratePartialBuffer   offset:0 atIndex:3];
-    [computeEncoder setBuffer:_printBuffer              offset:0 atIndex:4];
-    [computeEncoder dispatchThreadgroups:gridSizeMetalStyle threadsPerThreadgroup:threadGroupSize];
-    [computeEncoder endEncoding];
-    [commandBuffer commit];
-    [commandBuffer waitUntilCompleted];
-    partialSums = (float*)_integratePartialBuffer.contents;
-    for (int j = 0; j < threadGroupNum; j++){
-        for (int i = 0; i < ng; i++){
-            _ux[i] += partialSums[i + j*ng];
-        }
-    }
-
-    // 積分実行: uy
-    commandBuffer = [_commandQueue commandBuffer];
-    computeEncoder = [commandBuffer computeCommandEncoder];
-    [computeEncoder setComputePipelineState:_integrateMeanVelYPipeline];
-    [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
-    [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
-    [computeEncoder setBuffer:_integrateTemporaryBuffer offset:0 atIndex:2];
-    [computeEncoder setBuffer:_integratePartialBuffer   offset:0 atIndex:3];
-    [computeEncoder setBuffer:_printBuffer              offset:0 atIndex:4];
-    [computeEncoder dispatchThreadgroups:gridSizeMetalStyle threadsPerThreadgroup:threadGroupSize];
-    [computeEncoder endEncoding];
-    [commandBuffer commit];
-    [commandBuffer waitUntilCompleted];
-    partialSums = (float*)_integratePartialBuffer.contents;
-    for (int j = 0; j < threadGroupNum; j++){
-        for (int i = 0; i < ng; i++){
-            _uy[i] += partialSums[i + j*ng];
-        }
-    }
-
-    // 積分実行: uz
-    commandBuffer = [_commandQueue commandBuffer];
-    computeEncoder = [commandBuffer computeCommandEncoder];
-    [computeEncoder setComputePipelineState:_integrateMeanVelZPipeline];
-    [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
-    [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
-    [computeEncoder setBuffer:_integrateTemporaryBuffer offset:0 atIndex:2];
-    [computeEncoder setBuffer:_integratePartialBuffer   offset:0 atIndex:3];
-    [computeEncoder setBuffer:_printBuffer              offset:0 atIndex:4];
-    [computeEncoder dispatchThreadgroups:gridSizeMetalStyle threadsPerThreadgroup:threadGroupSize];
-    [computeEncoder endEncoding];
-    [commandBuffer commit];
-    [commandBuffer waitUntilCompleted];
-    partialSums = (float*)_integratePartialBuffer.contents;
-    for (int j = 0; j < threadGroupNum; j++){
-        for (int i = 0; i < ng; i++){
-            _uz[i] += partialSums[i + j*ng];
-        }
-    }
-
-    // 積分実行: Pxx
-    commandBuffer = [_commandQueue commandBuffer];
-    computeEncoder = [commandBuffer computeCommandEncoder];
-    [computeEncoder setComputePipelineState:_integratePressureXXPipeline];
-    [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
-    [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
-    [computeEncoder setBuffer:_integrateTemporaryBuffer offset:0 atIndex:2];
-    [computeEncoder setBuffer:_integratePartialBuffer   offset:0 atIndex:3];
-    [computeEncoder setBuffer:_printBuffer              offset:0 atIndex:4];
-    [computeEncoder dispatchThreadgroups:gridSizeMetalStyle threadsPerThreadgroup:threadGroupSize];
-    [computeEncoder endEncoding];
-    [commandBuffer commit];
-    [commandBuffer waitUntilCompleted];
-    partialSums = (float*)_integratePartialBuffer.contents;
-    for (int j = 0; j < threadGroupNum; j++){
-        for (int i = 0; i < ng; i++){
-            _Pxx[i] += partialSums[i + j*ng];
-        }
-    }
-
-    // 積分実行: Pxy
-    commandBuffer = [_commandQueue commandBuffer];
-    computeEncoder = [commandBuffer computeCommandEncoder];
-    [computeEncoder setComputePipelineState:_integratePressureXYPipeline];
-    [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
-    [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
-    [computeEncoder setBuffer:_integrateTemporaryBuffer offset:0 atIndex:2];
-    [computeEncoder setBuffer:_integratePartialBuffer   offset:0 atIndex:3];
-    [computeEncoder setBuffer:_printBuffer              offset:0 atIndex:4];
-    [computeEncoder dispatchThreadgroups:gridSizeMetalStyle threadsPerThreadgroup:threadGroupSize];
-    [computeEncoder endEncoding];
-    [commandBuffer commit];
-    [commandBuffer waitUntilCompleted];
-    partialSums = (float*)_integratePartialBuffer.contents;
-    for (int j = 0; j < threadGroupNum; j++){
-        for (int i = 0; i < ng; i++){
-            _Pxy[i] += partialSums[i + j*ng];
-        }
-    }
-
-    // 積分実行: Pxz
-    commandBuffer = [_commandQueue commandBuffer];
-    computeEncoder = [commandBuffer computeCommandEncoder];
-    [computeEncoder setComputePipelineState:_integratePressureXZPipeline];
-    [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
-    [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
-    [computeEncoder setBuffer:_integrateTemporaryBuffer offset:0 atIndex:2];
-    [computeEncoder setBuffer:_integratePartialBuffer   offset:0 atIndex:3];
-    [computeEncoder setBuffer:_printBuffer              offset:0 atIndex:4];
-    [computeEncoder dispatchThreadgroups:gridSizeMetalStyle threadsPerThreadgroup:threadGroupSize];
-    [computeEncoder endEncoding];
-    [commandBuffer commit];
-    [commandBuffer waitUntilCompleted];
-    partialSums = (float*)_integratePartialBuffer.contents;
-    for (int j = 0; j < threadGroupNum; j++){
-        for (int i = 0; i < ng; i++){
-            _Pxz[i] += partialSums[i + j*ng];
-        }
-    }
-
-    // 積分実行: Pyy
-    commandBuffer = [_commandQueue commandBuffer];
-    computeEncoder = [commandBuffer computeCommandEncoder];
-    [computeEncoder setComputePipelineState:_integratePressureYYPipeline];
-    [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
-    [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
-    [computeEncoder setBuffer:_integrateTemporaryBuffer offset:0 atIndex:2];
-    [computeEncoder setBuffer:_integratePartialBuffer   offset:0 atIndex:3];
-    [computeEncoder setBuffer:_printBuffer              offset:0 atIndex:4];
-    [computeEncoder dispatchThreadgroups:gridSizeMetalStyle threadsPerThreadgroup:threadGroupSize];
-    [computeEncoder endEncoding];
-    [commandBuffer commit];
-    [commandBuffer waitUntilCompleted];
-    partialSums = (float*)_integratePartialBuffer.contents;
-    for (int j = 0; j < threadGroupNum; j++){
-        for (int i = 0; i < ng; i++){
-            _Pyy[i] += partialSums[i + j*ng];
-        }
-    }
-
-    // 積分実行: Pyz
-    commandBuffer = [_commandQueue commandBuffer];
-    computeEncoder = [commandBuffer computeCommandEncoder];
-    [computeEncoder setComputePipelineState:_integratePressureYZPipeline];
-    [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
-    [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
-    [computeEncoder setBuffer:_integrateTemporaryBuffer offset:0 atIndex:2];
-    [computeEncoder setBuffer:_integratePartialBuffer   offset:0 atIndex:3];
-    [computeEncoder setBuffer:_printBuffer              offset:0 atIndex:4];
-    [computeEncoder dispatchThreadgroups:gridSizeMetalStyle threadsPerThreadgroup:threadGroupSize];
-    [computeEncoder endEncoding];
-    [commandBuffer commit];
-    [commandBuffer waitUntilCompleted];
-    partialSums = (float*)_integratePartialBuffer.contents;
-    for (int j = 0; j < threadGroupNum; j++){
-        for (int i = 0; i < ng; i++){
-            _Pyz[i] += partialSums[i + j*ng];
-        }
-    }
-
-    // 積分実行: Pzz
-    commandBuffer = [_commandQueue commandBuffer];
-    computeEncoder = [commandBuffer computeCommandEncoder];
-    [computeEncoder setComputePipelineState:_integratePressureZZPipeline];
-    [computeEncoder setBuffer:particleBuffer            offset:0 atIndex:0];
-    [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
-    [computeEncoder setBuffer:_integrateTemporaryBuffer offset:0 atIndex:2];
-    [computeEncoder setBuffer:_integratePartialBuffer   offset:0 atIndex:3];
-    [computeEncoder setBuffer:_printBuffer              offset:0 atIndex:4];
-    [computeEncoder dispatchThreadgroups:gridSizeMetalStyle threadsPerThreadgroup:threadGroupSize];
-    [computeEncoder endEncoding];
-    [commandBuffer commit];
-    [commandBuffer waitUntilCompleted];
-    partialSums = (float*)_integratePartialBuffer.contents;
-    for (int j = 0; j < threadGroupNum; j++){
-        for (int i = 0; i < ng; i++){
-            _Pzz[i] += partialSums[i + j*ng];
-        }
-    }
 
     // 積分量->モーメント量
-    // ptcl -> 1/cm3
-    float constN = ptcl.w/(fld.dx*fld.dy);
-    for (int i = 0; i < ng; i++){
-        _n[i] *= constN;
-    }
+    n = (float*)[_nBuffer contents];
+    ux = (float*)[_uxBuffer contents];
+    uy = (float*)[_uyBuffer contents];
+    uz = (float*)[_uzBuffer contents];
+    Pxx = (float*)[_PxxBuffer contents];
+    Pxy = (float*)[_PxyBuffer contents];
+    Pxz = (float*)[_PxzBuffer contents];
+    Pyy = (float*)[_PyyBuffer contents];
+    Pyz = (float*)[_PyzBuffer contents];
+    Pzz = (float*)[_PzzBuffer contents];
     // cm/s*ptcl -> cm/s
     for (int i = 0; i < ng; i++){
-        if(_n[i] > 1e-20){
-            _ux[i] /= _n[i]/constN;
-            _uy[i] /= _n[i]/constN;
-            _uz[i] /= _n[i]/constN;
+        if(n[i] > 1e-20){
+            ux[i] /= n[i]/prm->scale;
+            uy[i] /= n[i]/prm->scale;
+            uz[i] /= n[i]/prm->scale;
         }else{
-            _ux[i] = 0.0;
-            _uy[i] = 0.0;
-            _uz[i] = 0.0;
+            ux[i] = 0.0;
+            uy[i] = 0.0;
+            uz[i] = 0.0;
         }
     }
     // cm2/s2*ptcl -> g*cm2/s2*1/cm3 = 0.1 Pa
     // Cov[X,Y] = E[XY] - E[X]E[Y]
     for (int i = 0; i < ng; i++){
-        if(_n[i] > 1e-20){
-            _Pxx[i] = ptcl.m*(_Pxx[i]/(_n[i]/constN) - _ux[i]*_ux[i])*_n[i];
-            _Pxy[i] = ptcl.m*(_Pxy[i]/(_n[i]/constN) - _ux[i]*_uy[i])*_n[i];
-            _Pxz[i] = ptcl.m*(_Pxz[i]/(_n[i]/constN) - _ux[i]*_uz[i])*_n[i];
-            _Pyy[i] = ptcl.m*(_Pyy[i]/(_n[i]/constN) - _uy[i]*_uy[i])*_n[i];
-            _Pyz[i] = ptcl.m*(_Pyz[i]/(_n[i]/constN) - _uy[i]*_uz[i])*_n[i];
-            _Pzz[i] = ptcl.m*(_Pzz[i]/(_n[i]/constN) - _uz[i]*_uz[i])*_n[i];
+        if(n[i] > 1e-20){
+            Pxx[i] = ptcl.m*(Pxx[i]/(n[i]/prm->scale) - ux[i]*ux[i])*n[i];
+            Pxy[i] = ptcl.m*(Pxy[i]/(n[i]/prm->scale) - ux[i]*uy[i])*n[i];
+            Pxz[i] = ptcl.m*(Pxz[i]/(n[i]/prm->scale) - ux[i]*uz[i])*n[i];
+            Pyy[i] = ptcl.m*(Pyy[i]/(n[i]/prm->scale) - uy[i]*uy[i])*n[i];
+            Pyz[i] = ptcl.m*(Pyz[i]/(n[i]/prm->scale) - uy[i]*uz[i])*n[i];
+            Pzz[i] = ptcl.m*(Pzz[i]/(n[i]/prm->scale) - uz[i]*uz[i])*n[i];
         }else{
-            _Pxx[i] = 0.0;
-            _Pxy[i] = 0.0;
-            _Pxz[i] = 0.0;
-            _Pyy[i] = 0.0;
-            _Pyz[i] = 0.0;
-            _Pzz[i] = 0.0;
+            Pxx[i] = 0.0;
+            Pxy[i] = 0.0;
+            Pxz[i] = 0.0;
+            Pyy[i] = 0.0;
+            Pyz[i] = 0.0;
+            Pzz[i] = 0.0;
         }
     }
 
 };
 
-static void writeField(FILE* fp, const char* name, int type_id, float* array, int arrSize, float scale) {
-    // 変数名（固定長32文字）
-    char name_buf[32] = {};
-    strncpy(name_buf, name, sizeof(name_buf) - 1); // 末尾NULL保護
-    fwrite(name_buf, sizeof(char), 32, fp);
-    
-    // タイプID（int）
-    // 0: node-center value,    1: left-shifted value
-    // 2: bottom-shifted value, 3: left&bottom-shifted value
-    // 4: potential
-    fwrite(&type_id, sizeof(int), 1, fp);
-    
-    // 配列本体をスケーリングして出力
-    float* output = (float *)malloc(sizeof(float)*arrSize);
-    for (int i = 0; i < arrSize; ++i) {
-        output[i] = array[i] * scale;
-    }
-    fwrite(output, sizeof(float), arrSize, fp);
-    // ここで必ず free する
-    free(output);
-}
-
-// 積分計算用バッファへのアクセサ
-- (id<MTLBuffer>)integrateTemporaryBuffer { return _integrateTemporaryBuffer; }
-- (id<MTLBuffer>)integratePartialBuffer { return _integratePartialBuffer; }
+// アクセサ
 - (id<MTLBuffer>)printBuffer { return _printBuffer; }
-// モーメント配列へのアクセサ
-- (float*)n { return _n; }
-- (float*)ux { return _ux; }
-- (float*)uy { return _uy; }
-- (float*)uz { return _uz; }
-- (float*)Pxx { return _Pxx; }
-- (float*)Pxy { return _Pxy; }
-- (float*)Pxz { return _Pxz; }
-- (float*)Pyy { return _Pyy; }
-- (float*)Pyz { return _Pyz; }
-- (float*)Pzz { return _Pzz; }
+- (id<MTLBuffer>)nBuffer { return _nBuffer; }
+- (id<MTLBuffer>)uxBuffer { return _uxBuffer; }
+- (id<MTLBuffer>)uyBuffer { return _uyBuffer; }
+- (id<MTLBuffer>)uzBuffer { return _uzBuffer; }
+- (id<MTLBuffer>)PxxBuffer { return _PxxBuffer; }
+- (id<MTLBuffer>)PxyBuffer { return _PxyBuffer; }
+- (id<MTLBuffer>)PxzBuffer { return _PxzBuffer; }
+- (id<MTLBuffer>)PyyBuffer { return _PyyBuffer; }
+- (id<MTLBuffer>)PyzBuffer { return _PyzBuffer; }
+- (id<MTLBuffer>)PzzBuffer { return _PzzBuffer; }
 
 @end

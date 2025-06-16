@@ -53,58 +53,49 @@ def plot_values(cycles, arr_values, labels, title="", scale=1.0):
     plt.show()    
 
 if __name__ == '__main__':
-    cycles, tgs1_ics128 = parseXML('tgs1ics128_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, tgs2_ics128 = parseXML('tgs2ics128_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, tgs4_ics128 = parseXML('tgs4ics128_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, tgs8_ics128 = parseXML('tgs8ics128_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, tgs16_ics128 = parseXML('tgs16ics128_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, tgs32_ics128 = parseXML('tgs32ics128_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, tgs64_ics128 = parseXML('tgs64ics128_log.xml', 'elapsedTime', 'integCDens_electron')
-    # cycles, tgs128_ics128 = parseXML('tgs128ics128_log.xml', 'elapsedTime', 'integCDens_electron')
-    timeICDE = [ tgs1_ics128 ,  tgs2_ics128 ,  tgs4_ics128 ,  tgs8_ics128 ,  tgs16_ics128 ,  tgs32_ics128 ,  tgs32_ics128 ,  tgs64_ics128 ]
-    labels =   ["tgs1_ics128", "tgs2_ics128", "tgs4_ics128", "tgs8_ics128", "tgs16_ics128", "tgs32_ics128", "tgs32_ics128", "tgs64_ics128"]
+    cycles, arr1 = parseXML('tgs1_log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, arr2 = parseXML('tgs1_log.xml', 'elapsedTime', 'integCDens_ion_Xe1')
+    cycles, arr3 = parseXML('tgs1_log.xml', 'elapsedTime', 'update_electron')
+    cycles, arr4 = parseXML('tgs1_log.xml', 'elapsedTime', 'update_ion_Xe1')
+    tgs1 = [v1+v2+v3+v4 for v1, v2, v3, v4 in zip(arr1,arr2,arr3,arr4)]
+    cycles, arr1 = parseXML('tgs4_log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, arr2 = parseXML('tgs4_log.xml', 'elapsedTime', 'integCDens_ion_Xe1')
+    cycles, arr3 = parseXML('tgs4_log.xml', 'elapsedTime', 'update_electron')
+    cycles, arr4 = parseXML('tgs4_log.xml', 'elapsedTime', 'update_ion_Xe1')
+    tgs4 = [v1+v2+v3+v4 for v1, v2, v3, v4 in zip(arr1,arr2,arr3,arr4)]
+    cycles, arr1 = parseXML('tgs16_log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, arr2 = parseXML('tgs16_log.xml', 'elapsedTime', 'integCDens_ion_Xe1')
+    cycles, arr3 = parseXML('tgs16_log.xml', 'elapsedTime', 'update_electron')
+    cycles, arr4 = parseXML('tgs16_log.xml', 'elapsedTime', 'update_ion_Xe1')
+    tgs16 = [v1+v2+v3+v4 for v1, v2, v3, v4 in zip(arr1,arr2,arr3,arr4)]
+    cycles, arr1 = parseXML('tgs64_log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, arr2 = parseXML('tgs64_log.xml', 'elapsedTime', 'integCDens_ion_Xe1')
+    cycles, arr3 = parseXML('tgs64_log.xml', 'elapsedTime', 'update_electron')
+    cycles, arr4 = parseXML('tgs64_log.xml', 'elapsedTime', 'update_ion_Xe1')
+    tgs64 = [v1+v2+v3+v4 for v1, v2, v3, v4 in zip(arr1,arr2,arr3,arr4)]
+    cycles, arr1 = parseXML('tgs128_log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, arr2 = parseXML('tgs128_log.xml', 'elapsedTime', 'integCDens_ion_Xe1')
+    cycles, arr3 = parseXML('tgs128_log.xml', 'elapsedTime', 'update_electron')
+    cycles, arr4 = parseXML('tgs128_log.xml', 'elapsedTime', 'update_ion_Xe1')
+    tgs128 = [v1+v2+v3+v4 for v1, v2, v3, v4 in zip(arr1,arr2,arr3,arr4)]
+    cycles, arr1 = parseXML('tgs256_log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, arr2 = parseXML('tgs256_log.xml', 'elapsedTime', 'integCDens_ion_Xe1')
+    cycles, arr3 = parseXML('tgs256_log.xml', 'elapsedTime', 'update_electron')
+    cycles, arr4 = parseXML('tgs256_log.xml', 'elapsedTime', 'update_ion_Xe1')
+    tgs256 = [v1+v2+v3+v4 for v1, v2, v3, v4 in zip(arr1,arr2,arr3,arr4)]
+    timeICDE = [ tgs1 ,  tgs4 ,  tgs16 ,  tgs64 ,  tgs128 ,  tgs256 ]
+    labels =   ["tgs1", "tgs4", "tgs16", "tgs64", "tgs128", "tgs256"]
     plot_values(cycles, timeICDE, labels, "elapsed time [msec]", 1e-3)
     
-    # cycles, tgs1_ics1 = parseXML('tgs1ics1_log.xml', 'elapsedTime', 'integCDens_electron')
-    # cycles, tgs1_ics2 = parseXML('tgs1ics2_log.xml', 'elapsedTime', 'integCDens_electron')
-    # cycles, tgs1_ics4 = parseXML('tgs1ics4_log.xml', 'elapsedTime', 'integCDens_electron')
-    # cycles, tgs1_ics8 = parseXML('tgs1ics8_log.xml', 'elapsedTime', 'integCDens_electron')
-    # cycles, tgs1_ics16 = parseXML('tgs1ics16_log.xml', 'elapsedTime', 'integCDens_electron')
-    # cycles, tgs1_ics32 = parseXML('tgs1ics32_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, tgs1_ics64 = parseXML('tgs1ics64_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, tgs1_ics128 = parseXML('tgs1ics128_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, tgs1_ics256 = parseXML('tgs1ics256_log.xml', 'elapsedTime', 'integCDens_electron')
-    timeICDE = [ tgs1_ics64 ,  tgs1_ics128 ,  tgs1_ics256 ]
-    labels =   ["tgs1_ics64", "tgs1_ics128", "tgs1_ics256"]
-    plot_values(cycles, timeICDE, labels, "elapsed time [msec]", 1e-3)
-    
-    # cycles, tgs2_ics2 = parseXML('tgs2ics2_log.xml', 'elapsedTime', 'integCDens_electron')
-    # cycles, tgs2_ics4 = parseXML('tgs2ics4_log.xml', 'elapsedTime', 'integCDens_electron')
-    # cycles, tgs2_ics8 = parseXML('tgs2ics8_log.xml', 'elapsedTime', 'integCDens_electron')
-    # cycles, tgs2_ics16 = parseXML('tgs2ics16_log.xml', 'elapsedTime', 'integCDens_electron')
-    # cycles, tgs2_ics32 = parseXML('tgs2ics32_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, tgs2_ics64 = parseXML('tgs2ics64_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, tgs2_ics128 = parseXML('tgs2ics128_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, tgs2_ics256 = parseXML('tgs2ics256_log.xml', 'elapsedTime', 'integCDens_electron')
-    timeICDE = [ tgs2_ics64 ,  tgs2_ics128 ,  tgs2_ics256 ]
-    labels =   ["tgs2_ics64", "tgs2_ics128", "tgs2_ics256"]
-    plot_values(cycles, timeICDE, labels, "elapsed time [msec]", 1e-3)
-    
-    cycles, tgs1_ics128 = parseXML('tgs1ics128_log.xml', 'memoryUsage', 'physicalFootprint')
-    cycles, tgs2_ics128 = parseXML('tgs2ics128_log.xml', 'memoryUsage', 'physicalFootprint')
-    cycles, tgs4_ics128 = parseXML('tgs4ics128_log.xml', 'memoryUsage', 'physicalFootprint')
-    cycles, tgs8_ics128 = parseXML('tgs8ics128_log.xml', 'memoryUsage', 'physicalFootprint')
-    cycles, tgs16_ics128 = parseXML('tgs16ics128_log.xml', 'memoryUsage', 'physicalFootprint')
-    cycles, tgs32_ics128 = parseXML('tgs32ics128_log.xml', 'memoryUsage', 'physicalFootprint')
-    timeICDE = [ tgs1_ics128 ,  tgs2_ics128 ,  tgs4_ics128 ,  tgs8_ics128 ,  tgs16_ics128 ,  tgs32_ics128 ]
-    labels =   ["tgs1_ics128", "tgs2_ics128", "tgs4_ics128", "tgs8_ics128", "tgs16_ics128", "tgs32_ics128"]
+    cycles, tgs1 = parseXML('tgs1_log.xml', 'memoryUsage', 'physicalFootprint')
+    cycles, tgs2 = parseXML('tgs2_log.xml', 'memoryUsage', 'physicalFootprint')
+    cycles, tgs4 = parseXML('tgs4_log.xml', 'memoryUsage', 'physicalFootprint')
+    cycles, tgs8 = parseXML('tgs8_log.xml', 'memoryUsage', 'physicalFootprint')
+    cycles, tgs16 = parseXML('tgs16_log.xml', 'memoryUsage', 'physicalFootprint')
+    cycles, tgs32 = parseXML('tgs32_log.xml', 'memoryUsage', 'physicalFootprint')
+    cycles, tgs64 = parseXML('tgs64_log.xml', 'memoryUsage', 'physicalFootprint')
+    timeICDE = [ tgs1 ,  tgs2 ,  tgs4 ,  tgs8 ,  tgs16 ,  tgs32 ,  tgs64 ]
+    labels =   ["tgs1", "tgs2", "tgs4", "tgs8", "tgs16", "tgs32", "tgs64"]
     plot_values(cycles, timeICDE, labels, "memory usage [MB]", 1e-3)
 
-    # cycles, tgs1_ics32 = parseXML('tgs1ics32_log.xml', 'memoryUsage', 'physicalFootprint')
-    cycles, tgs1_ics64 = parseXML('tgs1ics64_log.xml', 'memoryUsage', 'physicalFootprint')
-    cycles, tgs1_ics128 = parseXML('tgs1ics128_log.xml', 'memoryUsage', 'physicalFootprint')
-    cycles, tgs1_ics256 = parseXML('tgs1ics256_log.xml', 'memoryUsage', 'physicalFootprint')
-    timeICDE = [ tgs1_ics64 ,  tgs1_ics128 ,  tgs1_ics256 ]
-    labels =   ["tgs1_ics64", "tgs1_ics128", "tgs1_ics256"]
-    plot_values(cycles, timeICDE, labels, "memory usage [MB]", 1e-3)
 
