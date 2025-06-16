@@ -47,6 +47,7 @@ void outputField(int cycle, EMField* fld, Init* init, XmlLogger& logger){
     // fld クラスの内容を取得
     float* phi = fld.phi;
     float* rho = (float *)[fld.rhoBuffer contents];
+    float* arho = (float *)[fld.atomicRhoBuffer contents];
     float* Ex  = (float *)[fld.ExBuffer  contents]; 
     float* Ey  = (float *)[fld.EyBuffer  contents]; 
     float* Bz  = (float *)[fld.BzBuffer  contents]; 
@@ -68,12 +69,16 @@ void outputField(int cycle, EMField* fld, Init* init, XmlLogger& logger){
     for(int i = 0; i < (nx+1)*(ny+1); i++){
         if (rho[i] < min_rho)       { min_rho = rho[i]; }
         else if(rho[i] > max_rho)   { max_rho = rho[i]; }
+    }
+    for(int i = 0; i < (nx+2)*(ny+1); i++){
         if (Ex[i] < min_Ex)         { min_Ex = Ex[i]; }
         else if(Ex[i] > max_Ex)     { max_Ex = Ex[i]; }
+    }
+    for(int i = 0; i < (nx+1)*(ny+2); i++){
         if (Ey[i] < min_Ey)         { min_Ey = Ey[i]; }
         else if(Ey[i] > max_Ey)     { max_Ey = Ey[i]; }
     }
-    for(int i = 0; i < (nx+2)*(ny+2); i++){
+    for(int i = 0; i < (nx+3)*(ny+3); i++){
         if (phi[i] < min_phi)       { min_phi = phi[i]; }
         else if(phi[i] > max_phi)   { max_phi = phi[i]; }
     }
@@ -105,7 +110,8 @@ void outputField(int cycle, EMField* fld, Init* init, XmlLogger& logger){
     
     // フィールドデータを書き出す: name,type,array
     writeField(fp, "rho", 0, rho, (nx+1)*(ny+1), 1.0f);
-    writeField(fp, "phi", 4, phi, (nx+2)*(ny+2), sVtoV);
+    writeField(fp, "arho", 0, arho, (nx+1)*(ny+1), 1.0f);
+    writeField(fp, "phi", 4, phi, (nx+3)*(ny+3), sVtoV);
     writeField(fp, "Ex", 1, Ex, (nx+2)*(ny+1), GtoV);
     writeField(fp, "Ey", 2, Ey, (nx+1)*(ny+2), GtoV);
     writeField(fp, "Bz", 3, Bz, (nx+2)*(ny+2), GtoT);

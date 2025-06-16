@@ -6,13 +6,13 @@
   },
   "ParamForTimeIntegration": {
     "Start":            0,
-    "End":              1000,
+    "End":              200,
     "TimeStep":         5e-12,
     "LogOutput":        1,
     "ParticleOutput":   0,
-    "FieldOutput":      0,
+    "FieldOutput":      100,
     "ProgressOutput":   0,
-    "ProjectName":      "org"
+    "ProjectName":      "atomic"
   },
   "ParamForComputing": {
     "MaximumParticleNumber":  20000000,
@@ -38,7 +38,7 @@
     {
       "ParticleName":       "electron",
       "pNumSetMethod":      "PtclNumPerCell",
-      "pNumValue":          20,
+      "pNumValue":          100,
       "Charge":             -4.803204197e-10,
       "Mass":               9.10938188e-28,
       "WeightSetMethod":    "InitialNumDens",
@@ -49,7 +49,7 @@
     {
       "ParticleName":       "ion_Xe1",
       "pNumSetMethod":      "PtclNumPerCell",
-      "pNumValue":          20,
+      "pNumValue":          100,
       "Charge":             4.803204197e-10,
       "Mass":               2.1801714e-22,
       "WeightSetMethod":    "InitialNumDens",

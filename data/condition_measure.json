@@ -6,13 +6,13 @@
   },
   "ParamForTimeIntegration": {
     "Start":            0,
-    "End":              1000,
+    "End":              200,
     "TimeStep":         5e-12,
-    "LogOutput":        1,
+    "LogOutput":        100,
     "ParticleOutput":   0,
     "FieldOutput":      0,
     "ProgressOutput":   0,
-    "ProjectName":      "org"
+    "ProjectName":      "measure_private"
   },
   "ParamForComputing": {
     "MaximumParticleNumber":  20000000,

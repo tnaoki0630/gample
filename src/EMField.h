@@ -11,6 +11,7 @@
 - (void)outputCSRmtx:(int)n row:(std::vector<int>)row_ptr collumn:(std::vector<int>)col_idx value:(std::vector<float>)val;
 - (void)solvePoisson:(XmlLogger&)logger;
 - (void)resetChargeDensity;
+- (void)checkChargeDensity;
 - (bool)load1dField:(std::vector<float>&)field withFilePath:(NSString*)filePath;
 - (bool)load2dField:(std::vector<float>&)field withFilePath:(NSString*)filePath;
 
@@ -18,6 +19,7 @@
 - (float*)phi;
 // Metal バッファへのアクセサ
 - (id<MTLBuffer>)rhoBuffer;
+- (id<MTLBuffer>)atomicRhoBuffer;
 - (id<MTLBuffer>)ExBuffer;
 - (id<MTLBuffer>)EyBuffer;
 - (id<MTLBuffer>)EzBuffer;

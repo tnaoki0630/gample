@@ -1,4 +1,4 @@
- #import "Particle.h"
+#import "Particle.h"
 #import "Init.h"
 #import "Constant.h"
 #import <random>
@@ -218,14 +218,11 @@ kernel void integrateChargeDensity(
     float sf[6][2];
     int ii, jj;
 
-    float max = -1.0;
-    float min = 10000;
-
     // 積分ループ
     for (uint idx = 0; idx < prm.ppt; idx++){
         
         uint pid = idx + gid*prm.ppt;
-        if (pid > prm.pNum) {
+        if (pid >= prm.pNum) {
             // pNum を超えたら積分処理をスキップ
             break;
         }
@@ -236,18 +233,6 @@ kernel void integrateChargeDensity(
         // electro-magnetic field on each ptcl
         i1 = int(p.x);
         j1 = int(p.y);
-
-        // 桁落ちによる配列外参照を防止 //
-        if (i1 < prm.ngb){
-            i1 = prm.ngb;
-        }else if (i1 > prm.ngx+prm.ngb){
-            i1 = prm.ngx+prm.ngb;
-        }
-        if (j1 < prm.ngb){
-            j1 = prm.ngb;
-        }else if (j1 > prm.ngy+prm.ngb){
-            j1 = prm.ngy+prm.ngb;
-        }
 
         hv[0] = p.x - float(i1);
         hv[1] = p.y - float(j1);
@@ -305,8 +290,64 @@ kernel void integrateChargeDensity(
         }
     }
 
-    // print[gid] = min;
+}
+
+// 電荷密度更新カーネル
+kernel void integrateChargeDensity_atomic(
+                        device ParticleState* ptcl          [[ buffer(0) ]],
+                        constant integrationParams& prm     [[ buffer(1) ]],
+                        device atomic_float* rho            [[ buffer(2) ]],
+                        device float* print                 [[ buffer(3) ]],
+                        constant float& constRho            [[ buffer(4) ]],
+                        uint gid                            [[ thread_position_in_grid ]]
+                        ) {
     
+    // 粒子数を超えたらスキップ
+    if(gid >= prm.pNum) return;
+
+    // 変数定義
+    const int nx = prm.ngx + 2*prm.ngb;
+    const int ny = prm.ngy + 2*prm.ngb;
+    const int ng = (nx+1)*(ny+1);
+    int i1, j1;
+    float hv[2];
+    float sc;
+    float sf[6][2];
+    int ii, jj;
+
+    // 粒子を取得
+    device ParticleState& p = ptcl[gid];
+
+    // electro-magnetic field on each ptcl
+    i1 = int(p.x);
+    j1 = int(p.y);
+    hv[0] = p.x - float(i1);
+    hv[1] = p.y - float(j1);
+    
+    // 5th-order weighting
+    for (int i = 0; i < 2; i++) {
+        sc = 2.0 + hv[i];
+        sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
+        sc = 1.0 + hv[i];
+        sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+        sc = hv[i];
+        sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+        sc = 1.0 - hv[i];
+        sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+        sc = 2.0 - hv[i];
+        sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+        sc = 3.0 - hv[i];
+        sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
+    }
+
+    // accumulation
+    for (int i = 0; i < 6; i++) {
+        for (int j = 0; j < 6; j++) {
+            ii = i1+(i-prm.ngb);
+            jj = j1+(j-prm.ngb);
+            atomic_fetch_add_explicit(&(rho[ii+jj*(nx+1)]), sf[i][0]*sf[j][1]*constRho, memory_order_relaxed);
+        }
+    }
 }
 )";
 
@@ -367,6 +408,8 @@ kernel void integrateChargeDensity(
         _updateParticlesPipeline = [device newComputePipelineStateWithFunction:updateParticlesFunction error:&error];
         id<MTLFunction> integrateChargeDensityFunction = [library newFunctionWithName:@"integrateChargeDensity"];
         _integrateChargeDensityPipeline = [device newComputePipelineStateWithFunction:integrateChargeDensityFunction error:&error];
+        id<MTLFunction> integrateChargeDensityFunction_atomic = [library newFunctionWithName:@"integrateChargeDensity_atomic"];
+        _integrateChargeDensityPipeline_atomic = [device newComputePipelineStateWithFunction:integrateChargeDensityFunction_atomic error:&error];
         
         // バッファサイズ
         size_t buffSize;
@@ -699,6 +742,41 @@ kernel void integrateChargeDensity(
             rho[i] += partialSums[i + j*ng]*constRho;
         }
     }
+
+};
+
+- (void)integrateChargeDensity_atomic:(EMField*)fld withMoment:(Moment*)mom withLogger:(XmlLogger&)logger{
+    // obtain buffer
+    id<MTLBuffer> rhoBuffer = [fld atomicRhoBuffer];
+    id<MTLBuffer> printBuffer = [mom printBuffer];
+    
+    // constant
+    float constRho = _q * _w / (fld.dx * fld.dy);   // constant weight and chargedensity
+    id<MTLBuffer> constRhoBuffer = [_device newBufferWithBytes:&constRho length:sizeof(float) options:MTLResourceStorageModeShared];
+
+    // コマンドバッファとエンコーダの作成
+    id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
+    id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
+    
+    // パイプラインとバッファの設定
+    [computeEncoder setComputePipelineState:_integrateChargeDensityPipeline_atomic];
+    [computeEncoder setBuffer:_particleBuffer           offset:0 atIndex:0];
+    [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
+    [computeEncoder setBuffer:rhoBuffer                 offset:0 atIndex:2];
+    [computeEncoder setBuffer:printBuffer               offset:0 atIndex:3];
+    [computeEncoder setBuffer:constRhoBuffer            offset:0 atIndex:4];
+
+    // グリッドとスレッドグループのサイズ設定
+    SimulationParams* prm = (SimulationParams*)[_paramsBuffer contents];
+    uint threadGroupNum = (prm->pNum + _threadGroupSize - 1) / _threadGroupSize;
+    MTLSize gridSizeMetalStyle = MTLSizeMake(threadGroupNum, 1, 1);
+    MTLSize threadGroupSize = MTLSizeMake(_threadGroupSize, 1, 1);
+
+    // ディスパッチ/エンコーディング/実行
+    [computeEncoder dispatchThreadgroups:gridSizeMetalStyle threadsPerThreadgroup:threadGroupSize];
+    [computeEncoder endEncoding];
+    [commandBuffer commit];
+    [commandBuffer waitUntilCompleted];
 
 };
 

@@ -62,10 +62,9 @@ def plot_variable_from_xml(xml_file, section_name, tag_name, ):
     if tag_name.lower() == 'all':
         for tn in tag_names:
             plt.plot(cycle_ids, tag_values[tn], label=tn)
-        plt.legend()
         plt.ylabel('Value')
     else:
-        plt.plot(cycle_ids, values)
+        plt.plot(cycle_ids, values, label=tag_name)
         plt.ylabel(tag_name)
     plt.legend(loc='lower right')
     plt.xlabel('Cycle ID')
