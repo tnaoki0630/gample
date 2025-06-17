@@ -43,6 +43,7 @@ main
 *.bin
 *.zip
 *_log.xml
+log_cp.xml
 
 # debug directory
 gample_xcode/

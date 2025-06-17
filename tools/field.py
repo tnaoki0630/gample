@@ -98,9 +98,9 @@ def plotField1dx(field, title, figname, type_id, j):
 
 if __name__ == '__main__':
 
-    cycle = 200
-    filename = f"bin/org_EMField_{cycle:08}.bin"
-    #filename = f"bin/org_Moments_electron_{cycle:08}.bin"
+    cycle = 280000
+    #filename = f"bin/long_EMField_{cycle:08}.bin"
+    filename = f"bin/org_Moments_electron_{cycle:08}.bin"
     #filename = f"bin/org_Moments_ion_Xe1_{cycle:08}.bin"
 
     with open(filename, 'rb') as f:
@@ -146,6 +146,6 @@ if __name__ == '__main__':
     # プロット
     for name, type_id, arr in fields:
         print(f"{name}: type_id={type_id}, shape={arr.shape}, min={arr.min()}, max={arr.max()}")
-        plotField2d(arr, name, f"fig/{name}_wBuff.png" , type_id , True)
+        #plotField2d(arr, name, f"fig/{name}_wBuff.png" , type_id , True)
         plotField2d(arr, name, f"fig/{name}.png" , type_id , False)
         plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)

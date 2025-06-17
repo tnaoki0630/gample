@@ -492,32 +492,32 @@ kernel void integrateChargeDensity(
     [commandBuffer waitUntilCompleted];
 
     // デバッグ出力
-    ParticleState* p = (ParticleState*)[_particleBuffer contents];
-    float* prt = (float*)printBuffer.contents;
-    float min_x = 1e20, max_x = -1e20;
-    float min_y = 1e20, max_y = -1e20;
-    float min_e = 1e20, max_e = -1e20;
-    float min = 1e20, max = -1e20;
-    for (int idx = 0; idx < prm->pNum; idx++){
-        // if(p[idx].piflag == 0){
-            // debug print
-            if (min > prt[idx]){ min = prt[idx]; }
-            if (max < prt[idx]){ max = prt[idx]; }
-            // // position
-            // if (min_x > p[idx].x){ min_x = p[idx].x; }
-            // if (max_x < p[idx].x){ max_x = p[idx].x; }
-            // if (min_y > p[idx].y){ min_y = p[idx].y; }
-            // if (max_y < p[idx].y){ max_y = p[idx].y; }
-            // // energy
-            // if (min_e > p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz){ 
-            //     min_e = p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz; 
-            // }
-            // if (max_e < p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz){ 
-            //     max_e = p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz; 
-            // }
-        // }
-    }
-    NSLog(@"debug print(%@): pNum = %d, min = %e, max = %e", _pName, prm->pNum, min, max);
+    // ParticleState* p = (ParticleState*)[_particleBuffer contents];
+    // float* prt = (float*)printBuffer.contents;
+    // float min_x = 1e20, max_x = -1e20;
+    // float min_y = 1e20, max_y = -1e20;
+    // float min_e = 1e20, max_e = -1e20;
+    // float min = 1e20, max = -1e20;
+    // for (int idx = 0; idx < prm->pNum; idx++){
+    //     // if(p[idx].piflag == 0){
+    //         // debug print
+    //         if (min > prt[idx]){ min = prt[idx]; }
+    //         if (max < prt[idx]){ max = prt[idx]; }
+    //         // // position
+    //         // if (min_x > p[idx].x){ min_x = p[idx].x; }
+    //         // if (max_x < p[idx].x){ max_x = p[idx].x; }
+    //         // if (min_y > p[idx].y){ min_y = p[idx].y; }
+    //         // if (max_y < p[idx].y){ max_y = p[idx].y; }
+    //         // // energy
+    //         // if (min_e > p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz){ 
+    //         //     min_e = p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz; 
+    //         // }
+    //         // if (max_e < p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz){ 
+    //         //     max_e = p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz; 
+    //         // }
+    //     // }
+    // }
+    // NSLog(@"debug print(%@): pNum = %d, min = %e, max = %e", _pName, prm->pNum, min, max);
 
 }
 
