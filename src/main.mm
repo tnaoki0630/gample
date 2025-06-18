@@ -54,16 +54,23 @@ int main(int argc, const char * argv[]) {
         // 初期化パラメータクラス作成
         Init *init = [[Init alloc] parseInputFile:inputPath];
 
+        // YYYYMMDDhhmmss を取得
+        auto now = std::chrono::system_clock::now();
+        auto nowt = std::chrono::system_clock::to_time_t(now);
+        std::tm tm = *std::localtime(&nowt);
+        std::ostringstream oss;
+        oss << std::put_time(&tm, "%Y%m%d%H%M%S");
+        std::string timestamp = oss.str();
+
         // logger の作成
         struct ParamForTimeIntegration timeParam = init.paramForTimeIntegration;
-        XmlLogger logger([[NSString stringWithFormat:@"%@_log.xml", timeParam.ProjectName] UTF8String]);
-
+        XmlLogger logger([[NSString stringWithFormat:@"%@_%s_log.xml", timeParam.ProjectName, timestamp.c_str()] UTF8String]);
+        
         // パース結果の出力(debugprint.mm)
         printInitContents(init, logger);
 
-        struct FlagForEquation EqFlags = init.flagForEquation;
-
         // 粒子クラスの初期化
+        struct FlagForEquation EqFlags = init.flagForEquation;
         NSMutableArray *ptclArr = [NSMutableArray arrayWithCapacity:EqFlags.Particle];
         for (int s = 0; s < EqFlags.Particle; s++) {
             Particle *ptcl = [[Particle alloc] initWithDevice:device withParam:init specimen:s withLogger:logger];

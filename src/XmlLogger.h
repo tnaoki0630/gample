@@ -1,9 +1,9 @@
 #pragma once
 
-#include <fstream>
-#include <sstream>
-#include <map>
-#include <string>
+#import <fstream>
+#import <sstream>
+#import <map>
+#import <string>
 
 class XmlLogger {
 public:

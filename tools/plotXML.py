@@ -61,7 +61,8 @@ def plot_variable_from_xml(xml_file, section_name, tag_name, ):
     plt.figure()
     if tag_name.lower() == 'all':
         for tn in tag_names:
-            plt.plot(cycle_ids, tag_values[tn], label=tn)
+            # 粒子数は桁が違いすぎるので除外
+            if tn != "particleNumber": plt.plot(cycle_ids, tag_values[tn], label=tn)
         plt.ylabel('Value')
     else:
         plt.plot(cycle_ids, values, label=tag_name)
@@ -81,6 +82,8 @@ if __name__ == '__main__':
     plot_variable_from_xml('log_cp.xml', 'injection_electron', 'all')
     plot_variable_from_xml('log_cp.xml', 'flowout_ion_Xe1', 'all')
     plot_variable_from_xml('log_cp.xml', 'flowout_electron', 'all')
+    plot_variable_from_xml('log_cp.xml', 'flowout_ion_Xe1', 'particleNumber')
+    plot_variable_from_xml('log_cp.xml', 'flowout_electron', 'particleNumber')
     plot_variable_from_xml('log_cp.xml', 'solvePoisson', 'meanCathode')
     plot_variable_from_xml('log_cp.xml', 'solvePoisson', 'iteration')
     plot_variable_from_xml('log_cp.xml', 'memoryUsage', 'all')

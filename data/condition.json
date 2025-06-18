@@ -8,9 +8,9 @@
     "Start":            0,
     "End":              20,
     "TimeStep":         5e-12,
-    "LogOutput":        100,
+    "LogOutput":        1,
     "ParticleOutput":   0,
-    "FieldOutput":      10000,
+    "FieldOutput":      20,
     "ProgressOutput":   50000,
     "ProjectName":      "org"
   },

@@ -42,8 +42,8 @@ main
 *.vtp
 *.bin
 *.zip
-*_log.xml
-log_cp.xml
+*.xml
+bin/
 
 # debug directory
 gample_xcode/

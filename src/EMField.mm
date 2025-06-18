@@ -608,7 +608,7 @@ typedef amgcl::make_solver<
             isTop = (j > _ngb+1+_ngy);
         }
 
-        for (int i = 0; i <= _nx+1; ++i) {
+        for (int i = 0; i <= _nx+2; ++i) {
             // Ex11[0:2,0:1]
             if ([_BC_Xmin isEqualToString:@"Dirichlet"]){
                 isLeft = (i <= _ngb+1);
