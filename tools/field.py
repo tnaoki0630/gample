@@ -123,9 +123,9 @@ def plotField1dx(field, title, figname, type_id, j):
 
     # プロット
     fig, ax = plt.subplots()
-    ax.plot(x[0:nx+1], field[j, 0:nx+1], label = "j = "+str(j))
-    ax.plot(x[0:nx+1], field[j+1, 0:nx+1], label = "j = "+str(j+1))
-    ax.plot(x[0:nx+1], field[j+2, 0:nx+1], label = "j = "+str(j+2))
+    ax.plot(x[0:mesh["ngx"]+mesh["ngb"]+buff+1], field[j, 0:mesh["ngx"]+mesh["ngb"]+buff+1], label = "j = "+str(j))
+    ax.plot(x[0:mesh["ngx"]+mesh["ngb"]+buff+1], field[j+1, 0:mesh["ngx"]+mesh["ngb"]+buff+1], label = "j = "+str(j+1))
+    ax.plot(x[0:mesh["ngx"]+mesh["ngb"]+buff+1], field[j+2, 0:mesh["ngx"]+mesh["ngb"]+buff+1], label = "j = "+str(j+2))
     ax.legend(loc=1)
     ax.set_xlabel('x (units)')
     ax.set_ylabel('y (units)')
@@ -204,9 +204,9 @@ def save_field_video(
 
 if __name__ == '__main__':
 
-    cycle = 20
-    mesh, fields = getField(f"bin/org_EMField_{cycle:08}.bin")
-    # mesh, fields = getField(f"bin/long_Moments_ion_Xe1_{cycle:08}.bin")
+    cycle = 20000
+    mesh, fields = getField(f"bin/long_EMField_{cycle:08}.bin")
+    mesh, fields = getField(f"bin/long_Moments_ion_Xe1_{cycle:08}.bin")
 
     print(f"Mesh info: ngx={mesh["ngx"]}, ngy={mesh["ngy"]}, ngb={mesh["ngb"]}, dx={mesh["dx"]}, dy={mesh["dy"]}")
     nx = mesh["ngx"]+2*mesh["ngb"]
