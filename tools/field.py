@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FFMpegWriter
+import sys
 
 def getField(filename):
     with open(filename, 'rb') as f:
@@ -134,46 +135,56 @@ def plotField1dx(field, title, figname, type_id, j):
     # メッシュの描画
     ax.axvline(0, color='gray', linestyle=':', linewidth=0.5)
     ax.axvline(mesh["ngx"]*mesh["dx"], color='gray', linestyle=':', linewidth=0.5)
+    ax.axvline(2.4, color='gray', linestyle=':', linewidth=0.5) ## cathodeline
     fig.tight_layout()
     # fig.savefig(figname)
     # plt.close(fig)
     plt.show()
 
 def save_field_video(
-    bin_pattern="bin/long_Moments_ion_Xe1_{cycle:08}.bin",
-    name="ion_Xe1_n",
+    bin_pattern="bin/long_Moments_electron_{cycle:08}.bin",
+    name="electron",
+    unit="[-]",
     type_id=0,
-    dtoutput=10000,
-    Sframe=1,
-    Eframe=2,
+    dtoutput=1,
+    Sframe=0,
+    Eframe=1,
     outfile="ion_Xe1_n.mp4",
+    cbar_vmin=None,
+    cbar_vmax=None,
     fps=5,
     dpi=150
 ):
     """
     bin_pattern : 読み込みファイル名のフォーマット文字列（cycle を受け取る）
-    name        : fields 内で一致させるフィールド名
+    name        : 変数名
+    unit        : 単位
     type_id     : 同じく型 ID
     dtoutput    : ファイル名の cycle 間隔
     Sframe      : 開始フレーム
     Eframe      : 終了フレーム
     outfile     : 出力動画ファイル名
+    cbar_vmin   : カラーバーの最小値（None の場合は最初のフレームから自動設定）
+    cbar_vmax   : カラーバーの最大値（None の場合は最初のフレームから自動設定）
     fps         : 動画のフレームレート
     dpi         : 出力解像度
     """
-    # 最初のフレームでメッシュとデータを取得し、範囲とカラー軸を決める
-    mesh0, fields0 = getField(bin_pattern.format(cycle=Sframe*dtoutput))
+    # 最初のフレーム読み込み
+    mesh0, fields0 = getField(bin_pattern.format(cycle=Sframe))
     arr0 = next(arr for nm, tid, arr in fields0 if nm == name and tid == type_id)
+
+    # カラーバー範囲を決定
+    vmin = arr0.min() if cbar_vmin is None else cbar_vmin
+    vmax = arr0.max() if cbar_vmax is None else cbar_vmax
+    # ゼロ中心ならbwr, それ以外ならplasma
+    cmap = 'bwr' if abs(vmin+vmax) < 1e-20 else 'plasma'
 
     ngb, dx, dy = mesh0["ngb"], mesh0["dx"], mesh0["dy"]
     buff = ngb + 1 if type_id == 4 else ngb
     nrows, ncols = arr0.shape
 
-    # ピクセル中心座標をそのまま格子間隔 dx,dy として仮定
     xmin, xmax = -buff * dx, -buff * dx + dx * (ncols - 1)
     ymin, ymax = -buff * dy, -buff * dy + dy * (nrows - 1)
-
-    vmin, vmax = arr0.min(), arr0.max()
 
     fig, ax = plt.subplots()
     im = ax.imshow(
@@ -183,30 +194,32 @@ def save_field_video(
         vmin=vmin,
         vmax=vmax,
         interpolation="nearest",
+        cmap=cmap,
     )
     ax.set_title(name)
-    fig.colorbar(im, ax=ax, label=name)
+    cbar = fig.colorbar(im, ax=ax, label=name+" "+unit, shrink=0.6)
 
     writer = FFMpegWriter(fps=fps, metadata={"title": name})
     with writer.saving(fig, outfile, dpi=dpi):
-        for i in range(Sframe, Eframe):
-            cycle = i * dtoutput
+        for cycle in range(Sframe, Eframe+dtoutput, dtoutput):
             mesh, fields = getField(bin_pattern.format(cycle=cycle))
             arr = next(arr for nm, tid, arr in fields if nm == name and tid == type_id)
 
             im.set_data(arr)
-            # 必要なら軸やタイトルを更新
-            ax.set_title(f"{name}  cycle={cycle}")
+            ax.set_title(f'{name}: time = {int(cycle*5e-3)} [ns]')
             writer.grab_frame()
 
     plt.close(fig)
     print(f"Saved video to {outfile}")
 
 if __name__ == '__main__':
+    args = sys.argv
 
-    cycle = 20000
+    cycle = 400000
+    # 引数が数字なら対象サイクルを更新
+    if args[1].isdigit(): cycle = int(args[1])
     mesh, fields = getField(f"bin/long_EMField_{cycle:08}.bin")
-    mesh, fields = getField(f"bin/long_Moments_ion_Xe1_{cycle:08}.bin")
+    #mesh, fields = getField(f"bin/long_Moments_electron_{cycle:08}.bin")
 
     print(f"Mesh info: ngx={mesh["ngx"]}, ngy={mesh["ngy"]}, ngb={mesh["ngb"]}, dx={mesh["dx"]}, dy={mesh["dy"]}")
     nx = mesh["ngx"]+2*mesh["ngb"]
@@ -219,5 +232,16 @@ if __name__ == '__main__':
         plotField2d(arr, name, f"fig/{name}.png" , type_id , False)
         plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
 
-    # 動画保存
-    # save_field_video("bin/long_Moments_ion_Xe1_{cycle:08}.bin", "ion_Xe1_n", 0, 10000, 1, 47, "long_ion_Xe1_n.mp4")
+    # 動画保存(開始フレーム、最終フレームを数字で受け取り動画保存)
+    if (len(args)==3):
+        dt = 10000
+        start = int(args[2])
+        end = int(args[1])
+        save_field_video("bin/long_Moments_electron_{cycle:08}.bin" ,"electron_n"   ,"[1/cm3]"  ,0,dt,start,end ,"fig/long_electron_n.mp4"  ,cbar_vmin=0    ,cbar_vmax=3e11)
+        save_field_video("bin/long_Moments_electron_{cycle:08}.bin" ,"electron_uy"  ,"[cm/s]"   ,0,dt,start,end ,"fig/long_electron_uy.mp4" ,cbar_vmin=-1e9 ,cbar_vmax=1e9)
+        save_field_video("bin/long_Moments_electron_{cycle:08}.bin" ,"electron_ux"  ,"[cm/s]"   ,0,dt,start,end ,"fig/long_electron_ux.mp4" ,cbar_vmin=-1e9 ,cbar_vmax=1e9)
+        save_field_video("bin/long_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_n"    ,"[1/cm3]"  ,0,dt,start,end ,"fig/long_ion_Xe1_n.mp4"   ,cbar_vmin=0    ,cbar_vmax=3e11)
+        save_field_video("bin/long_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_ux"   ,"[cm/s]"   ,0,dt,start,end ,"fig/long_ion_Xe1_ux.mp4"  ,cbar_vmin=-1e7 ,cbar_vmax=1e7)
+        save_field_video("bin/long_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_uy"   ,"[cm/s]"   ,0,dt,start,end ,"fig/long_ion_Xe1_uy.mp4"  ,cbar_vmin=-1e6 ,cbar_vmax=1e6)
+        save_field_video("bin/long_EMField_{cycle:08}.bin"          ,"Ex"           ,"[V/m]"    ,1,dt,start,end ,"fig/long_Ex.mp4"          ,cbar_vmin=-1e5 ,cbar_vmax=1e5)
+        save_field_video("bin/long_EMField_{cycle:08}.bin"          ,"Ey"           ,"[V/m]"    ,2,dt,start,end ,"fig/long_Ey.mp4"          ,cbar_vmin=-1e5 ,cbar_vmax=1e5)
