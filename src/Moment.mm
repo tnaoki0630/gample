@@ -26,6 +26,9 @@ struct integrationParams {
     float scale;
 };
 
+// Function Constants
+constant int weightOrder   [[function_constant(0)]];
+
 // モーメント計算カーネル
 kernel void integrateMoments(
                         device ParticleState* ptcl          [[ buffer(0) ]],
@@ -75,23 +78,30 @@ kernel void integrateMoments(
     
     // 5th-order weighting
     for (int i = 0; i < 2; i++) {
-        sc = 2.0 + hv[i];
-        sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
-        sc = 1.0 + hv[i];
-        sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-        sc = hv[i];
-        sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-        sc = 1.0 - hv[i];
-        sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-        sc = 2.0 - hv[i];
-        sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-        sc = 3.0 - hv[i];
-        sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
+        // 1st-order weighting
+        if (weightOrder == 1){
+            sf[0][i] = hv[i];
+            sf[1][i] = 1.0 - hv[i];
+        // 5th-order weighting
+        } else if (weightOrder == 5){
+            sc = 2.0 + hv[i];
+            sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
+            sc = 1.0 + hv[i];
+            sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+            sc = hv[i];
+            sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+            sc = 1.0 - hv[i];
+            sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+            sc = 2.0 - hv[i];
+            sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+            sc = 3.0 - hv[i];
+            sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
+        }
     }
 
     // accumulation
-    for (int i = 0; i < 6; i++) {
-        for (int j = 0; j < 6; j++) {
+    for (int i = 0; i < weightOrder+1; i++) {
+        for (int j = 0; j < weightOrder+1; j++) {
             ii = i1+(i-prm.ngb);
             jj = j1+(j-prm.ngb);
             idx_out = ii+jj*(nx+1);
@@ -137,8 +147,13 @@ kernel void integrateMoments(
             return nil;
         }
 
-        // カーネルの取得
-        id<MTLFunction> integrateFunction = [library newFunctionWithName:@"integrateMoments"];
+        // constant 引数付きでカーネルを生成
+        MTLFunctionConstantValues *fc = [[MTLFunctionConstantValues alloc] init];
+        int wo = fieldParam.weightOrder;
+        [fc setConstantValue:&wo type:MTLDataTypeInt atIndex:0];
+
+        // 引数付きでカーネルを作成
+        id<MTLFunction> integrateFunction = [library newFunctionWithName:@"integrateMoments" constantValues:fc error:&error];
         _integrateMomentsPipeline = [device newComputePipelineStateWithFunction:integrateFunction error:&error];
 
         // 定数パラメータ格納バッファ

@@ -10,7 +10,7 @@
     "TimeStep":         5e-12,
     "LogOutput":        1,
     "ParticleOutput":   0,
-    "FieldOutput":      0,
+    "FieldOutput":      200,
     "ProgressOutput":   0,
     "ProjectName":      "large4_light",
     "RestartName":      "large4_light"
