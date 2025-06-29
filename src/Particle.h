@@ -41,6 +41,7 @@ struct SimulationParams {
         int ngx;
         int ngy;
         int ngb;
+        float constRho;
 };
 
 @interface Particle : NSObject

@@ -41,6 +41,7 @@ struct SimulationParams {
     int ngx;
     int ngy;
     int ngb;
+    float constRho;
 };
 
 // 積分計算用構造体
@@ -69,21 +70,28 @@ kernel void updateParticles(
                         device const float* Bx              [[ buffer(5) ]],
                         device const float* By              [[ buffer(6) ]],
                         device const float* Bz              [[ buffer(7) ]],
-                        device float* print                 [[ buffer(8) ]],
+                        device atomic_float* rho            [[ buffer(8) ]],
+                        device float* print                 [[ buffer(9) ]],
                         uint id                             [[ thread_position_in_grid ]]
                         ) {
+    // check particle count
     if (id >= prm.pNum) return;
     
     // get particle
     device ParticleState& p = ptcl[id];
 
-    // electro-magnetic field on each ptcl
+    ////////////////////////////////
+    // push
+    ////////////////////////////////
+    
+    // search nearest grid
     float xh = p.x - 0.5;
     float yh = p.y - 0.5;
     int i1 = int(xh);
     int j1 = int(p.y);
     int i2 = int(p.x);
     int j2 = int(yh);
+
     // protect
     if (i1 < prm.ngb-1) i1 = prm.ngb-1;
     if (i1 > prm.ngb-1+prm.ngx) i1 = prm.ngb-1+prm.ngx;
@@ -94,7 +102,8 @@ kernel void updateParticles(
     if (j2 < prm.ngb-1) j2 = prm.ngb-1;
     if (j2 > prm.ngb-1+prm.ngy) j2 = prm.ngb-1+prm.ngy;
 
-    float hv[2][2] ;
+    // weighting
+    float hv[2][2];
     hv[0][0] = xh  - float(i1);
     hv[0][1] = p.y - float(j1);
     hv[1][0] = p.x - float(i2);
@@ -187,82 +196,57 @@ kernel void updateParticles(
         p.y = fmod(p.y + float(prm.ngy - prm.ngb), float(prm.ngy)) + float(prm.ngb);
     }
 
+    // update nearest grid for boundary and deposition
+    i1 = int(p.x);
+    j1 = int(p.y);
+
     // delete boundary
     if (BC_Xmin == 1){
-        if(int(p.x) < prm.ngb){
+        if(i1 < prm.ngb){
             p.piflag = 1;
         }
     }
     if (BC_Xmax == 1){
-        if(int(p.x) > prm.ngb+prm.ngx){
+        if(i1 > prm.ngb+prm.ngx){
             p.piflag = 2;
         }
     }
     if (BC_Ymin == 1){
-        if(int(p.y) < prm.ngb){
+        if(j1 < prm.ngb){
             p.piflag = 3;
         }
     }
     if (BC_Ymax == 1){
-        if(int(p.y) > prm.ngb+prm.ngy){
+        if(j1 > prm.ngb+prm.ngy){
             p.piflag = 4;
         }
     }
 
-}
+    // skip spilled particles
+    if (p.piflag != 0) return;
 
-// 電荷密度更新カーネル
-kernel void integrateChargeDensity(
-                        device ParticleState* ptcl          [[ buffer(0) ]],
-                        constant integrationParams& prm     [[ buffer(1) ]],
-                        device atomic_float* rho            [[ buffer(2) ]],
-                        device float* print                 [[ buffer(3) ]],
-                        uint gid                            [[ thread_position_in_grid ]]
-                        ) {
+    ////////////////////////////////
+    // deposition
+    ////////////////////////////////
     
-    // 粒子数を超えたらスキップ
-    if(gid >= prm.pNum) return;
-
-    // 変数定義
-    const int nx = prm.ngx + 2*prm.ngb;
-    const int ny = prm.ngy + 2*prm.ngb;
-    const int ng = (nx+1)*(ny+1);
-    int i1, j1;
-    float hv[2];
-    float sc;
-    float sf[6][2];
-    int ii, jj;
-
-    // 粒子を取得
-    device ParticleState& p = ptcl[gid];
-
-    // electro-magnetic field on each ptcl
-    i1 = int(p.x);
-    j1 = int(p.y);
-
-    // protect
-    if (i1 < prm.ngb-1) i1 = prm.ngb-1;
-    if (i1 > prm.ngb-1+prm.ngx) i1 = prm.ngb-1+prm.ngx;
-    if (j1 < prm.ngb) j1 = prm.ngb;
-    if (j1 >= prm.ngb+prm.ngy) j1 = prm.ngb+prm.ngy-1;
-    
-    hv[0] = p.x - float(i1);
-    hv[1] = p.y - float(j1);
+    // weighting
+    hv[0][0] = p.x - float(i1);
+    hv[0][1] = p.y - float(j1);
     
     // 5th-order weighting
-    for (int i = 0; i < 2; i++) {
-        sc = 2.0 + hv[i];
-        sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
-        sc = 1.0 + hv[i];
-        sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-        sc = hv[i];
-        sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-        sc = 1.0 - hv[i];
-        sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-        sc = 2.0 - hv[i];
-        sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-        sc = 3.0 - hv[i];
-        sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
+    for (int j = 0; j < 2; j++) {
+        sc = 2.0 + hv[0][j];
+        sf[0][0][j] = 1.0/120.0 *pow(3.0-sc, 5);
+        sc = 1.0 + hv[0][j];
+        sf[1][0][j] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+        sc = hv[0][j];
+        sf[2][0][j] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+        sc = 1.0 - hv[0][j];
+        sf[3][0][j] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+        sc = 2.0 - hv[0][j];
+        sf[4][0][j] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+        sc = 3.0 - hv[0][j];
+        sf[5][0][j] = 1.0/120.0 *pow(3.0-sc, 5);
     }
 
     // accumulation
@@ -270,10 +254,12 @@ kernel void integrateChargeDensity(
         for (int j = 0; j < 6; j++) {
             ii = i1+(i-prm.ngb);
             jj = j1+(j-prm.ngb);
-            atomic_fetch_add_explicit(&(rho[ii+jj*(nx+1)]), sf[i][0]*sf[j][1]*prm.scale, memory_order_relaxed);
+            atomic_fetch_add_explicit(&(rho[ii+jj*(nx+1)]), sf[i][0][0]*sf[j][0][1]*prm.constRho, memory_order_relaxed);
         }
     }
+
 }
+
 )";
 
 // プライベートインスタンス変数
@@ -334,6 +320,7 @@ kernel void integrateChargeDensity(
         prm->ngx = fieldParam.ngx;
         prm->ngy = fieldParam.ngy;
         prm->ngb = fieldParam.ngb;
+        prm->constRho  = _q * _w / (fieldParam.dx * fieldParam.dy);
 
         // constant 引数付きでカーネルを生成
         MTLFunctionConstantValues *fc = [[MTLFunctionConstantValues alloc] init];
@@ -389,8 +376,8 @@ kernel void integrateChargeDensity(
 
         id<MTLFunction> updateParticlesFunction = [library newFunctionWithName:@"updateParticles" constantValues:fc error:&error];
         _updateParticlesPipeline = [device newComputePipelineStateWithFunction:updateParticlesFunction error:&error];
-        id<MTLFunction> integrateChargeDensityFunction = [library newFunctionWithName:@"integrateChargeDensity"];
-        _integrateChargeDensityPipeline = [device newComputePipelineStateWithFunction:integrateChargeDensityFunction error:&error];
+        // id<MTLFunction> integrateChargeDensityFunction = [library newFunctionWithName:@"integrateChargeDensity"];
+        // _integrateChargeDensityPipeline = [device newComputePipelineStateWithFunction:integrateChargeDensityFunction error:&error];
 
         // 定数パラメータ格納バッファ
         buffSize = sizeof(integrationParams);
@@ -475,8 +462,10 @@ kernel void integrateChargeDensity(
     prm->constB = 0.5*_q*dt/_m/c;
     prm->constX = dt/fld.dx;
     prm->constY = dt/fld.dy;
+    prm->constY = dt/fld.dy;
     
     // EMFieldのバッファを直接使用
+    id<MTLBuffer> rhoBuffer = [fld rhoBuffer];
     id<MTLBuffer> ExBuffer = [fld ExBuffer];
     id<MTLBuffer> EyBuffer = [fld EyBuffer];
     id<MTLBuffer> EzBuffer = [fld EzBuffer];
@@ -501,7 +490,8 @@ kernel void integrateChargeDensity(
     [computeEncoder setBuffer:BxBuffer          offset:0 atIndex:5];
     [computeEncoder setBuffer:ByBuffer          offset:0 atIndex:6];
     [computeEncoder setBuffer:BzBuffer          offset:0 atIndex:7];
-    [computeEncoder setBuffer:printBuffer       offset:0 atIndex:8];
+    [computeEncoder setBuffer:rhoBuffer         offset:0 atIndex:8];
+    [computeEncoder setBuffer:printBuffer       offset:0 atIndex:9];
 
     
     // グリッドとスレッドグループのサイズ設定

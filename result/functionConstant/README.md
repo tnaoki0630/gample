@@ -8,3 +8,5 @@
 <br>![](update_wFC_vs_woFC.png)
 - 検証のついでなので、悪くならなければ ok。
 - 将来的に粒子衝突を追加することを見越して update と integCDens はわけて定義していたが、定数引数でコンパイルできるなら統合しても良さそう。試してみる。
+- integCDens を統合したバージョンと比較。
+<br>![](updateAndDeposition_org_vs_margedKarnel.png)

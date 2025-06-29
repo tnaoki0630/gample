@@ -143,10 +143,10 @@ int main(int argc, const char * argv[]) {
                     MEASURE("reduce_"+pName, [ptcl reduce:logger], dataElapsedTime);
                     // 流出電流の計算
                     intCurrent += ptcl.pinum_Xmin;
-                    // 電荷密度の更新
-                    if (EqFlags.EMField == 1){
-                        MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld  withMoment:mom withLogger:logger], dataElapsedTime);
-                    }
+                    // // 電荷密度の更新
+                    // if (EqFlags.EMField == 1){
+                    //     MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld  withMoment:mom withLogger:logger], dataElapsedTime);
+                    // }
                     // 粒子軌道の出力
                     if (timeParam.ParticleOutput != 0 && cycle%timeParam.ParticleOutput == 0){
                         outputPhaseSpace(cycle, ptcl, init, logger);

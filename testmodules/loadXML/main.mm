@@ -10,7 +10,7 @@ int main(int argc, const char * argv[]) {
 	ptree pt;
 	read_xml("CrossSection_hayashi_e_Xe.xml", pt, trim_whitespace);
 
-    // <sample0>の子要素を取得
+    // 子要素を取得
 	if (auto opt = pt.get_child_optional("root.sample0"))
 	{	
 		for (auto& child : opt.value())
