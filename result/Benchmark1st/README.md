@@ -27,6 +27,6 @@ https://github.com/user-attachments/assets/a106cf0a-e261-480e-a3ee-5f5d34df4c17
 https://github.com/user-attachments/assets/3a76ebd1-ea03-436d-8b96-71dff0262309
 - initPPC=10 よりマシにはなっているが、上流側で変な電場がチラつく。
 - 粒子数の時系列を見てみると 1.5[us] 程度で 3.5e11[1/cm] あたりで粒子数がサチった。
-![](pNum_ippcComp.png)
+<br>![](pNum_ippcComp.png)
 - lab の PIC_MCC コードでは ippc=20 で 0~2.5[us] にかけて 7e11[1/cm] くらいまで粒子数が伸び続けていたので、なにか違った現象が出ている様子。
-![](https://github.com/user-attachments/assets/f0b720d5-a194-4711-b495-45f3249854f2)
+<br>![](https://github.com/user-attachments/assets/f0b720d5-a194-4711-b495-45f3249854f2)
