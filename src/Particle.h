@@ -41,10 +41,6 @@ struct SimulationParams {
         int ngx;
         int ngy;
         int ngb;
-        int BC_Xmin;
-        int BC_Xmax;
-        int BC_Ymin;
-        int BC_Ymax;
 };
 
 @interface Particle : NSObject

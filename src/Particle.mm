@@ -41,10 +41,6 @@ struct SimulationParams {
     int ngx;
     int ngy;
     int ngb;
-    int BC_Xmin;
-    int BC_Xmax;
-    int BC_Ymin;
-    int BC_Ymax;
 };
 
 // 積分計算用構造体
@@ -55,6 +51,13 @@ struct integrationParams {
     int ngb;
     float scale;
 };
+
+// Function Constants
+constant int BC_Xmin        [[function_constant(0)]];
+constant int BC_Xmax        [[function_constant(1)]];
+constant int BC_Ymin        [[function_constant(2)]];
+constant int BC_Ymax        [[function_constant(3)]];
+constant int kWeightOrder   [[function_constant(4)]];
 
 // 粒子更新カーネル
 kernel void updateParticles(
@@ -177,25 +180,33 @@ kernel void updateParticles(
     p.y = p.y + p.vy * prm.constY;
 
     // periodic boundary
-    if (prm.BC_Xmin == 0) {
+    if (BC_Xmin == 0) {
         p.x = fmod(p.x + float(prm.ngx - prm.ngb), float(prm.ngx)) + float(prm.ngb);
     }
-    if (prm.BC_Ymin == 0) {
+    if (BC_Ymin == 0) {
         p.y = fmod(p.y + float(prm.ngy - prm.ngb), float(prm.ngy)) + float(prm.ngb);
     }
 
     // delete boundary
-    if (prm.BC_Xmin == 1 && int(p.x) < prm.ngb){
-        p.piflag = 1;
+    if (BC_Xmin == 1){
+        if(int(p.x) < prm.ngb){
+            p.piflag = 1;
+        }
     }
-    if (prm.BC_Xmax == 1 && int(p.x) > prm.ngb+prm.ngx){
-        p.piflag = 2;
+    if (BC_Xmax == 1){
+        if(int(p.x) > prm.ngb+prm.ngx){
+            p.piflag = 2;
+        }
     }
-    if (prm.BC_Ymin == 1 && int(p.y) < prm.ngb){
-        p.piflag = 3;
+    if (BC_Ymin == 1){
+        if(int(p.y) < prm.ngb){
+            p.piflag = 3;
+        }
     }
-    if (prm.BC_Ymax == 1 && int(p.y) > prm.ngb+prm.ngy){
-        p.piflag = 4;
+    if (BC_Ymax == 1){
+        if(int(p.y) > prm.ngb+prm.ngy){
+            p.piflag = 4;
+        }
     }
 
 }
@@ -311,11 +322,6 @@ kernel void integrateChargeDensity(
             NSLog(@"Failed to create Metal library: %@", error);
             return nil;
         }
-        // カーネルの取得
-        id<MTLFunction> updateParticlesFunction = [library newFunctionWithName:@"updateParticles"];
-        _updateParticlesPipeline = [device newComputePipelineStateWithFunction:updateParticlesFunction error:&error];
-        id<MTLFunction> integrateChargeDensityFunction = [library newFunctionWithName:@"integrateChargeDensity"];
-        _integrateChargeDensityPipeline = [device newComputePipelineStateWithFunction:integrateChargeDensityFunction error:&error];
         
         // バッファサイズ
         size_t buffSize;
@@ -328,42 +334,63 @@ kernel void integrateChargeDensity(
         prm->ngx = fieldParam.ngx;
         prm->ngy = fieldParam.ngy;
         prm->ngb = fieldParam.ngb;
+
+        // constant 引数付きでカーネルを生成
+        MTLFunctionConstantValues *fc = [[MTLFunctionConstantValues alloc] init];
         // 境界条件格納
+        int BC;
         for (int pos = 0; pos < pBCs.size(); pos++){
             if ([pBCs[pos].position isEqualToString:@"Xmin"]){
                 if ([pBCs[pos].type isEqualToString:@"periodic"]){
-                    prm->BC_Xmin = 0;
+                    BC = 0;
                 }else if ([pBCs[pos].type isEqualToString:@"Delete"]){
-                    prm->BC_Xmin = 1;
+                    BC = 1;
                 }else{
-                    prm->BC_Xmin = -1; // error
+                    BC = -1; // error
                 }
+                // function constant をセット
+                [fc setConstantValue:&BC type:MTLDataTypeInt atIndex:0];
             }else if ([pBCs[pos].position isEqualToString:@"Xmax"]){
                 if ([pBCs[pos].type isEqualToString:@"periodic"]){
-                    prm->BC_Xmax = 0;
+                    BC = 0;
                 }else if ([pBCs[pos].type isEqualToString:@"Delete"]){
-                    prm->BC_Xmax = 1;
+                    BC = 1;
                 }else{
-                    prm->BC_Xmax = -1; // error
+                    BC = -1; // error
                 }
+                // function constant をセット
+                [fc setConstantValue:&BC type:MTLDataTypeInt atIndex:1];
             }else if ([pBCs[pos].position isEqualToString:@"Ymin"]){
                 if ([pBCs[pos].type isEqualToString:@"periodic"]){
-                    prm->BC_Ymin = 0;
+                    BC = 0;
                 }else if ([pBCs[pos].type isEqualToString:@"Delete"]){
-                    prm->BC_Ymin = 1;
+                    BC = 1;
                 }else{
-                    prm->BC_Ymin = -1; // error
+                    BC = -1; // error
                 }
+                // function constant をセット
+                [fc setConstantValue:&BC type:MTLDataTypeInt atIndex:2];
             }else if ([pBCs[pos].position isEqualToString:@"Ymax"]){
                 if ([pBCs[pos].type isEqualToString:@"periodic"]){
-                    prm->BC_Ymax = 0;
+                    BC = 0;
                 }else if ([pBCs[pos].type isEqualToString:@"Delete"]){
-                    prm->BC_Ymax = 1;
+                    BC = 1;
                 }else{
-                    prm->BC_Ymax = -1; // error
+                    BC = -1; // error
                 }
+                // function constant をセット
+                [fc setConstantValue:&BC type:MTLDataTypeInt atIndex:3];
+            }
+            if (BC < 0){
+                NSLog(@"[FatalError] invalid particle boundary");
+                return nil;
             }
         }
+
+        id<MTLFunction> updateParticlesFunction = [library newFunctionWithName:@"updateParticles" constantValues:fc error:&error];
+        _updateParticlesPipeline = [device newComputePipelineStateWithFunction:updateParticlesFunction error:&error];
+        id<MTLFunction> integrateChargeDensityFunction = [library newFunctionWithName:@"integrateChargeDensity"];
+        _integrateChargeDensityPipeline = [device newComputePipelineStateWithFunction:integrateChargeDensityFunction error:&error];
 
         // 定数パラメータ格納バッファ
         buffSize = sizeof(integrationParams);
