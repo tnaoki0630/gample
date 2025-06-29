@@ -55,8 +55,8 @@ def plot_values(cycles, arr_values, labels, scales, title="", xscale=1.0):
 
 if __name__ == '__main__':
     cycle = 3200
-    cycles, Ne_long = parseXML('long_20250620033134_log.xml', 'flowout_electron', 'particleNumber')
-    cycles, Ni_long = parseXML('long_20250620033134_log.xml', 'flowout_ion_Xe1', 'particleNumber')
+    cycles, Ne_long = parseXML('long_20250619025651_log.xml', 'flowout_electron', 'particleNumber')
+    cycles, Ni_long = parseXML('long_20250619025651_log.xml', 'flowout_ion_Xe1', 'particleNumber')
     cycles, Ne_large = parseXML('large_20250621024603_log.xml', 'flowout_electron', 'particleNumber')
     cycles, Ni_large = parseXML('large_20250621024603_log.xml', 'flowout_ion_Xe1', 'particleNumber')
     cycles, Ne_large2 = parseXML('large2_20250623042317_log.xml', 'flowout_electron', 'particleNumber')
