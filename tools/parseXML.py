@@ -7,7 +7,7 @@ def parseXML(xml_file, section_name, tag_name):
     """
     Parses the given XML file.
     usage:: obtain time-series of elapsed time in integrate charge-density for electron.
-    cycles, values = parseXML('log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, values = parseXML('log.xml', 'flowout_electron', 'integCDens_electron')
     """
     # Parse XML
     tree = ET.parse(xml_file)
@@ -54,10 +54,15 @@ def plot_values(cycles, arr_values, labels, title="", scale=1.0):
     plt.show()
 
 if __name__ == '__main__':
-    cycles, ICDE_org = parseXML('org_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, ICDI_org = parseXML('org_log.xml', 'elapsedTime', 'integCDens_ion_Xe1')
-    cycles, ICDE_frac = parseXML('frac_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, ICDI_frac = parseXML('frac_log.xml', 'elapsedTime', 'integCDens_ion_Xe1')
-    values = [ICDE_org ,ICDI_org ,ICDE_frac ,ICDI_frac]
-    labels = ["ICDE_org" ,"ICDI_org" ,"ICDE_frac" ,"ICDI_frac"]
-    plot_values(cycles, values, labels, "elapsed time [ms]", 1e-3)
+    cycle = 3200
+    cycles, Ne_long = parseXML('long_20250620033134_log.xml', 'flowout_electron', 'particleNumber')
+    cycles, Ni_long = parseXML('long_20250620033134_log.xml', 'flowout_ion_Xe1', 'particleNumber')
+    cycles, Ne_large = parseXML('large_20250621024603_log.xml', 'flowout_electron', 'particleNumber')
+    cycles, Ni_large = parseXML('large_20250621024603_log.xml', 'flowout_ion_Xe1', 'particleNumber')
+    cycles, Ne_large2 = parseXML('large2_20250623042317_log.xml', 'flowout_electron', 'particleNumber')
+    cycles, Ni_large2 = parseXML('large2_20250623042317_log.xml', 'flowout_ion_Xe1', 'particleNumber')
+    cycles, Ne_large3 = parseXML('large3_20250624212336_log.xml', 'flowout_electron', 'particleNumber')
+    cycles, Ni_large3 = parseXML('large3_20250624212336_log.xml', 'flowout_ion_Xe1', 'particleNumber')
+    values = [Ne_long[0:cycle], Ni_long[0:cycle], Ne_large[0:cycle], Ni_large[0:cycle], Ne_large2[0:cycle], Ni_large2[0:cycle], Ne_large3[0:cycle], Ni_large3[0:cycle]]
+    labels = ["Ne_ippc10", "Ni_ippc10", "Ne_ippc20", "Ni_ippc20", "Ne_ippc30", "Ni_ippc30", "Ne_ippc50", "Ni_ippc50"]
+    plot_values(cycles[0:cycle], values, labels, "particle Number [-]", 1)

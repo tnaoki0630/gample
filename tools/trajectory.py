@@ -14,7 +14,8 @@ record_dtype = np.dtype([
 ])
 
 # ファイル名のパターンに合わせて全粒子のファイルを取得
-files = sorted(glob.glob("bin/proj1_PhaseSpace_electron_*.bin"))
+files = sorted(glob.glob("bin/large_PhaseSpace_electron_*.bin"))
+# files = sorted(glob.glob("bin/large_PhaseSpace_ion_Xe1_*.bin"))
 if not files:
     raise FileNotFoundError("*.bin が見つかりません。")
 
@@ -38,19 +39,19 @@ scat = ax.scatter(frame_positions[0, :, 0], frame_positions[0, :, 1])
 ax.set_xlabel("x")
 ax.set_ylabel("y")
 ax.set_title(f"Time step: {times[0]}")
-ax.set_xlim(0, 2)
+ax.set_xlim(0, 2.5)
 ax.set_ylim(0, 1)
+ax.axvline(2.4, color='gray', linestyle=':', linewidth=0.5) ## cathodeline
+ax.set_aspect('equal', adjustable='box')
 
 def update(frame):
     # フレームごとに粒子の位置を更新
     scat.set_offsets(frame_positions[frame])
-    # デバッグ用の print は高速化のためコメントアウト（必要なら一時的に有効化）
-    # print(frame_positions[frame])
     ax.set_title(f"Time step: {times[frame]}")
     return scat,
 
 # アニメーション作成
 ani = animation.FuncAnimation(fig, update, frames=num_frames, interval=100, blit=True)
 
-# 動画として保存（ffmpegがインストールされている必要があります）
-ani.save("particle_trajectories.mp4", writer="ffmpeg", fps=5)
+# 動画として保存
+ani.save("particle_trajectories.mp4", writer="ffmpeg", fps=60)

@@ -1,4 +1,5 @@
 #import <Metal/Metal.h>
+#import <Accelerate/Accelerate.h>
 #import "EMField.h"
 #import "Constant.h"
 #import "XmlLogger.h"
@@ -15,7 +16,7 @@
 # define PI 3.141592653589793
 
 // amgcl 
-typedef amgcl::backend::builtin<float> Backend;
+typedef amgcl::backend::builtin<double> Backend;
 typedef amgcl::make_solver<
     amgcl::amg<
         Backend,
@@ -29,7 +30,7 @@ typedef amgcl::make_solver<
     id<MTLDevice> _device;
     id<MTLBuffer> _rhoBuffer;    // 電荷密度
     id<MTLBuffer> _atomicRhoBuffer;    // 電荷密度
-    float* _phi;                 // 電位
+    double* _phi;                 // 電位
     id<MTLBuffer> _ExBuffer;     // 電場 x成分
     id<MTLBuffer> _EyBuffer;     // 電場 y成分
     id<MTLBuffer> _EzBuffer;     // 電場 z成分
@@ -56,25 +57,25 @@ typedef amgcl::make_solver<
     NSString* _BC_Xmax;
     NSString* _BC_Ymin;
     NSString* _BC_Ymax;
-    std::vector<float> _phi_Xmin;
-    std::vector<float> _phi_Xmax;
-    std::vector<float> _phi_Ymin;
-    std::vector<float> _phi_Ymax;
-    std::vector<float> _dphidx_Xmin;
-    std::vector<float> _dphidx_Xmax;
-    std::vector<float> _dphidy_Ymin;
-    std::vector<float> _dphidy_Ymax;
+    std::vector<double> _phi_Xmin;
+    std::vector<double> _phi_Xmax;
+    std::vector<double> _phi_Ymin;
+    std::vector<double> _phi_Ymax;
+    std::vector<double> _dphidx_Xmin;
+    std::vector<double> _dphidx_Xmax;
+    std::vector<double> _dphidy_Ymin;
+    std::vector<double> _dphidy_Ymax;
     int _nkx;
     int _ikmin;
     int _nky;
     int _jkmin;
-    float _Cd;
-    float _Cx;
-    float _Cy;
-    std::vector<float> _phi_sol;
-    std::vector<float> _rhs_BC;
+    double _Cd;
+    double _Cx;
+    double _Cy;
+    std::vector<double> _phi_sol;
+    std::vector<double> _rhs_BC;
     std::unique_ptr<Solver> _solver;    // smart pointer
-    float _cathodePos;
+    double _cathodePos;
 }
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam  withLogger:(XmlLogger&)logger{
@@ -111,7 +112,7 @@ typedef amgcl::make_solver<
         _BzBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+2)*(_ny+2) options:MTLResourceStorageModeShared];
         
         // malloc
-        _phi = (float *)malloc(sizeof(float) * (_nx+3)*(_ny+3) );
+        _phi = (double*)malloc(sizeof(double) * (_nx+3)*(_ny+3) );
         
         // initialize E
         float* Ex = (float*)_ExBuffer.contents;
@@ -210,7 +211,7 @@ typedef amgcl::make_solver<
         // CSR 行列
         std::vector<int> ptr;
         std::vector<int> col;
-        std::vector<float> val;
+        std::vector<double> val;
 
         // 解くべき行列サイズ(境界条件に依存)
         _nkx = _ngx;
@@ -546,23 +547,23 @@ typedef amgcl::make_solver<
 
     // 右辺ベクトルの更新
     int arrSize = (_nkx+1)*(_nky+1);
-    std::vector<float> rhs;
+    std::vector<double> rhs;
     for (int j = 0; j <= _nky; j++){
         for (int i = 0; i <= _nkx; i++){
             int k = i + j*(_nkx+1);
-            rhs.push_back(_rhs_BC[k] -4*PI*rho[(i+_ikmin)+(j+_jkmin)*(_nx+1)]);
+            rhs.push_back(_rhs_BC[k] -4*PI*static_cast<double>(rho[(i+_ikmin)+(j+_jkmin)*(_nx+1)]));
         }
     }
 
     // solve（solver, phi_sol は使い回す）
     int iters;
-    float error;
+    double error;
     std::tie(iters, error) = (*_solver)(rhs, _phi_sol);
 
     // index
     bool isLeft, isRight, isBottom, isTop;
     int idx_in_i, idx_in_j;
-    float dphidx, dphidy;
+    double dphidx, dphidy;
 
     // phi の全セルを走査して埋める
     for (int j = 0; j <= _ny+2; ++j) {
@@ -754,7 +755,7 @@ typedef amgcl::make_solver<
     }
 
     // adjust potential at hollow-cathode
-    float mean = 0.0;
+    double mean = 0.0;
     for (int j = 0; j <= _nky; j++){
         idx_in = (int)(_cathodePos/_dx) + j*(_nkx+1);
         mean += _phi_sol[idx_in];
@@ -818,8 +819,16 @@ typedef amgcl::make_solver<
     NSLog(@"checkChargeDensity: min = %e, max = %e", min, max);
 }
 
+// 電位へのアクセサ（double->float)
+- (float*)phi { 
+    static std::vector<float> cache;
+    size_t arrSize = (_nx+3) * (_ny+3);
+    if (cache.size() != arrSize) cache.resize(arrSize);
+    for (size_t i = 0; i < arrSize; ++i)
+        cache[i] = static_cast<float>(_phi[i]);
+    return cache.data();
+}
 // 電荷密度へのアクセサ
-- (float*)phi { return _phi; }
 - (id<MTLBuffer>)rhoBuffer { return _rhoBuffer; }
 - (id<MTLBuffer>)atomicRhoBuffer { return _atomicRhoBuffer; }
 

@@ -139,7 +139,7 @@ kernel void updateParticles(
             Bpz += sf[i][0][0]*sf[j][1][1]*Bz[ii+jj*(nx+2)];
         }
     }
-    print[id] = i2+5-prm.ngb+(j2+1+5-prm.ngb)*(nx+1);
+    // print[id] = i2+5-prm.ngb+(j2+1+5-prm.ngb)*(nx+1);
     // print[id] = j2+1+5-prm.ngb;
     
     // acceleration by electric field
@@ -165,6 +165,7 @@ kernel void updateParticles(
     float upx = umx + v0y*ssz - v0z*ssy;
     float upy = umy + v0z*ssx - v0x*ssz;
     float upz = umz + v0x*ssy - v0y*ssx;
+    print[id] = btbt;
 
     // acceleration by electric field
     p.vx = upx + prm.constE*Epx;
@@ -677,7 +678,8 @@ kernel void integrateChargeDensity(
                     addn = -current; // アノード電流の符号を反転した分だけ電子が流入
                     current = 0; // リセット
                 }else{
-                    addn = 0; // current を引き継ぎ
+                    addn = 0; // 追加しない
+                    current = 0; // 自サイクルに引き継ぐならここはコメントアウトする。電子の方が無くなりやすいので、引き継がずにリセットした方が定常収束は早いはず。
                 }
                 data["keptCurrent"] = std::to_string(-current);
             }else{

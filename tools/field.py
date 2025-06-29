@@ -46,7 +46,7 @@ def getField(filename):
     return meshinfo, fields
 
 # プロット関数
-def plotField2d(field, title, figname, type_id, bool_buff):
+def plotField2d(field, title, figname, type_id, bool_buff, cmin=None, cmax=None):
     # 解析領域の ikmin, jkmin を復元
     if type_id == 4:
         buff = mesh["ngb"]+1
@@ -71,18 +71,22 @@ def plotField2d(field, title, figname, type_id, bool_buff):
     # メッシュ作成
     X, Y = np.meshgrid(x, y)
 
+    # カラーバー
+    vmin = field.min() if cmin is None else cmin
+    vmax = field.max() if cmax is None else cmax
+    cmap = 'bwr' if abs(vmin+vmax) < 1e-20 else 'plasma'
     # プロット
     fig, ax = plt.subplots()
     if (nx < 50 or ny < 50):
         if bool_buff:
-            im = ax.scatter(X[0:ny+1, 0:nx+1], Y[0:ny+1, 0:nx+1], c=field[0:ny+1, 0:nx+1], s=20)
+            im = ax.scatter(X[0:ny+1, 0:nx+1], Y[0:ny+1, 0:nx+1], c=field[0:ny+1, 0:nx+1], s=20,vmin=vmin,vmax=vmax,cmap=cmap)
         else:
-            im = ax.scatter(X[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], Y[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], c=field[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], s=20)
+            im = ax.scatter(X[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], Y[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], c=field[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], s=20,vmin=vmin,vmax=vmax,cmap=cmap)
     else:
         if bool_buff:
-            im = ax.pcolormesh(X[0:ny+1, 0:nx+1], Y[0:ny+1, 0:nx+1], field[0:ny+1, 0:nx+1], shading='auto')
+            im = ax.pcolormesh(X[0:ny+1, 0:nx+1], Y[0:ny+1, 0:nx+1], field[0:ny+1, 0:nx+1], shading='auto',vmin=vmin,vmax=vmax,cmap=cmap)
         else:
-            im = ax.pcolormesh(X[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], Y[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], field[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], shading='auto')
+            im = ax.pcolormesh(X[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], Y[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], field[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], shading='auto',vmin=vmin,vmax=vmax,cmap=cmap)
     cbar = fig.colorbar(im, ax=ax, fraction=0.025, pad=0.04)
     cbar.set_label('Field value')
     ax.set_xlabel('x (units)')
@@ -127,6 +131,7 @@ def plotField1dx(field, title, figname, type_id, j):
     ax.plot(x[0:mesh["ngx"]+mesh["ngb"]+buff+1], field[j, 0:mesh["ngx"]+mesh["ngb"]+buff+1], label = "j = "+str(j))
     ax.plot(x[0:mesh["ngx"]+mesh["ngb"]+buff+1], field[j+1, 0:mesh["ngx"]+mesh["ngb"]+buff+1], label = "j = "+str(j+1))
     ax.plot(x[0:mesh["ngx"]+mesh["ngb"]+buff+1], field[j+2, 0:mesh["ngx"]+mesh["ngb"]+buff+1], label = "j = "+str(j+2))
+    ax.plot(x[0:mesh["ngx"]+mesh["ngb"]+buff+1], np.mean(field[:, 0:mesh["ngx"]+mesh["ngb"]+buff+1], axis=0), label = "mean")
     ax.legend(loc=1)
     ax.set_xlabel('x (units)')
     ax.set_ylabel('y (units)')
@@ -142,7 +147,7 @@ def plotField1dx(field, title, figname, type_id, j):
     plt.show()
 
 def save_field_video(
-    bin_pattern="bin/long_Moments_electron_{cycle:08}.bin",
+    bin_pattern="bin/large_Moments_electron_{cycle:08}.bin",
     name="electron",
     unit="[-]",
     type_id=0,
@@ -215,33 +220,38 @@ def save_field_video(
 if __name__ == '__main__':
     args = sys.argv
 
-    cycle = 400000
-    # 引数が数字なら対象サイクルを更新
-    if args[1].isdigit(): cycle = int(args[1])
-    mesh, fields = getField(f"bin/long_EMField_{cycle:08}.bin")
-    #mesh, fields = getField(f"bin/long_Moments_electron_{cycle:08}.bin")
+    pname = args[1]
+    if args[2].isdigit(): cycle = int(args[2])
+    mesh, fields = getField("bin/"+pname+f"_EMField_{cycle:08}.bin")
+    # mesh, fields = getField(f"bin/large_Moments_electron_{cycle:08}.bin")
+    # mesh, fields = getField(f"bin/large_Moments_ion_Xe1_{cycle:08}.bin")
 
     print(f"Mesh info: ngx={mesh["ngx"]}, ngy={mesh["ngy"]}, ngb={mesh["ngb"]}, dx={mesh["dx"]}, dy={mesh["dy"]}")
     nx = mesh["ngx"]+2*mesh["ngb"]
     ny = mesh["ngx"]+2*mesh["ngb"]
 
+    # カラーバー調整辞書(get で取り出した場合、無指定の変数は None を渡す)
+    dict_cmin = {"rho":-10, "phi":-100, "Ex":-1e5, "Ey":-1e5, "electron_uy":-1e9}
+    dict_cmax = {"rho":10,  "phi":700,  "Ex":1e5,  "Ey":1e5,  "electron_uy":1e9}
+
     # プロット
     for name, type_id, arr in fields:
         print(f"{name}: type_id={type_id}, shape={arr.shape}, min={arr.min()}, max={arr.max()}")
         #plotField2d(arr, name, f"fig/{name}_wBuff.png" , type_id , True)
-        plotField2d(arr, name, f"fig/{name}.png" , type_id , False)
+        plotField2d(arr, name, f"fig/{name}.png" , type_id , False,dict_cmin.get(name),dict_cmax.get(name))
         plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
 
     # 動画保存(開始フレーム、最終フレームを数字で受け取り動画保存)
-    if (len(args)==3):
+    if (len(args)==4):
         dt = 10000
-        start = int(args[2])
-        end = int(args[1])
-        save_field_video("bin/long_Moments_electron_{cycle:08}.bin" ,"electron_n"   ,"[1/cm3]"  ,0,dt,start,end ,"fig/long_electron_n.mp4"  ,cbar_vmin=0    ,cbar_vmax=3e11)
-        save_field_video("bin/long_Moments_electron_{cycle:08}.bin" ,"electron_uy"  ,"[cm/s]"   ,0,dt,start,end ,"fig/long_electron_uy.mp4" ,cbar_vmin=-1e9 ,cbar_vmax=1e9)
-        save_field_video("bin/long_Moments_electron_{cycle:08}.bin" ,"electron_ux"  ,"[cm/s]"   ,0,dt,start,end ,"fig/long_electron_ux.mp4" ,cbar_vmin=-1e9 ,cbar_vmax=1e9)
-        save_field_video("bin/long_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_n"    ,"[1/cm3]"  ,0,dt,start,end ,"fig/long_ion_Xe1_n.mp4"   ,cbar_vmin=0    ,cbar_vmax=3e11)
-        save_field_video("bin/long_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_ux"   ,"[cm/s]"   ,0,dt,start,end ,"fig/long_ion_Xe1_ux.mp4"  ,cbar_vmin=-1e7 ,cbar_vmax=1e7)
-        save_field_video("bin/long_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_uy"   ,"[cm/s]"   ,0,dt,start,end ,"fig/long_ion_Xe1_uy.mp4"  ,cbar_vmin=-1e6 ,cbar_vmax=1e6)
-        save_field_video("bin/long_EMField_{cycle:08}.bin"          ,"Ex"           ,"[V/m]"    ,1,dt,start,end ,"fig/long_Ex.mp4"          ,cbar_vmin=-1e5 ,cbar_vmax=1e5)
-        save_field_video("bin/long_EMField_{cycle:08}.bin"          ,"Ey"           ,"[V/m]"    ,2,dt,start,end ,"fig/long_Ey.mp4"          ,cbar_vmin=-1e5 ,cbar_vmax=1e5)
+        start = int(args[3])
+        end = int(args[2])
+        save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_n"   ,"[1/cm3]"  ,0,dt,start,end ,"fig/"+pname+"_electron_n.mp4"  ,cbar_vmin=0    ,cbar_vmax=3e11)
+        save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_uy"  ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_electron_uy.mp4" ,cbar_vmin=-1e9 ,cbar_vmax=1e9)
+        save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_ux"  ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_electron_ux.mp4" ,cbar_vmin=-1e9 ,cbar_vmax=1e9)
+        save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_n"    ,"[1/cm3]"  ,0,dt,start,end ,"fig/"+pname+"_ion_Xe1_n.mp4"   ,cbar_vmin=0    ,cbar_vmax=3e11)
+        save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_ux"   ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_ion_Xe1_ux.mp4"  ,cbar_vmin=-1e7 ,cbar_vmax=1e7)
+        save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_uy"   ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_ion_Xe1_uy.mp4"  ,cbar_vmin=-1e6 ,cbar_vmax=1e6)
+        save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"rho"          ,"[esu/m3]" ,0,dt,start,end ,"fig/"+pname+"_rho.mp4"         ,cbar_vmin=-10  ,cbar_vmax=10)
+        save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"Ex"           ,"[V/m]"    ,1,dt,start,end ,"fig/"+pname+"_Ex.mp4"          ,cbar_vmin=-1e5 ,cbar_vmax=1e5)
+        save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"Ey"           ,"[V/m]"    ,2,dt,start,end ,"fig/"+pname+"_Ey.mp4"          ,cbar_vmin=-1e5 ,cbar_vmax=1e5)

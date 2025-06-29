@@ -51,16 +51,23 @@ int main(int argc, const char * argv[]) {
             return 1;
         }
 
+        // ログファイル名
+        std::string timestamp;
+        if (args.count("-o") == 1){
+            timestamp = args["-o"].c_str();
+        }else{
+            // 無指定ならタイムスタンプ YYYYMMDDhhmmss を付与
+            auto now = std::chrono::system_clock::now();
+            auto nowt = std::chrono::system_clock::to_time_t(now);
+            std::tm tm = *std::localtime(&nowt);
+            std::ostringstream oss;
+            oss << std::put_time(&tm, "%Y%m%d%H%M%S");
+            timestamp = oss.str();
+        }
+
         // 初期化パラメータクラス作成
         Init *init = [[Init alloc] parseInputFile:inputPath];
 
-        // YYYYMMDDhhmmss を取得
-        auto now = std::chrono::system_clock::now();
-        auto nowt = std::chrono::system_clock::to_time_t(now);
-        std::tm tm = *std::localtime(&nowt);
-        std::ostringstream oss;
-        oss << std::put_time(&tm, "%Y%m%d%H%M%S");
-        std::string timestamp = oss.str();
 
         // logger の作成
         struct ParamForTimeIntegration timeParam = init.paramForTimeIntegration;
@@ -93,6 +100,13 @@ int main(int argc, const char * argv[]) {
                 NSLog(@"restart failed.");
                 return 1;
             };
+            // 初期場出力
+            // for (int s = 0; s < EqFlags.Particle; s++) {
+            //     Particle *ptcl = [ptclArr objectAtIndex:s];
+            //     [ptcl integrateChargeDensity:fld  withMoment:mom withLogger:logger];
+            // }
+            // [fld solvePoisson:logger];
+            // outputField(StartCycle, fld, init, logger);
         }
         double dt = timeParam.TimeStep;
         double time = StartCycle*dt;

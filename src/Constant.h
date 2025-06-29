@@ -20,5 +20,5 @@ const double AtosA = 1/(10/c);                 // convert A to cgs-gauss [1 A = 
 const double sAtoA = 10/c;                     // convert cgs-gauss to A [1 statA = 10/c A]
 const double JtosJ = 1/(10/c*1e4);             // convert A/m^2 to cgs-gauss (esu/s/cm^2) [1 A = 1/(10/c) statA]
 const double sJtoJ = 10/c*1e4;                 // convert cgs-gauss (esu/s/cm^2) to A/m^2 [1 statA = 10/c A]
-const double TtoG = 1e4;                       // convert T to to cgs-gauss G [1 G = 10^-4 T]
-const double GtoT = 1e-4;                      // convert T to to cgs-gauss G [1 G = 10^-4 T]
+const double TtoG = 1e4;                       // convert T to cgs-gauss G [1 G = 10^-4 T]
+const double GtoT = 1e-4;                      // convert cgs-gauss G to T [1 G = 10^-4 T]

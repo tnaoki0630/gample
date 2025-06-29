@@ -6,19 +6,20 @@
   },
   "ParamForTimeIntegration": {
     "Start":            0,
-    "End":              60000,
+    "End":              800000,
     "TimeStep":         5e-12,
     "LogOutput":        100,
     "ParticleOutput":   0,
     "FieldOutput":      10000,
-    "ProgressOutput":   60000,
-    "ProjectName":      "proj2"
+    "ProgressOutput":   50000,
+    "ProjectName":      "large",
+    "RestartName":      "large"
   },
   "ParamForComputing": {
-    "MaximumParticleNumber":  5000000,
+    "MaximumParticleNumber":  20000000,
     "ThreadGroupSize":        1,
     "IntegrationChunkSize":   128,
-    "MaxIterForPoisson":      200,
+    "MaxiterForPoisson":      100,
     "ToleranceForPoisson":    1e-6
   },
   "ParamForField": {
