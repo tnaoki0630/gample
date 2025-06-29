@@ -43,6 +43,7 @@ main
 *.bin
 *.zip
 *.xml
+*.mp4
 bin/
 
 # debug directory
