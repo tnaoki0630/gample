@@ -33,7 +33,7 @@
     "FilePathOfBx":         "data/Bx.bin",
     "FilePathOfBy":         "data/By.bin",
     "FilePathOfBz":         "data/Bz.bin",
-    "WeightingOrder":       5
+    "WeightingOrder":       1
   },
   "ParamForParticle": [
     {

@@ -57,7 +57,7 @@ constant int BC_Xmin        [[function_constant(0)]];
 constant int BC_Xmax        [[function_constant(1)]];
 constant int BC_Ymin        [[function_constant(2)]];
 constant int BC_Ymax        [[function_constant(3)]];
-constant int kWeightOrder   [[function_constant(4)]];
+constant int weightOrder   [[function_constant(4)]];
 
 // 粒子更新カーネル
 kernel void updateParticles(
@@ -100,23 +100,30 @@ kernel void updateParticles(
     hv[1][0] = p.x - float(i2);
     hv[1][1] = yh  - float(j2);
     
-    // 5th-order weighting
+    // weighting
     float sc;
     float sf[6][2][2];
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {
-            sc = 2.0 + hv[i][j];
-            sf[0][i][j] = 1.0/120.0 *pow(3.0-sc, 5);
-            sc = 1.0 + hv[i][j];
-            sf[1][i][j] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = hv[i][j];
-            sf[2][i][j] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 1.0 - hv[i][j];
-            sf[3][i][j] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 2.0 - hv[i][j];
-            sf[4][i][j] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = 3.0 - hv[i][j];
-            sf[5][i][j] = 1.0/120.0 *pow(3.0-sc, 5);
+            // 1st-order weighting
+            if (weightOrder == 1){
+                sf[0][i][j] = hv[i][j];
+                sf[1][i][j] = 1.0 - hv[i][j];
+            // 5th-order weighting
+            } else if (weightOrder == 5){
+                sc = 2.0 + hv[i][j];
+                sf[0][i][j] = 1.0/120.0 *pow(3.0-sc, 5);
+                sc = 1.0 + hv[i][j];
+                sf[1][i][j] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+                sc = hv[i][j];
+                sf[2][i][j] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+                sc = 1.0 - hv[i][j];
+                sf[3][i][j] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+                sc = 2.0 - hv[i][j];
+                sf[4][i][j] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+                sc = 3.0 - hv[i][j];
+                sf[5][i][j] = 1.0/120.0 *pow(3.0-sc, 5);
+            }
         }
     }
 
@@ -129,8 +136,8 @@ kernel void updateParticles(
     float Bpz = 0.0;
     int ii, jj;
     const int nx = (prm.ngx + 2*prm.ngb);
-    for (int i = 0; i < 6; i++) {
-        for (int j = 0; j < 6; j++) {
+    for (int i = 0; i < weightOrder+1; i++) {
+        for (int j = 0; j < weightOrder+1; j++) {
             ii = i1+(i-prm.ngb+1);
             jj = j1+(j-prm.ngb);
             Epx += sf[i][0][0]*sf[j][0][1]*Ex[ii+jj*(nx+2)];
@@ -142,8 +149,6 @@ kernel void updateParticles(
             Bpz += sf[i][0][0]*sf[j][1][1]*Bz[ii+jj*(nx+2)];
         }
     }
-    // print[id] = i2+5-prm.ngb+(j2+1+5-prm.ngb)*(nx+1);
-    // print[id] = j2+1+5-prm.ngb;
     
     // acceleration by electric field
     float umx = p.vx + prm.constE*Epx;
@@ -249,25 +254,32 @@ kernel void integrateChargeDensity(
     hv[0] = p.x - float(i1);
     hv[1] = p.y - float(j1);
     
-    // 5th-order weighting
+    // weighting
     for (int i = 0; i < 2; i++) {
-        sc = 2.0 + hv[i];
-        sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
-        sc = 1.0 + hv[i];
-        sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-        sc = hv[i];
-        sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-        sc = 1.0 - hv[i];
-        sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-        sc = 2.0 - hv[i];
-        sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-        sc = 3.0 - hv[i];
-        sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
+        // 1st-order weighting
+        if (weightOrder == 1){
+            sf[0][i] = hv[i];
+            sf[1][i] = 1.0 - hv[i];
+        // 5th-order weighting
+        } else if (weightOrder == 5){
+            sc = 2.0 + hv[i];
+            sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
+            sc = 1.0 + hv[i];
+            sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+            sc = hv[i];
+            sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+            sc = 1.0 - hv[i];
+            sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+            sc = 2.0 - hv[i];
+            sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+            sc = 3.0 - hv[i];
+            sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
+        }
     }
 
     // accumulation
-    for (int i = 0; i < 6; i++) {
-        for (int j = 0; j < 6; j++) {
+    for (int i = 0; i < weightOrder+1; i++) {
+        for (int j = 0; j < weightOrder+1; j++) {
             ii = i1+(i-prm.ngb);
             jj = j1+(j-prm.ngb);
             atomic_fetch_add_explicit(&(rho[ii+jj*(nx+1)]), sf[i][0]*sf[j][1]*prm.scale, memory_order_relaxed);
@@ -387,9 +399,14 @@ kernel void integrateChargeDensity(
             }
         }
 
+        // weighting order
+        int wo = fieldParam.weightOrder;
+        [fc setConstantValue:&wo type:MTLDataTypeInt atIndex:4];
+
+        // 引数付きでカーネルを作成
         id<MTLFunction> updateParticlesFunction = [library newFunctionWithName:@"updateParticles" constantValues:fc error:&error];
         _updateParticlesPipeline = [device newComputePipelineStateWithFunction:updateParticlesFunction error:&error];
-        id<MTLFunction> integrateChargeDensityFunction = [library newFunctionWithName:@"integrateChargeDensity"];
+        id<MTLFunction> integrateChargeDensityFunction = [library newFunctionWithName:@"integrateChargeDensity" constantValues:fc error:&error];
         _integrateChargeDensityPipeline = [device newComputePipelineStateWithFunction:integrateChargeDensityFunction error:&error];
 
         // 定数パラメータ格納バッファ

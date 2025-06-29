@@ -54,14 +54,27 @@ def plot_values(cycles, arr_values, labels, scales, title="", dt=1.0):
     plt.show()
 
 if __name__ == '__main__':
-    cycle = 200
     cycles, arr1 = parseXML('large4_light_woFC_log.xml', 'elapsedTime', 'update_electron')
     cycles, arr2 = parseXML('large4_light_woFC_log.xml', 'elapsedTime', 'update_ion_Xe1')
-    update_woFC = [v1+v2 for v1, v2 in zip(arr1,arr2)]
+    cycles, arr3 = parseXML('large4_light_woFC_log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, arr4 = parseXML('large4_light_woFC_log.xml', 'elapsedTime', 'integCDens_ion_Xe1')
+    update_woFC = [v1+v2+v3+v4 for v1, v2, v3, v4 in zip(arr1,arr2,arr3,arr4)]
     cycles, arr1 = parseXML('large4_light_wFC_log.xml', 'elapsedTime', 'update_electron')
     cycles, arr2 = parseXML('large4_light_wFC_log.xml', 'elapsedTime', 'update_ion_Xe1')
-    update_wFC = [v1+v2 for v1, v2 in zip(arr1,arr2)]
-    values = [update_woFC, update_wFC]
-    labels = ["update_woFC", "update_wFC"]
-    scales = [1,1]
-    plot_values(cycles[0:cycle], values, labels, scales, "elapsed time [ns]", dt=5e-3)
+    cycles, arr3 = parseXML('large4_light_wFC_log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, arr4 = parseXML('large4_light_wFC_log.xml', 'elapsedTime', 'integCDens_ion_Xe1')
+    update_wFC = [v1+v2+v3+v4 for v1, v2, v3, v4 in zip(arr1,arr2,arr3,arr4)]
+    cycles, arr1 = parseXML('large4_light_variableWO_log.xml', 'elapsedTime', 'update_electron')
+    cycles, arr2 = parseXML('large4_light_variableWO_log.xml', 'elapsedTime', 'update_ion_Xe1')
+    cycles, arr3 = parseXML('large4_light_variableWO_log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, arr4 = parseXML('large4_light_variableWO_log.xml', 'elapsedTime', 'integCDens_ion_Xe1')
+    update_variableWO = [v1+v2+v3+v4 for v1, v2, v3, v4 in zip(arr1,arr2,arr3,arr4)]
+    cycles, arr1 = parseXML('large4_light_1stOrder_log.xml', 'elapsedTime', 'update_electron')
+    cycles, arr2 = parseXML('large4_light_1stOrder_log.xml', 'elapsedTime', 'update_ion_Xe1')
+    cycles, arr3 = parseXML('large4_light_1stOrder_log.xml', 'elapsedTime', 'integCDens_electron')
+    cycles, arr4 = parseXML('large4_light_1stOrder_log.xml', 'elapsedTime', 'integCDens_ion_Xe1')
+    update_1stOrder = [v1+v2+v3+v4 for v1, v2, v3, v4 in zip(arr1,arr2,arr3,arr4)]
+    values = [update_woFC, update_wFC, update_variableWO, update_1stOrder]
+    labels = ["updateAndDeposition_woFC", "updateAndDeposition_wFC", "updateAndDeposition_variableWO", "updateAndDeposition_1stOrder"]
+    scales = [1e-3,1e-3,1e-3,1e-3]
+    plot_values(cycles, values, labels, scales, "elapsed time [ms]", dt=5e-3)
