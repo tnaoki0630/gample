@@ -30,3 +30,6 @@ https://github.com/user-attachments/assets/3a76ebd1-ea03-436d-8b96-71dff0262309
 <br>![](pNum_ippcComp.png)
 - lab の PIC_MCC コードでは ippc=20 で 0~2.5[us] にかけて 7e11[1/cm] くらいまで粒子数が伸び続けていたので、なにか違った現象が出ている様子。
 <br>![](https://github.com/user-attachments/assets/f0b720d5-a194-4711-b495-45f3249854f2)
+- WarpX の先行研究だと ippc=200 とかから始めているので、それくらいは必要なのかも？
+- よく考えると float だと 1e-7 以下の成分が捨てられるので、high-order weighting が全然活かせてないのかもしれない。
+- low-order weighting に切り替えて粒子数をとにかく稼ぐ作戦でやってみる。
