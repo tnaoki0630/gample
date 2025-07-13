@@ -222,7 +222,8 @@ if __name__ == '__main__':
 
     pname = args[1]
     if args[2].isdigit(): cycle = int(args[2])
-    mesh, fields = getField("bin/"+pname+f"_EMField_{cycle:08}.bin")
+    # mesh, fields = getField("bin/"+pname+f"_EMField_{cycle:08}.bin")
+    mesh, fields = getField("bin/"+pname+f"_Moments_electron_{cycle:08}.bin")
     # mesh, fields = getField(f"bin/large_Moments_electron_{cycle:08}.bin")
     # mesh, fields = getField(f"bin/large_Moments_ion_Xe1_{cycle:08}.bin")
 
@@ -237,7 +238,7 @@ if __name__ == '__main__':
     # プロット
     for name, type_id, arr in fields:
         print(f"{name}: type_id={type_id}, shape={arr.shape}, min={arr.min()}, max={arr.max()}")
-        #plotField2d(arr, name, f"fig/{name}_wBuff.png" , type_id , True)
+        # plotField2d(arr, name, f"fig/{name}_wBuff.png" , type_id , True)
         plotField2d(arr, name, f"fig/{name}.png" , type_id , False,dict_cmin.get(name),dict_cmax.get(name))
         plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
 

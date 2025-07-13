@@ -173,7 +173,6 @@ kernel void updateParticles(
     float upx = umx + v0y*ssz - v0z*ssy;
     float upy = umy + v0z*ssx - v0x*ssz;
     float upz = umz + v0x*ssy - v0y*ssx;
-    print[id] = btbt;
 
     // acceleration by electric field
     p.vx = upx + prm.constE*Epx;
@@ -194,26 +193,32 @@ kernel void updateParticles(
 
     // delete boundary
     if (BC_Xmin == 1){
-        if(int(p.x) < prm.ngb){
+        if(int(floor(p.x)) < prm.ngb){
             p.piflag = 1;
         }
     }
     if (BC_Xmax == 1){
-        if(int(p.x) > prm.ngb+prm.ngx){
+        if(int(floor(p.x)) >= prm.ngb+prm.ngx){
             p.piflag = 2;
         }
     }
     if (BC_Ymin == 1){
-        if(int(p.y) < prm.ngb){
+        if(int(floor(p.y)) < prm.ngb){
             p.piflag = 3;
         }
     }
     if (BC_Ymax == 1){
-        if(int(p.y) > prm.ngb+prm.ngy){
+        if(int(floor(p.y)) >= prm.ngb+prm.ngy){
             p.piflag = 4;
         }
     }
 
+    // debug print
+    if (!isfinite(p.x)) {
+        print[id] = 1.0;
+    }else{
+        print[id] = 0.0;
+    }
 }
 
 // 電荷密度更新カーネル
@@ -537,32 +542,32 @@ kernel void integrateChargeDensity(
     [commandBuffer waitUntilCompleted];
 
     // デバッグ出力
-    // ParticleState* p = (ParticleState*)[_particleBuffer contents];
-    // float* prt = (float*)printBuffer.contents;
-    // float min_x = 1e20, max_x = -1e20;
-    // float min_y = 1e20, max_y = -1e20;
-    // float min_e = 1e20, max_e = -1e20;
-    // float min = 1e20, max = -1e20;
-    // for (int idx = 0; idx < prm->pNum; idx++){
-    //     // if(p[idx].piflag == 0){
-    //         // debug print
-    //         if (min > prt[idx]){ min = prt[idx]; }
-    //         if (max < prt[idx]){ max = prt[idx]; }
-    //         // // position
-    //         // if (min_x > p[idx].x){ min_x = p[idx].x; }
-    //         // if (max_x < p[idx].x){ max_x = p[idx].x; }
-    //         // if (min_y > p[idx].y){ min_y = p[idx].y; }
-    //         // if (max_y < p[idx].y){ max_y = p[idx].y; }
-    //         // // energy
-    //         // if (min_e > p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz){ 
-    //         //     min_e = p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz; 
-    //         // }
-    //         // if (max_e < p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz){ 
-    //         //     max_e = p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz; 
-    //         // }
-    //     // }
-    // }
+    ParticleState* p = (ParticleState*)[_particleBuffer contents];
+    float* prt = (float*)printBuffer.contents;
+    float min_x = 1e20, max_x = -1e20;
+    float min_y = 1e20, max_y = -1e20;
+    float min_v = 1e20, max_v = -1e20;
+    float min = 1e20, max = -1e20;
+    for (int idx = 0; idx < prm->pNum; idx++){
+        if(p[idx].piflag == 0){
+            // debug print
+            // if (min > prt[idx]){ min = prt[idx]; }
+            // if (max < prt[idx]){ max = prt[idx]; }
+            if (prt[idx] > 1e-20){ NSLog(@"[update] not finite: prt[%d] = %e",idx,prt[idx]); }
+            // position
+            if (min_x > p[idx].x){ min_x = p[idx].x; }
+            if (max_x < p[idx].x){ max_x = p[idx].x; }
+            if (min_y > p[idx].y){ min_y = p[idx].y; }
+            if (max_y < p[idx].y){ max_y = p[idx].y; }
+            // velocity
+            float v = sqrt(p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz);
+            if (v > c){ NSLog(@"[update] exceeded speed of light: p[%d].v = %e",idx,v); }
+            if (min_v > v){ min_v = v; }
+            if (max_v < v){ max_v = v; }
+        }
+    }
     // NSLog(@"debug print(%@): pNum = %d, min = %e, max = %e", _pName, prm->pNum, min, max);
+    // NSLog(@"update(%@): pNum = %d, min_x = %e, max_x = %e, min_y = %e, max_y = %e, min_v = %e, max_v = %e", _pName, prm->pNum, min_x, max_x, min_y, max_y, min_v, max_v);
 
 }
 
@@ -586,6 +591,16 @@ kernel void integrateChargeDensity(
         if (k1 >= kmax){
             if (p[k1].piflag > 0){
                 pulln++;
+                // count particles for each boundary with charge
+                if (p[k1].piflag == 1){
+                    _pinum_Xmin += (int)(_q/(float)ec);
+                }else if(p[k1].piflag == 2){
+                    _pinum_Xmax += (int)(_q/(float)ec);
+                }else if(p[k1].piflag == 3){
+                    _pinum_Ymin += (int)(_q/(float)ec);
+                }else if(p[k1].piflag == 4){
+                    _pinum_Ymax += (int)(_q/(float)ec);
+                }
             }
             break;
         }
@@ -604,13 +619,25 @@ kernel void integrateChargeDensity(
             // keep kmax
             kend = kmax;
             // scan alive particle
-            for (int k2 = kend-1; k2 > k1; k2--){
+            for (int k2 = kend-1; k2 >= k1; k2--){
                 kmax--;
                 pulln++;
                 // copy
                 if (p[k2].piflag == 0){
                     p[k1] = p[k2];
                     break;
+                }
+                // count particles for each boundary with charge
+                if (k2 > k1){
+                    if (p[k2].piflag == 1){
+                        _pinum_Xmin += (int)(_q/(float)ec);
+                    }else if(p[k2].piflag == 2){
+                        _pinum_Xmax += (int)(_q/(float)ec);
+                    }else if(p[k2].piflag == 3){
+                        _pinum_Ymin += (int)(_q/(float)ec);
+                    }else if(p[k2].piflag == 4){
+                        _pinum_Ymax += (int)(_q/(float)ec);
+                    }
                 }
             }
         }
@@ -625,7 +652,7 @@ kernel void integrateChargeDensity(
                || int(p[k1].x) > prm->ngb+prm->ngx
                || int(p[k1].y) < prm->ngb
                || int(p[k1].y) > prm->ngb+prm->ngy ){
-            NSLog(@"spilled particle detected: pName = %@, idx = %d, p.x = %e, p.y = %e", _pName, k1, p[k1].x, p[k1].y);
+            NSLog(@"spilled particle is detected: pName = %@, idx = %d, p.x = %e, p.y = %e", _pName, k1, p[k1].x, p[k1].y);
         }
     }
     // output log

@@ -117,6 +117,11 @@ kernel void integrateMoments(
             atomic_fetch_add_explicit(&( Pzz[idx_out] ), sf[i][0]*sf[j][1]*p.vz*p.vz , memory_order_relaxed);
         }
     }
+    if (!isfinite(p.x)) {
+        print[gid] = 1.0;
+    }else{
+        print[gid] = 0.0;
+    }
 }
 )";
 
@@ -214,6 +219,9 @@ kernel void integrateMoments(
         Pyz[i] = 0.0;
         Pzz[i] = 0.0;
     }
+    // for (int i = 0; i < 10; i++){
+    //     NSLog(@"Moment(before): n[%d] = %e",i,n[i]);
+    // }
     
     // 粒子データは Particle クラスのバッファを使用
     id<MTLBuffer> particleBuffer = [ptcl particleBuffer];
@@ -296,6 +304,15 @@ kernel void integrateMoments(
             Pzz[i] = 0.0;
         }
     }
+
+    // // debug print
+    // float* prt = (float*)_printBuffer.contents;
+    // for (int i = 0; i < prm->pNum; i++){
+    //     if (prt[i] > 1e-20){
+    //         NSLog(@"not finite: prt[%d] = %e",i,prt[i]);
+    //     }
+    //     // NSLog(@"Moment: n[%d] = %e",i,n[i]);
+    // }
 
 };
 

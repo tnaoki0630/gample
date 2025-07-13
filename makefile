@@ -34,6 +34,7 @@ SOURCES_COMMON = $(SRC_DIR)/main.mm \
                  $(SRC_DIR)/EMField.mm \
                  $(SRC_DIR)/Moment.mm \
                  $(SRC_DIR)/FileIO.mm \
+                 $(SRC_DIR)/Collision.mm \
 
 # EXEC の値によって Particle ソースを切り替え
 ifeq ($(EXEC), mpi)

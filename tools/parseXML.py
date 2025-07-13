@@ -48,33 +48,45 @@ def plot_values(cycles, arr_values, labels, scales, title="", dt=1.0):
     plt.margins(x=0.0, y=0.30)
     plt.ylabel(title)
     plt.xlabel('time [ns]')
-    plt.xlim(left=0)
-    # plt.ylim(bottom=0)
+    # plt.xlim(left=0)
+    # plt.ylim(bottom=0)q
     plt.tight_layout()
     plt.show()
 
 if __name__ == '__main__':
-    cycles, arr1 = parseXML('large4_light_woFC_log.xml', 'elapsedTime', 'update_electron')
-    cycles, arr2 = parseXML('large4_light_woFC_log.xml', 'elapsedTime', 'update_ion_Xe1')
-    cycles, arr3 = parseXML('large4_light_woFC_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, arr4 = parseXML('large4_light_woFC_log.xml', 'elapsedTime', 'integCDens_ion_Xe1')
-    update_woFC = [v1+v2+v3+v4 for v1, v2, v3, v4 in zip(arr1,arr2,arr3,arr4)]
-    cycles, arr1 = parseXML('large4_light_wFC_log.xml', 'elapsedTime', 'update_electron')
-    cycles, arr2 = parseXML('large4_light_wFC_log.xml', 'elapsedTime', 'update_ion_Xe1')
-    cycles, arr3 = parseXML('large4_light_wFC_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, arr4 = parseXML('large4_light_wFC_log.xml', 'elapsedTime', 'integCDens_ion_Xe1')
-    update_wFC = [v1+v2+v3+v4 for v1, v2, v3, v4 in zip(arr1,arr2,arr3,arr4)]
-    cycles, arr1 = parseXML('large4_light_variableWO_log.xml', 'elapsedTime', 'update_electron')
-    cycles, arr2 = parseXML('large4_light_variableWO_log.xml', 'elapsedTime', 'update_ion_Xe1')
-    cycles, arr3 = parseXML('large4_light_variableWO_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, arr4 = parseXML('large4_light_variableWO_log.xml', 'elapsedTime', 'integCDens_ion_Xe1')
-    update_variableWO = [v1+v2+v3+v4 for v1, v2, v3, v4 in zip(arr1,arr2,arr3,arr4)]
-    cycles, arr1 = parseXML('large4_light_1stOrder_log.xml', 'elapsedTime', 'update_electron')
-    cycles, arr2 = parseXML('large4_light_1stOrder_log.xml', 'elapsedTime', 'update_ion_Xe1')
-    cycles, arr3 = parseXML('large4_light_1stOrder_log.xml', 'elapsedTime', 'integCDens_electron')
-    cycles, arr4 = parseXML('large4_light_1stOrder_log.xml', 'elapsedTime', 'integCDens_ion_Xe1')
-    update_1stOrder = [v1+v2+v3+v4 for v1, v2, v3, v4 in zip(arr1,arr2,arr3,arr4)]
-    values = [update_woFC, update_wFC, update_variableWO, update_1stOrder]
-    labels = ["updateAndDeposition_woFC", "updateAndDeposition_wFC", "updateAndDeposition_variableWO", "updateAndDeposition_1stOrder"]
-    scales = [1e-3,1e-3,1e-3,1e-3]
-    plot_values(cycles, values, labels, scales, "elapsed time [ms]", dt=5e-3)
+    cycle = 3200
+    #cycles, Ne_long = parseXML('long_20250619025651_log.xml', 'flowout_electron', 'particleNumber')
+    #cycles, Ni_long = parseXML('long_20250619025651_log.xml', 'flowout_ion_Xe1', 'particleNumber')
+    # cycles, Ne_large = parseXML('large_20250621024603_log.xml', 'flowout_electron', 'particleNumber')
+    # cycles, Ni_large = parseXML('large_20250621024603_log.xml', 'flowout_ion_Xe1', 'particleNumber')
+    # cycles, Ne_large2 = parseXML('large2_20250623042317_log.xml', 'flowout_electron', 'particleNumber')
+    # cycles, Ni_large2 = parseXML('large2_20250623042317_log.xml', 'flowout_ion_Xe1', 'particleNumber')
+    # cycles, Ne_large3 = parseXML('large3_20250624212336_log.xml', 'flowout_electron', 'particleNumber')
+    # cycles, Ni_large3 = parseXML('large3_20250624212336_log.xml', 'flowout_ion_Xe1', 'particleNumber')
+    # cycles, Ne_large4 = parseXML('large4_20250626124908_log.xml', 'flowout_electron', 'particleNumber')
+    # cycles, Ni_large4 = parseXML('large4_20250626124908_log.xml', 'flowout_ion_Xe1', 'particleNumber')
+    # cycles, Ne_large5 = parseXML('log_cp.xml', 'flowout_electron', 'particleNumber')
+    # cycles, Ni_large5 = parseXML('log_cp.xml', 'flowout_ion_Xe1', 'particleNumber')
+    # values = [Ne_large[0:cycle], Ni_large[0:cycle], Ne_large2[0:cycle], Ni_large2[0:cycle], Ne_large3[0:cycle], Ni_large3[0:cycle], Ne_large4[0:cycle], Ni_large4[0:cycle], Ne_large5[0:cycle], Ni_large5[0:cycle]]
+    # labels = ["Ne_ippc20", "Ni_ippc20", "Ne_ippc30", "Ni_ippc30", "Ne_ippc50", "Ni_ippc50", "Ne_ippc100(ngy=50)", "Ni_ippc100(ngy=50)", "Ne_ippc250(ngy=100,1st)", "Ni_ippc250(ngy=100,1st)"]
+    # scales = [6.25e4, 6.25e4, 4.166667e4, 4.166667e4, 2.5e4, 2.5e4, 1.25e4*4, 1.25e4*4, 0.5e4*2, 0.5e4*2]
+    # plot_values(cycles[0:cycle], values, labels, scales, "particle Number [1/cm]", 5e-3)
+    
+    cycles, ele_Xmin = parseXML('log_cp.xml', 'flowout_electron', 'Xmin')
+    cycles, ele_Xmax = parseXML('log_cp.xml', 'flowout_electron', 'Xmax')
+    cycles, ele_pull = parseXML('log_cp.xml', 'flowout_electron', 'pulledPtclNum')
+    cycles, ion_Xmin = parseXML('log_cp.xml', 'flowout_ion_Xe1', 'Xmin')
+    cycles, ion_Xmax = parseXML('log_cp.xml', 'flowout_ion_Xe1', 'Xmax')
+    cycles, ion_pull = parseXML('log_cp.xml', 'flowout_ion_Xe1', 'pulledPtclNum')
+    cycles, injection = parseXML('log_cp.xml', 'injection_electron', 'hollow-cathode')
+    injectionError = [max(0,-(v1+v2))-v3 for v1,v2,v3 in zip(ele_Xmin,ion_Xmin,injection)]
+    pullError_ele = [v1+v2+v3 for v1,v2,v3 in zip(ele_Xmin,ele_Xmax,ele_pull)]
+    pullError_ion = [v1+v2-v3 for v1,v2,v3 in zip(ion_Xmin,ion_Xmax,ion_pull)]
+    values = [injectionError,pullError_ele,pullError_ion]
+    labels = ["injectionError","pullError_ele","pullError_ion"]
+    scales = [1,1,1]
+    plot_values(cycles, values, labels, scales, "particle Number [-]", dt=5e-3)
+    values = [ele_Xmin, ion_Xmin, injection]
+    labels = ["ele_Xmin", "ion_Xmin", "injection"]
+    scales = [1,1,1]
+    plot_values(cycles, values, labels, scales, "particle Number [-]", dt=5e-3)

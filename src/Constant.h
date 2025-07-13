@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 // physical constants
+const double me = 9.10938188e-28;      // electron mass [g]
 const double ec = 4.803204197e-10;     // elementary charge [statC = esu]
 const double c = 2.99792458e10;        // speed of light [cm/s]
 const double kb = 1.3806503e-16;       // Boltzmann's constant [erg/K]

@@ -234,7 +234,7 @@ static void writeField(FILE* fp, const char* name, int type_id, float* array, in
     free(output);
 }
 
-BOOL saveProgress(int cycle, NSMutableArray* ptclArr, EMField* fld, int current, Init* init){
+BOOL saveProgress(int cycle, NSMutableArray* ptclArr, EMField* fld, Init* init){
     struct FlagForEquation EqFlags = init.flagForEquation;
     struct ParamForComputing compParam = init.paramForComputing;
     struct ParamForTimeIntegration timeParam = init.paramForTimeIntegration;
@@ -279,7 +279,7 @@ BOOL saveProgress(int cycle, NSMutableArray* ptclArr, EMField* fld, int current,
     return YES;
 }
 
-BOOL loadProgress(int cycle, NSMutableArray* ptclArr, EMField* fld, int& current, Init* init){
+BOOL loadProgress(int cycle, NSMutableArray* ptclArr, EMField* fld, Init* init){
     struct FlagForEquation EqFlags = init.flagForEquation;
     struct ParamForComputing compParam = init.paramForComputing;
     struct ParamForTimeIntegration timeParam = init.paramForTimeIntegration;

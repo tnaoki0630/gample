@@ -40,6 +40,10 @@ void printInitContents(Init* init, XmlLogger& logger){
         [log appendFormat:@"  Mass: %e\n", particles[i].m];
         [log appendFormat:@"  Weight: %e\n", particles[i].w];
         [log appendFormat:@"  genType: %@\n", particles[i].genType];
+        [log appendFormat:@"  initialXmin: %e\n", particles[i].genX[0]];
+        [log appendFormat:@"  initialXmax: %e\n", particles[i].genX[1]];
+        [log appendFormat:@"  initialYmin: %e\n", particles[i].genY[0]];
+        [log appendFormat:@"  initialYmax: %e\n", particles[i].genY[1]];
         [log appendFormat:@"  initialT: %e\n", particles[i].genT];
     }
     

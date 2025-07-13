@@ -5,6 +5,7 @@
 #import "Init.h"
 #import "Particle.h"
 #import "Moment.h"
+#import "Collision.h"
 #import "EMField.h"
 #import "DebugPrint.h"
 #import "XmlLogger.h"
@@ -26,6 +27,9 @@ std::map<std::string, std::string> parseArgs(int argc, const char* argv[]) {
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
+        // flags
+        const bool debug = false;
+
         // 所要時間計測
         auto start = std::chrono::high_resolution_clock::now();
         
@@ -90,13 +94,14 @@ int main(int argc, const char * argv[]) {
         [fld solvePoisson:logger];
         // モーメント計算クラスの初期化
         Moment *mom = [[Moment alloc] initWithDevice:device withParam:init withLogger:logger];
+        // 衝突計算クラスの初期化
+        Collision *col = [[Collision alloc] initWithDevice:device withParam:init withParticles:ptclArr withLogger:logger];
 
         // 時間更新パラメータ
         int StartCycle = timeParam.Start;
-        int intCurrent = 0;
         // リスタート
         if(StartCycle != 0){
-            if(!loadProgress(StartCycle, ptclArr, fld, intCurrent, init)){
+            if(!loadProgress(StartCycle, ptclArr, fld, init)){
                 NSLog(@"restart failed.");
                 return 1;
             };
@@ -107,6 +112,11 @@ int main(int argc, const char * argv[]) {
             // }
             // [fld solvePoisson:logger];
             // outputField(StartCycle, fld, init, logger);
+        }
+        outputField(0, fld, init, logger);
+        for(Particle* ptcl in ptclArr){
+            [mom integrateMoments:ptcl withEMField:fld withLogger:logger];
+            outputMoments(0, mom, ptcl.pName, init, logger);
         }
         double dt = timeParam.TimeStep;
         double time = StartCycle*dt;
@@ -138,14 +148,15 @@ int main(int argc, const char * argv[]) {
                     Particle *ptcl = [ptclArr objectAtIndex:s];
                     std::string pName = [particles[s].pName UTF8String];
                     // 粒子の時間更新
+                    if (debug){ NSLog(@"update"); }
                     MEASURE("update_"+pName, [ptcl update:dt withEMField:fld withMom:mom withLogger:logger], dataElapsedTime);
                     // 流出粒子の処理
+                    if (debug){ NSLog(@"reducee"); }
                     MEASURE("reduce_"+pName, [ptcl reduce:logger], dataElapsedTime);
-                    // 流出電流の計算
-                    intCurrent += ptcl.pinum_Xmin;
                     // 電荷密度の更新
                     if (EqFlags.EMField == 1){
-                        MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld  withMoment:mom withLogger:logger], dataElapsedTime);
+                        if (debug){ NSLog(@"integCDens"); }
+                        MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld withMoment:mom withLogger:logger], dataElapsedTime);
                     }
                     // 粒子軌道の出力
                     if (timeParam.ParticleOutput != 0 && cycle%timeParam.ParticleOutput == 0){
@@ -154,12 +165,14 @@ int main(int argc, const char * argv[]) {
                     // モーメントの出力
                     if (timeParam.FieldOutput != 0 && cycle%timeParam.FieldOutput == 0){
                         [mom integrateMoments:ptcl withEMField:fld withLogger:logger];
+                        if (debug){ NSLog(@"moments"); }
                         outputMoments(cycle, mom, particles[s].pName, init, logger);
                     }
                 }
 
                 // 電場の更新
                 if (EqFlags.EMField == 1){
+                    if (debug){ NSLog(@"poisson"); }
                     MEASURE("solvePoisson", [fld solvePoisson:logger], dataElapsedTime);
                     // 場の出力
                     if (timeParam.FieldOutput != 0 && cycle%timeParam.FieldOutput == 0){
@@ -168,20 +181,19 @@ int main(int argc, const char * argv[]) {
                 }
 
                 // 粒子生成
-                std::vector<int> ret(EqFlags.Particle);
-                for (int s = 0; s < EqFlags.Particle; s++) {
-                    Particle *ptcl = [ptclArr objectAtIndex:s];
-                    std::string pName = [particles[s].pName UTF8String];
-                    MEASURE("injection_"+pName, ret.push_back([ptcl injection:dt withParam:init withCurrent:intCurrent withLogger:logger]), dataElapsedTime);
-                }
-                if (std::reduce(std::begin(ret), std::end(ret)) != 0){
-                    NSLog(@"injection failed.");
+                bool ret1,ret2;
+                if (debug){ NSLog(@"AI"); }
+                MEASURE("artificialIonization", ret1 = [col artificialIonization:dt withParticles:ptclArr withLogger:logger], dataElapsedTime);
+                if (debug){ NSLog(@"HC"); }
+                MEASURE("hollowCathode", ret2 = [col hollowCathode:dt withParticles:ptclArr withLogger:logger], dataElapsedTime);
+                if (!ret1 || !ret2){
+                    NSLog(@"injection failed. ret1 = %d, ret2 = %d",ret1,ret2);
                     return 1;
                 }
 
                 // 途中経過出力
                 if (timeParam.FieldOutput != 0 && cycle%timeParam.ProgressOutput == 0){
-                    if(!saveProgress(cycle, ptclArr, fld, intCurrent, init)){
+                    if(!saveProgress(cycle, ptclArr, fld, init)){
                         NSLog(@"output progress failed.");
                         return 1;
                     };
@@ -196,7 +208,7 @@ int main(int argc, const char * argv[]) {
                 logger.logSection("memoryUsage", dataMemUsage);
                 
                 //サイクル終了
-                NSLog(@"Frame %d completed", cycle);
+                if(cycle%timeParam.LogOutput == 0) NSLog(@"Frame %d completed", cycle);
                 logger.logCycleEnd();
             }
         }

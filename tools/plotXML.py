@@ -73,18 +73,91 @@ def plot_variable_from_xml(xml_file, section_name, tag_name, ):
     plt.tight_layout()
     plt.show()
 
-# Example usage:
-# plot_variable_from_xml('log.xml', 'solvePoisson', 'iteration')
-# plot_variable_from_xml('log.xml', 'elapsedTime', 'all')
+
+def parseXML(xml_file, section_name, tag_name):
+    """
+    Parses the given XML file.
+    usage:: obtain time-series of elapsed time in integrate charge-density for electron.
+    cycles, values = parseXML('log.xml', 'flowout_electron', 'integCDens_electron')
+    """
+    # Parse XML
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+
+    cycle_ids = []
+    values = []
+
+    # Iterate over each Cycle element
+    for cycle in root.findall('Cycle'):
+        cycle_id = int(cycle.get('ID'))
+        cycle_ids.append(cycle_id)
+
+        # Find the matching Section
+        section = None
+        for sec in cycle.findall('Section'):
+            if sec.get('Name') == section_name:
+                section = sec
+                break
+
+        if section is None:
+            # No section found for this cycle
+            values.append(None)
+            continue
+
+        # Single-tag case
+        elem = section.find(tag_name)
+        val = float(elem.text) if elem is not None and elem.text else None
+        values.append(val)
+
+    return cycle_ids, values
+
+def plot_values(cycles, arr_values, labels, scales, title="", dt=1.0, xmin=None, xmax=None, ymin=None, ymax=None):
+    plt.figure()
+    for values, label_values, scale in zip(arr_values, labels, scales):
+        plt.plot([cyc*dt for cyc in cycles], [val*scale for val in values], label=label_values)
+    plt.legend(loc='lower right')
+    plt.margins(x=0.0, y=0.30)
+    plt.ylabel(title)
+    plt.xlabel('time [us]')
+    if xmin is not None:
+        plt.xlim(left=xmin)
+    if xmax is not None:
+        plt.xlim(right=xmax)
+    if ymin is not None:
+        plt.ylim(bottom=ymin)
+    if ymax is not None:
+        plt.ylim(top=ymax)
+    plt.tight_layout()
+    plt.show()
 
 if __name__ == '__main__':
     plot_variable_from_xml('log_cp.xml', 'elapsedTime', 'all')
     plot_variable_from_xml('log_cp.xml', 'injection_electron', 'all')
     plot_variable_from_xml('log_cp.xml', 'flowout_ion_Xe1', 'all')
     plot_variable_from_xml('log_cp.xml', 'flowout_electron', 'all')
-    plot_variable_from_xml('log_cp.xml', 'flowout_ion_Xe1', 'particleNumber')
-    plot_variable_from_xml('log_cp.xml', 'flowout_electron', 'particleNumber')
     plot_variable_from_xml('log_cp.xml', 'solvePoisson', 'meanCathode')
     plot_variable_from_xml('log_cp.xml', 'solvePoisson', 'iteration')
     plot_variable_from_xml('log_cp.xml', 'memoryUsage', 'all')
-    plot_variable_from_xml('log_cp.xml', 'outputField', 'all')
+    # plot_variable_from_xml('log_cp.xml', 'outputField', 'all')
+
+    cycles, Ne = parseXML('log_cp.xml', 'flowout_electron', 'particleNumber')
+    cycles, Ni = parseXML('log_cp.xml', 'flowout_ion_Xe1', 'particleNumber')
+    values = [Ne,Ni]
+    labels = ["Ne","Ni"]
+    weight = 2.5e4 # 1/cm
+    domainAR = (2.5*1.25)/(2.5*1.0) # mthesis vs benchmark
+    scales = [weight*domainAR,weight*domainAR]
+    plot_values(cycles, values, labels, scales, "particle Number [1/cm]", dt=5e-6, xmin=0, xmax=20, ymin=0, ymax=8e11)
+
+    cycles, Gamma_ic = parseXML('log_cp.xml', 'flowout_ion_Xe1', 'Xmin')
+    cycles, Gamma_ia = parseXML('log_cp.xml', 'flowout_ion_Xe1', 'Xmax')
+    cycles, Gamma_ec = parseXML('log_cp.xml', 'flowout_electron', 'Xmin')
+    cycles, Gamma_ea = parseXML('log_cp.xml', 'flowout_electron', 'Xmax')
+    Ly = 0.005*200 # cm
+    dt = 5e-12  # s
+    Gamma_i = [v1+v2 for v1,v2 in zip(Gamma_ic, Gamma_ia)]
+    Gamma_e = [v1+v2 for v1,v2 in zip(Gamma_ec, Gamma_ea)]
+    values = [Gamma_e,Gamma_i]
+    labels = ["Gamma_e","Gamma_i"]
+    scales = [weight/Ly/dt,weight/Ly/dt]
+    plot_values(cycles, values, labels, scales, "particle Flux [1/cm2s]", dt=5e-6, xmin=0, xmax=20, ymin=0, ymax=4e17)

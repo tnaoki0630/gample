@@ -230,12 +230,21 @@
             SourceForParticle src;
             src.pName       = mergedD[@"ParticleName"];
             src.genType     = mergedD[@"GenerateType"];
+            // artificial ionization
             if([mergedD[@"SrcSetMethod"] isEqualToString:@"Source[1/cm/s]"]){
                 src.src = [mergedD[@"SrcValue"] doubleValue];
             }else if([mergedD[@"SrcSetMethod"] isEqualToString:@"CurrentDensity[A/m2]"]){
                 src.src = [mergedD[@"SrcValue"] doubleValue]*JtosJ*_field.ngy*_field.dy/ec; // 単一電荷を仮定しているので注意
-            }else if([src.genType isEqualToString:@"hollow-cathode"]){
+            }
+            // hollow-cathode
+            else if([mergedD[@"SrcSetMethod"] isEqualToString:@"BoundaryCurrentAtXmin"]){
                 src.src = 0;
+            }else if([mergedD[@"SrcSetMethod"] isEqualToString:@"BoundaryCurrentAtXmax"]){
+                src.src = 1;
+            }else if([mergedD[@"SrcSetMethod"] isEqualToString:@"BoundaryCurrentAtYmin"]){
+                src.src = 2;
+            }else if([mergedD[@"SrcSetMethod"] isEqualToString:@"BoundaryCurrentAtYmax"]){
+                src.src = 3;
             }else{
                 NSLog(@"SrcSet failed.");
                 return nil;
@@ -254,6 +263,11 @@
                 for (id v in velArr) src.genU.push_back([v doubleValue]);
             }
             src.genT              = [mergedD[@"GenerateTemp"] doubleValue]*eVtoK;
+            velArr = mergedD[@"GenVelForElectron"];
+            if ([velArr isKindOfClass:[NSArray class]]) {
+                for (id v in velArr) src.genU_ele.push_back([v doubleValue]);
+            }
+            src.genT_ele              = [mergedD[@"GenTempForElectron"] doubleValue]*eVtoK;
             _particleSources.push_back(src);
         }
         
@@ -338,14 +352,16 @@
 }
 - (NSMutableDictionary*)SourceForParticleDefault{
     return [@{
-        @"ParticleName":    @"undefined",
-        @"GenerateType":    @"undefined",
-        @"SrcSetMethod":    @"undefined",
-        @"SrcVal":          @0,
-        @"GeneratePosX":    @[@(-1), @(-1)],
-        @"GeneratePosY":    @[@(-1), @(-1)],
-        @"GenerateVel":     @[@0, @0, @0],
-        @"GenerateTemp":    @0
+        @"ParticleName":        @"undefined",
+        @"GenerateType":        @"undefined",
+        @"SrcSetMethod":        @"undefined",
+        @"SrcVal":              @0,
+        @"GeneratePosX":        @[@(-1), @(-1)],
+        @"GeneratePosY":        @[@(-1), @(-1)],
+        @"GenerateVel":         @[@0, @0, @0],
+        @"GenerateTemp":        @0,
+        @"GenVelForElectron":   @[@0, @0, @0],
+        @"GenTempForElectron":  @0
     } mutableCopy];
 }
 - (NSMutableDictionary*)ParamForFieldDefault{

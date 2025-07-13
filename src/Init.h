@@ -60,7 +60,9 @@ struct SourceForParticle {
     std::vector<double> genX;
     std::vector<double> genY;
     std::vector<double> genU;
+    std::vector<double> genU_ele;
     double genT;
+    double genT_ele;
 };
 
 struct ParamForField {
