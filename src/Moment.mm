@@ -80,8 +80,8 @@ kernel void integrateMoments(
     for (int i = 0; i < 2; i++) {
         // 1st-order weighting
         if (weightOrder == 1){
-            sf[0][i] = hv[i];
-            sf[1][i] = 1.0 - hv[i];
+            sf[0][i] = 1.0 - hv[i];
+            sf[1][i] = hv[i];
         // 5th-order weighting
         } else if (weightOrder == 5){
             sc = 2.0 + hv[i];

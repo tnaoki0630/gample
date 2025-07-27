@@ -121,29 +121,29 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
     if (genType == 3){
         states[id] = rng;
         return;
+    }else{
+    // add ion
+        device ParticleState &p_ion = ptcl_ion[prm.ion_pNum + id];
+        
+        // position
+        p_ion.x = p_ele.x;
+        p_ion.y = p_ele.y;
+        
+        // Maxwellian(Box-Muller)
+        rv1 = rand01(rng);
+        rv2 = rand01(rng);
+        p_ion.vx = prm.ion_genU[0] + prm.ion_vth*sqrt(-log(rv1))*cos(2.0*PI*rv2);
+        p_ion.vy = prm.ion_genU[1] + prm.ion_vth*sqrt(-log(rv1))*sin(2.0*PI*rv2);
+        rv1 = rand01(rng);
+        rv2 = rand01(rng);
+        p_ion.vz = prm.ion_genU[2] + prm.ion_vth*sqrt(-log(rv1))*cos(2.0*PI*rv2);
+        
+        // deletion flag
+        p_ion.piflag = 0;
+        
+        // update rnd state
+        states[id] = rng;
     }
-
-    // get ion
-    device ParticleState &p_ion = ptcl_ion[prm.ion_pNum + id];
-    
-    // position
-    p_ion.x = p_ele.x;
-    p_ion.y = p_ele.y;
-    
-    // Maxwellian(Box-Muller)
-    rv1 = rand01(rng);
-    rv2 = rand01(rng);
-    p_ion.vx = prm.ion_genU[0] + prm.ion_vth*sqrt(-log(rv1))*cos(2.0*PI*rv2);
-    p_ion.vy = prm.ion_genU[1] + prm.ion_vth*sqrt(-log(rv1))*sin(2.0*PI*rv2);
-    rv1 = rand01(rng);
-    rv2 = rand01(rng);
-    p_ion.vz = prm.ion_genU[2] + prm.ion_vth*sqrt(-log(rv1))*cos(2.0*PI*rv2);
-    
-    // deletion flag
-    p_ion.piflag = 0;
-    
-    // update rnd state
-    states[id] = rng;
 }
 )";
 
@@ -446,11 +446,12 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
         RNGState* states = (RNGState*)[_RNGStateBuffer contents];
         // 未初期化状態があれば splitmix64 で初期化
         if(prm->addn > _initializedStates){
-            for (size_t i = _initializedStates; i < prm->addn - _initializedStates; ++i) {
+            for (size_t i = _initializedStates; i < prm->addn; ++i) {
                 uint64_t s = splitmix64(_masterSeed);     // ① state 用
                 uint64_t c = splitmix64(_masterSeed);     // ② inc 用
                 states[i].state = s;
                 states[i].inc   = (c | 1ULL);            // ビットOR演算で奇数化
+                NSLog(@"[AI] states[%zu].state = %llu, states[%zu].state = %llu",i,s,i,c);
             }
             // update count
             _initializedStates = prm->addn;
@@ -478,24 +479,26 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
         // 粒子数更新
         eleParams->pNum += prm->addn;
         ionParams->pNum += prm->addn;
+        // NSLog(@"[AI] addn = %d, ele_pNum = %d, ion_pNum = %d",prm->addn,eleParams->pNum,ionParams->pNum);
 
         // debug print
-        // ParticleState* p;
-        // for (Particle* ptcl in ptclArr) {
-        //     // electron の状態を取得
-        //     if([ptcl.pName isEqualToString:@"electron"]){
-        //         p = (ParticleState*)[[ptcl particleBuffer] contents];
-        //         break;
-        //     }
-        // }
-        // float* prt = (float*)_printBuffer.contents;
-        // for (int i = 0; i < prm->addn; i++){
-        //     if (prt[i] > 1e-20){
-        //         NSLog(@"[AI] detected not finite: prt[%d] = %e",i,prt[i]);
-        //         // NSLog(@"[AI] detected over light speed: prt[%d] = %e",i,prt[i]);
-        //     }
-        //     // NSLog(@"[AI] p[pNum+%d].x = %e",i,p[eleParams->pNum-prm->addn+i].x);
-        // }
+        ParticleState* p;
+        for (Particle* ptcl in ptclArr) {
+            // electron の状態を取得
+            if([ptcl.pName isEqualToString:@"electron"]){
+                p = (ParticleState*)[[ptcl particleBuffer] contents];
+                break;
+            }
+        }
+        float* prt = (float*)_printBuffer.contents;
+        for (int i = 0; i < prm->addn; i++){
+            if (prt[i] > 1e-20){
+                NSLog(@"[AI] detected not finite: prt[%d] = %e",i,prt[i]);
+                // NSLog(@"[AI] detected over light speed: prt[%d] = %e",i,prt[i]);
+            }
+            int n = eleParams->pNum-prm->addn+i;
+            // NSLog(@"[AI] p[pNum+%d].x = %e, p[n].y = %e, p[n].vx = %e, p[n].vy = %e, p[n].vz = %e",i,p[n].x,p[n].y,p[n].vx,p[n].vy,p[n].vz);
+        }
 
         return true;
 }
@@ -557,7 +560,7 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
         // 未初期化状態があれば splitmix64 で初期化
         if(prm->addn > _initializedStates){
             RNGState *states = (RNGState*)_RNGStateBuffer.contents;
-            for (size_t i = _initializedStates; i < prm->addn - _initializedStates; ++i) {
+            for (size_t i = _initializedStates; i < prm->addn; ++i) {
                 uint64_t s = splitmix64(_masterSeed);     // ① state 用
                 uint64_t c = splitmix64(_masterSeed);     // ② inc 用
                 states[i].state = s;
@@ -588,25 +591,26 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
 
         // 粒子数更新
         eleParams->pNum += prm->addn;
+        // NSLog(@"[HC] addn = %d, pNum = %d",prm->addn,eleParams->pNum);
 
         // debug print
-        // ParticleState* p;
-        // for (Particle* ptcl in ptclArr) {
-        //     // electron の状態を取得
-        //     if([ptcl.pName isEqualToString:@"electron"]){
-        //         p = (ParticleState*)[[ptcl particleBuffer] contents];
-        //         break;
-        //     }
-        // }
-        // float* prt = (float*)_printBuffer.contents;
-        // for (int i = 0; i < prm->addn; i++){
-        //     if (prt[i] > 1e-20){
-        //         NSLog(@"[HC] detected not finite: prt[%d] = %e",i,prt[i]);
-        //         // NSLog(@"[AI] detected over light speed: prt[%d] = %e",i,prt[i]);
-        //     }
-        //     // NSLog(@"[HC] p[pNum+%d].x = %e",i,p[eleParams->pNum-prm->addn+i].x);
-        //     // NSLog(@"Moment: n[%d] = %e",i,n[i]);
-        // }
+        ParticleState* p;
+        for (Particle* ptcl in ptclArr) {
+            // electron の状態を取得
+            if([ptcl.pName isEqualToString:@"electron"]){
+                p = (ParticleState*)[[ptcl particleBuffer] contents];
+                break;
+            }
+        }
+        float* prt = (float*)_printBuffer.contents;
+        for (int i = 0; i < prm->addn; i++){
+            if (prt[i] > 1e-20){
+                NSLog(@"[HC] detected not finite: prt[%d] = %e",i,prt[i]);
+                // NSLog(@"[AI] detected over light speed: prt[%d] = %e",i,prt[i]);
+            }
+            int n = eleParams->pNum-prm->addn+i;
+            // NSLog(@"[HC] p[pNum+%d].x = %e, p[n].y = %e, p[n].vx = %e, p[n].vy = %e, p[n].vz = %e",i,p[n].x,p[n].y,p[n].vx,p[n].vy,p[n].vz);
+        }
 
         return true;
 }

@@ -243,8 +243,8 @@ if __name__ == '__main__':
     # カラーバー調整辞書(get で取り出した場合、無指定の変数は None を渡す)
     # dict_cmin = {"rho":-10, "phi":-100, "Ex":-1e5, "Ey":-1e5, "electron_uy":-1e9}
     # dict_cmax = {"rho":10,  "phi":700,  "Ex":1e5,  "Ey":1e5,  "electron_uy":1e9}
-    dict_cmin = {"rho":-0.5}
-    dict_cmax = {"rho":0.5}
+    dict_cmin = {"rho":-1}
+    dict_cmax = {"rho":1}
 
     pname = args[1] # projectname
     if args[2].isdigit():
@@ -284,12 +284,12 @@ if __name__ == '__main__':
         start = int(args[3])
         dt = int(args[4])
         end = int(args[2])
-        # save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_n"   ,"[1/cm3]"  ,0,dt,start,end ,"fig/"+pname+"_electron_n.mp4"  ,cbar_vmin=dict_cmin.get("electron_n")  ,cbar_vmax=dict_cmax.get("electron_n") ,fps=15)
-        # save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_ux"  ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_electron_ux.mp4" ,cbar_vmin=dict_cmin.get("electron_ux") ,cbar_vmax=dict_cmax.get("electron_ux"),fps=15)
-        # save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_uy"  ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_electron_uy.mp4" ,cbar_vmin=dict_cmin.get("electron_uy") ,cbar_vmax=dict_cmax.get("electron_uy"),fps=15)
-        # save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_n"    ,"[1/cm3]"  ,0,dt,start,end ,"fig/"+pname+"_ion_Xe1_n.mp4"   ,cbar_vmin=dict_cmin.get("ion_Xe1_n")   ,cbar_vmax=dict_cmax.get("ion_Xe1_n")  ,fps=15)
-        # save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_ux"   ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_ion_Xe1_ux.mp4"  ,cbar_vmin=dict_cmin.get("ion_Xe1_ux")  ,cbar_vmax=dict_cmax.get("ion_Xe1_ux") ,fps=15)
-        # save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_uy"   ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_ion_Xe1_uy.mp4"  ,cbar_vmin=dict_cmin.get("ion_Xe1_uy")  ,cbar_vmax=dict_cmax.get("ion_Xe1_uy") ,fps=15)
+        save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_n"   ,"[1/cm3]"  ,0,dt,start,end ,"fig/"+pname+"_electron_n.mp4"  ,cbar_vmin=dict_cmin.get("electron_n")  ,cbar_vmax=dict_cmax.get("electron_n") ,fps=15)
+        save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_ux"  ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_electron_ux.mp4" ,cbar_vmin=dict_cmin.get("electron_ux") ,cbar_vmax=dict_cmax.get("electron_ux"),fps=15)
+        save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_uy"  ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_electron_uy.mp4" ,cbar_vmin=dict_cmin.get("electron_uy") ,cbar_vmax=dict_cmax.get("electron_uy"),fps=15)
+        save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_n"    ,"[1/cm3]"  ,0,dt,start,end ,"fig/"+pname+"_ion_Xe1_n.mp4"   ,cbar_vmin=dict_cmin.get("ion_Xe1_n")   ,cbar_vmax=dict_cmax.get("ion_Xe1_n")  ,fps=15)
+        save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_ux"   ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_ion_Xe1_ux.mp4"  ,cbar_vmin=dict_cmin.get("ion_Xe1_ux")  ,cbar_vmax=dict_cmax.get("ion_Xe1_ux") ,fps=15)
+        save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_uy"   ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_ion_Xe1_uy.mp4"  ,cbar_vmin=dict_cmin.get("ion_Xe1_uy")  ,cbar_vmax=dict_cmax.get("ion_Xe1_uy") ,fps=15)
         save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"rho"          ,"[esu/m3]" ,0,dt,start,end ,"fig/"+pname+"_rho.mp4"         ,cbar_vmin=dict_cmin.get("rho")         ,cbar_vmax=dict_cmax.get("rho")        ,fps=15)
-        # save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"Ex"           ,"[V/m]"    ,1,dt,start,end ,"fig/"+pname+"_Ex.mp4"          ,cbar_vmin=dict_cmin.get("Ex")          ,cbar_vmax=dict_cmax.get("Ex")         ,fps=15)
-        # save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"Ey"           ,"[V/m]"    ,2,dt,start,end ,"fig/"+pname+"_Ey.mp4"          ,cbar_vmin=dict_cmin.get("Ey")          ,cbar_vmax=dict_cmax.get("Ey")         ,fps=15)
+        save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"Ex"           ,"[V/m]"    ,1,dt,start,end ,"fig/"+pname+"_Ex.mp4"          ,cbar_vmin=dict_cmin.get("Ex")          ,cbar_vmax=dict_cmax.get("Ex")         ,fps=15)
+        save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"Ey"           ,"[V/m]"    ,2,dt,start,end ,"fig/"+pname+"_Ey.mp4"          ,cbar_vmin=dict_cmin.get("Ey")          ,cbar_vmax=dict_cmax.get("Ey")         ,fps=15)

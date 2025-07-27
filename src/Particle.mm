@@ -77,6 +77,13 @@ kernel void updateParticles(
     // get particle
     device ParticleState& p = ptcl[id];
 
+    // // debug print
+    // if (!isfinite(p.x)) {
+    //     print[id] = 1.0;
+    // }else{
+    //     print[id] = 0.0;
+    // }
+
     // electro-magnetic field on each ptcl
     float xh = p.x - 0.5;
     float yh = p.y - 0.5;
@@ -589,7 +596,7 @@ kernel void integrateChargeDensity(
             // debug print
             // if (min > prt[idx]){ min = prt[idx]; }
             // if (max < prt[idx]){ max = prt[idx]; }
-            if (prt[idx] > 1e-20){ NSLog(@"[update] not finite: prt[%d] = %e",idx,prt[idx]); }
+            if (prt[idx] > 1e-20){ NSLog(@"[update_%@] not finite: prt[%d] = %e",_pName,idx,prt[idx]); }
             // position
             if (min_x > p[idx].x){ min_x = p[idx].x; }
             if (max_x < p[idx].x){ max_x = p[idx].x; }
@@ -597,7 +604,7 @@ kernel void integrateChargeDensity(
             if (max_y < p[idx].y){ max_y = p[idx].y; }
             // velocity
             float v = sqrt(p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz);
-            if (v > c){ NSLog(@"[update] exceeded speed of light: p[%d].v = %e",idx,v); }
+            if (v > c){ NSLog(@"[update_%@] exceeded speed of light: p[%d].v = %e",_pName,idx,v); }
             if (min_v > v){ min_v = v; }
             if (max_v < v){ max_v = v; }
         }
@@ -652,6 +659,7 @@ kernel void integrateChargeDensity(
             }else if(p[k1].piflag == 4){
                 _pinum_Ymax += (int)(_q/(float)ec);
             }
+            // NSLog(@"[reduce_%@] reduced %d",_pName,k1);
             // keep kmax
             kend = kmax;
             // scan alive particle
@@ -660,6 +668,7 @@ kernel void integrateChargeDensity(
                 pulln++;
                 // copy
                 if (p[k2].piflag == 0){
+                    // NSLog(@"[reduce_%@] p[%d].x = %e is exchanged with p[%d].x = %e",_pName,k1,p[k1].x,k2,p[k2].x);
                     p[k1] = p[k2];
                     break;
                 }
@@ -674,6 +683,7 @@ kernel void integrateChargeDensity(
                     }else if(p[k2].piflag == 4){
                         _pinum_Ymax += (int)(_q/(float)ec);
                     }
+                    // NSLog(@"[reduce_%@] reduced %d",_pName,k2);
                 }
             }
         }
