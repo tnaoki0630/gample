@@ -132,7 +132,6 @@ def plot_values(cycles, arr_values, labels, scales, title="", dt=1.0, xmin=None,
 
 if __name__ == '__main__':
     plot_variable_from_xml('log_cp.xml', 'elapsedTime', 'all')
-    plot_variable_from_xml('log_cp.xml', 'injection_electron', 'all')
     plot_variable_from_xml('log_cp.xml', 'flowout_ion_Xe1', 'all')
     plot_variable_from_xml('log_cp.xml', 'flowout_electron', 'all')
     plot_variable_from_xml('log_cp.xml', 'solvePoisson', 'meanCathode')
@@ -144,7 +143,7 @@ if __name__ == '__main__':
     cycles, Ni = parseXML('log_cp.xml', 'flowout_ion_Xe1', 'particleNumber')
     values = [Ne,Ni]
     labels = ["Ne","Ni"]
-    weight = 2.5e4 # 1/cm
+    weight = 6.25e4 # 1/cm
     domainAR = (2.5*1.25)/(2.5*1.0) # mthesis vs benchmark
     scales = [weight*domainAR,weight*domainAR]
     plot_values(cycles, values, labels, scales, "particle Number [1/cm]", dt=5e-6, xmin=0, xmax=20, ymin=0, ymax=8e11)
@@ -161,3 +160,11 @@ if __name__ == '__main__':
     labels = ["Gamma_e","Gamma_i"]
     scales = [weight/Ly/dt,weight/Ly/dt]
     plot_values(cycles, values, labels, scales, "particle Flux [1/cm2s]", dt=5e-6, xmin=0, xmax=20, ymin=0, ymax=4e17)
+    
+    cycles, addn_HC = parseXML('log_cp.xml', 'hollowCathode', 'addn_injected')
+    cycles, addn_HC_neg = parseXML('log_cp.xml', 'hollowCathode', 'addn_neglected')
+    cycles, addn_AI = parseXML('log_cp.xml', 'artificialIonization', 'addn_injected')
+    values = [addn_HC,addn_HC_neg,addn_AI]
+    labels = ["addn_HC","addn_HC_neg","addn_AI"]
+    scales = [1,1,1]
+    plot_values(cycles, values, labels, scales, "injected particles [-]", dt=5e-6, xmin=0)

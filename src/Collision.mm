@@ -154,6 +154,8 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
     NSString* _srcName;
     int _srcValueForHC;
     std::default_random_engine _rndEngine;
+    bool _existAI;
+    bool _existHC;
 }
 
 // 初期設定
@@ -300,7 +302,9 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
         eleParams->pNum = prm->addn;
         ionParams->pNum = prm->addn;
 
-        // 生成条件のカーネルをセット
+        // 生成条件のカーネルをセット（それぞれ1条件のみ対応）
+        _existAI = false;
+        _existHC = false;
         for (int i = 0; i < sources.size(); i++){
             if ([sources[i].genType isEqualToString:@"uniformIonization"]){
                 genType = 0;
@@ -313,6 +317,8 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
             }
             // artificial ionization
             if (genType == 0 || genType == 1 || genType == 2){
+                // set exist flag
+                _existAI = true;
                 // set function constant
                 [fc setConstantValue:&genType type:MTLDataTypeInt atIndex:0];
                 function = [library newFunctionWithName:@"artificialIonization" constantValues:fc error:&error];
@@ -350,6 +356,8 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
             }
             // hollow-cathode
             if (genType == 3){
+                // set exist flag
+                _existHC = true;
                 // set function constant
                 [fc setConstantValue:&genType type:MTLDataTypeInt atIndex:0];
                 function = [library newFunctionWithName:@"artificialIonization" constantValues:fc error:&error];
@@ -396,6 +404,8 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
 - (bool)artificialIonization:(double)dt withParticles:(NSArray<Particle*>*)ptclArr withLogger:(XmlLogger&)logger{
         // logging
         std::map<std::string, std::string>loggingData;
+        // check flag
+        if(!_existAI){ return true; }
 
         // 粒子状態の取得とパラメータ更新
         generationParams* prm = (generationParams*)[_paramsBuffer contents];
@@ -493,6 +503,8 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
 - (bool)hollowCathode:(double)dt withParticles:(NSArray<Particle*>*)ptclArr withLogger:(XmlLogger&)logger{
         // ログ出力用データセット
         std::map<std::string, std::string>loggingData;
+        // check flag
+        if(!_existHC){ return true; }
         
         // set params
         generationParams* prm = (generationParams*)[_paramsForHCBuffer contents];
@@ -530,13 +542,13 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
             return false;
         }else if (addn <= 0){
             // neglect negative current
-            loggingData["addn_negrected"] = std::to_string(-addn);
+            loggingData["addn_neglected"] = std::to_string(-addn);
             loggingData["addn_injected"] = std::to_string(0);
             logger.logSection("hollowCathode", loggingData);
             return true;
         }else{
             // assign addn to prm
-            loggingData["addn_negrected"] = std::to_string(0);
+            loggingData["addn_neglected"] = std::to_string(0);
             loggingData["addn_injected"] = std::to_string(addn);
             logger.logSection("hollowCathode", loggingData);
             prm->addn = (uint)addn;

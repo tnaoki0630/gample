@@ -77,16 +77,20 @@ def plotField2d(field, title, figname, type_id, bool_buff, cmin=None, cmax=None)
     cmap = 'bwr' if abs(vmin+vmax) < 1e-20 else 'plasma'
     # プロット
     fig, ax = plt.subplots()
-    if (nx < 50 or ny < 50):
-        if bool_buff:
-            im = ax.scatter(X[0:ny+1, 0:nx+1], Y[0:ny+1, 0:nx+1], c=field[0:ny+1, 0:nx+1], s=20,vmin=vmin,vmax=vmax,cmap=cmap)
-        else:
-            im = ax.scatter(X[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], Y[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], c=field[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], s=20,vmin=vmin,vmax=vmax,cmap=cmap)
+    # if (nx < 50 or ny < 50):
+    #     if bool_buff:
+    #         im = ax.scatter(X[0:ny+1, 0:nx+1], Y[0:ny+1, 0:nx+1], c=field[0:ny+1, 0:nx+1], s=20,marker='s',vmin=vmin,vmax=vmax,cmap=cmap)
+    #     else:
+    #         im = ax.scatter(X[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], Y[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], c=field[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], s=30,marker='s',vmin=vmin,vmax=vmax,cmap=cmap)
+    # else:
+    #     if bool_buff:
+    #         im = ax.pcolormesh(X[0:ny+1, 0:nx+1], Y[0:ny+1, 0:nx+1], field[0:ny+1, 0:nx+1], shading='auto',vmin=vmin,vmax=vmax,cmap=cmap)
+    #     else:
+    #         im = ax.pcolormesh(X[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], Y[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], field[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], shading='auto',vmin=vmin,vmax=vmax,cmap=cmap)
+    if bool_buff:
+        im = ax.pcolormesh(X[0:ny+1, 0:nx+1], Y[0:ny+1, 0:nx+1], field[0:ny+1, 0:nx+1], shading='auto',vmin=vmin,vmax=vmax,cmap=cmap)
     else:
-        if bool_buff:
-            im = ax.pcolormesh(X[0:ny+1, 0:nx+1], Y[0:ny+1, 0:nx+1], field[0:ny+1, 0:nx+1], shading='auto',vmin=vmin,vmax=vmax,cmap=cmap)
-        else:
-            im = ax.pcolormesh(X[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], Y[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], field[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], shading='auto',vmin=vmin,vmax=vmax,cmap=cmap)
+        im = ax.pcolormesh(X[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], Y[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], field[buff:mesh["ngy"]+buff+1, buff:mesh["ngx"]+buff+1], shading='auto',vmin=vmin,vmax=vmax,cmap=cmap)
     cbar = fig.colorbar(im, ax=ax, fraction=0.025, pad=0.04)
     cbar.set_label('Field value')
     ax.set_xlabel('x (units)')
@@ -174,6 +178,9 @@ def save_field_video(
     fps         : 動画のフレームレート
     dpi         : 出力解像度
     """
+    # time evolution per cycle
+    dt_sim = 5e-3
+
     # 最初のフレーム読み込み
     mesh0, fields0 = getField(bin_pattern.format(cycle=Sframe))
     arr0 = next(arr for nm, tid, arr in fields0 if nm == name and tid == type_id)
@@ -202,16 +209,29 @@ def save_field_video(
         cmap=cmap,
     )
     ax.set_title(name)
+    # メッシュ
+    if (nx < 50 or ny < 50):
+        for i in range(mesh0["ngx"]+1):
+            ax.axvline(i*mesh0["dx"], color='gray', linestyle=':', linewidth=0.5)
+        for j in range(mesh0["ngy"]+1):
+            ax.axhline(j*mesh0["dy"], color='gray', linestyle=':', linewidth=0.5)
+
     cbar = fig.colorbar(im, ax=ax, label=name+" "+unit, shrink=0.6)
 
+    # writer の作成
     writer = FFMpegWriter(fps=fps, metadata={"title": name})
     with writer.saving(fig, outfile, dpi=dpi):
         for cycle in range(Sframe, Eframe+dtoutput, dtoutput):
             mesh, fields = getField(bin_pattern.format(cycle=cycle))
+            # データ更新
             arr = next(arr for nm, tid, arr in fields if nm == name and tid == type_id)
-
             im.set_data(arr)
-            ax.set_title(f'{name}: time = {int(cycle*5e-3)} [ns]')
+            # カラーバー更新
+            vmin = arr.min() if cbar_vmin is None else cbar_vmin
+            vmax = arr.max() if cbar_vmax is None else cbar_vmax
+            im.set_clim(vmin,vmax)
+            # ax.set_title(f'{name}: time = {int(cycle*dt_sim)} [ns]')
+            ax.set_title(f'{name}: time = {cycle*dt_sim:.3f} [ns]')
             writer.grab_frame()
 
     plt.close(fig)
@@ -220,22 +240,39 @@ def save_field_video(
 if __name__ == '__main__':
     args = sys.argv
 
-    pname = args[1]
-    if args[2].isdigit(): cycle = int(args[2])
-    # mesh, fields = getField("bin/"+pname+f"_EMField_{cycle:08}.bin")
-    mesh, fields = getField("bin/"+pname+f"_Moments_electron_{cycle:08}.bin")
-    # mesh, fields = getField(f"bin/large_Moments_electron_{cycle:08}.bin")
-    # mesh, fields = getField(f"bin/large_Moments_ion_Xe1_{cycle:08}.bin")
+    # カラーバー調整辞書(get で取り出した場合、無指定の変数は None を渡す)
+    # dict_cmin = {"rho":-10, "phi":-100, "Ex":-1e5, "Ey":-1e5, "electron_uy":-1e9}
+    # dict_cmax = {"rho":10,  "phi":700,  "Ex":1e5,  "Ey":1e5,  "electron_uy":1e9}
+    dict_cmin = {"rho":-0.5}
+    dict_cmax = {"rho":0.5}
+
+    pname = args[1] # projectname
+    if args[2].isdigit():
+        cycle = int(args[2])
+    else:
+        cycle = None
+    mesh, fields = getField("bin/"+pname+f"_EMField_{cycle:08}.bin")
 
     print(f"Mesh info: ngx={mesh["ngx"]}, ngy={mesh["ngy"]}, ngb={mesh["ngb"]}, dx={mesh["dx"]}, dy={mesh["dy"]}")
     nx = mesh["ngx"]+2*mesh["ngb"]
     ny = mesh["ngx"]+2*mesh["ngb"]
 
-    # カラーバー調整辞書(get で取り出した場合、無指定の変数は None を渡す)
-    dict_cmin = {"rho":-10, "phi":-100, "Ex":-1e5, "Ey":-1e5, "electron_uy":-1e9}
-    dict_cmax = {"rho":10,  "phi":700,  "Ex":1e5,  "Ey":1e5,  "electron_uy":1e9}
-
-    # プロット
+    # plot EMField
+    for name, type_id, arr in fields:
+        print(f"{name}: type_id={type_id}, shape={arr.shape}, min={arr.min()}, max={arr.max()}")
+        # plotField2d(arr, name, f"fig/{name}_wBuff.png" , type_id , True)
+        plotField2d(arr, name, f"fig/{name}.png" , type_id , False,dict_cmin.get(name),dict_cmax.get(name))
+        plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
+    
+    # electron
+    mesh, fields = getField("bin/"+pname+f"_Moments_electron_{cycle:08}.bin")
+    for name, type_id, arr in fields:
+        print(f"{name}: type_id={type_id}, shape={arr.shape}, min={arr.min()}, max={arr.max()}")
+        # plotField2d(arr, name, f"fig/{name}_wBuff.png" , type_id , True)
+        plotField2d(arr, name, f"fig/{name}.png" , type_id , False,dict_cmin.get(name),dict_cmax.get(name))
+        plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
+    # ion
+    mesh, fields = getField("bin/"+pname+f"_Moments_ion_Xe1_{cycle:08}.bin")
     for name, type_id, arr in fields:
         print(f"{name}: type_id={type_id}, shape={arr.shape}, min={arr.min()}, max={arr.max()}")
         # plotField2d(arr, name, f"fig/{name}_wBuff.png" , type_id , True)
@@ -243,16 +280,16 @@ if __name__ == '__main__':
         plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
 
     # 動画保存(開始フレーム、最終フレームを数字で受け取り動画保存)
-    if (len(args)==4):
-        dt = 10000
+    if (len(args)==5):
         start = int(args[3])
+        dt = int(args[4])
         end = int(args[2])
-        save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_n"   ,"[1/cm3]"  ,0,dt,start,end ,"fig/"+pname+"_electron_n.mp4"  ,cbar_vmin=0    ,cbar_vmax=3e11)
-        save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_uy"  ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_electron_uy.mp4" ,cbar_vmin=-1e9 ,cbar_vmax=1e9)
-        save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_ux"  ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_electron_ux.mp4" ,cbar_vmin=-1e9 ,cbar_vmax=1e9)
-        save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_n"    ,"[1/cm3]"  ,0,dt,start,end ,"fig/"+pname+"_ion_Xe1_n.mp4"   ,cbar_vmin=0    ,cbar_vmax=3e11)
-        save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_ux"   ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_ion_Xe1_ux.mp4"  ,cbar_vmin=-1e7 ,cbar_vmax=1e7)
-        save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_uy"   ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_ion_Xe1_uy.mp4"  ,cbar_vmin=-1e6 ,cbar_vmax=1e6)
-        save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"rho"          ,"[esu/m3]" ,0,dt,start,end ,"fig/"+pname+"_rho.mp4"         ,cbar_vmin=-10  ,cbar_vmax=10)
-        save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"Ex"           ,"[V/m]"    ,1,dt,start,end ,"fig/"+pname+"_Ex.mp4"          ,cbar_vmin=-1e5 ,cbar_vmax=1e5)
-        save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"Ey"           ,"[V/m]"    ,2,dt,start,end ,"fig/"+pname+"_Ey.mp4"          ,cbar_vmin=-1e5 ,cbar_vmax=1e5)
+        # save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_n"   ,"[1/cm3]"  ,0,dt,start,end ,"fig/"+pname+"_electron_n.mp4"  ,cbar_vmin=dict_cmin.get("electron_n")  ,cbar_vmax=dict_cmax.get("electron_n") ,fps=15)
+        # save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_ux"  ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_electron_ux.mp4" ,cbar_vmin=dict_cmin.get("electron_ux") ,cbar_vmax=dict_cmax.get("electron_ux"),fps=15)
+        # save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_uy"  ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_electron_uy.mp4" ,cbar_vmin=dict_cmin.get("electron_uy") ,cbar_vmax=dict_cmax.get("electron_uy"),fps=15)
+        # save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_n"    ,"[1/cm3]"  ,0,dt,start,end ,"fig/"+pname+"_ion_Xe1_n.mp4"   ,cbar_vmin=dict_cmin.get("ion_Xe1_n")   ,cbar_vmax=dict_cmax.get("ion_Xe1_n")  ,fps=15)
+        # save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_ux"   ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_ion_Xe1_ux.mp4"  ,cbar_vmin=dict_cmin.get("ion_Xe1_ux")  ,cbar_vmax=dict_cmax.get("ion_Xe1_ux") ,fps=15)
+        # save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_uy"   ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_ion_Xe1_uy.mp4"  ,cbar_vmin=dict_cmin.get("ion_Xe1_uy")  ,cbar_vmax=dict_cmax.get("ion_Xe1_uy") ,fps=15)
+        save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"rho"          ,"[esu/m3]" ,0,dt,start,end ,"fig/"+pname+"_rho.mp4"         ,cbar_vmin=dict_cmin.get("rho")         ,cbar_vmax=dict_cmax.get("rho")        ,fps=15)
+        # save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"Ex"           ,"[V/m]"    ,1,dt,start,end ,"fig/"+pname+"_Ex.mp4"          ,cbar_vmin=dict_cmin.get("Ex")          ,cbar_vmax=dict_cmax.get("Ex")         ,fps=15)
+        # save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"Ey"           ,"[V/m]"    ,2,dt,start,end ,"fig/"+pname+"_Ey.mp4"          ,cbar_vmin=dict_cmin.get("Ey")          ,cbar_vmax=dict_cmax.get("Ey")         ,fps=15)

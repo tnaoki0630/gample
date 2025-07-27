@@ -63,6 +63,7 @@
         _flagEquation.Particle    = [mergedFlagD[@"Particle"]    integerValue];
         _flagEquation.EMField     = [mergedFlagD[@"EMField"]     integerValue];
         _flagEquation.MCCollision = [mergedFlagD[@"MCCollision"] integerValue];
+        NSLog(@"_flagEquation.Particle = %d", _flagEquation.Particle);
 
         // ParamForTimeIntegration
         NSDictionary *timeD = root[@"ParamForTimeIntegration"];
@@ -176,7 +177,7 @@
             [mergedD addEntriesFromDictionary:d];
             ParamForParticle p;
             p.pName             = mergedD[@"ParticleName"];
-            if([mergedD[@"pNumSetMethod"] isEqualToString:@"InititalParticleNumber"]){
+            if([mergedD[@"pNumSetMethod"] isEqualToString:@"InitialParticleNumber"]){
                 p.pNum = [mergedD[@"pNumValue"] integerValue];
             }else if([mergedD[@"pNumSetMethod"] isEqualToString:@"PtclNumPerCell"]){
                 p.pNum = [mergedD[@"pNumValue"] integerValue]*_field.ngx*_field.ngy;

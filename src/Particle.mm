@@ -107,8 +107,8 @@ kernel void updateParticles(
         for (int j = 0; j < 2; j++) {
             // 1st-order weighting
             if (weightOrder == 1){
-                sf[0][i][j] = hv[i][j];
-                sf[1][i][j] = 1.0 - hv[i][j];
+                sf[0][i][j] = 1.0 - hv[i][j];
+                sf[1][i][j] = hv[i][j];
             // 5th-order weighting
             } else if (weightOrder == 5){
                 sc = 2.0 + hv[i][j];
@@ -231,6 +231,7 @@ kernel void integrateChargeDensity(
                         ) {
     
     // 粒子数を超えたらスキップ
+    print[gid] = 0.0;
     if(gid >= prm.pNum) return;
 
     // 変数定義
@@ -263,8 +264,8 @@ kernel void integrateChargeDensity(
     for (int i = 0; i < 2; i++) {
         // 1st-order weighting
         if (weightOrder == 1){
-            sf[0][i] = hv[i];
-            sf[1][i] = 1.0 - hv[i];
+            sf[0][i] = 1.0 - hv[i];
+            sf[1][i] = hv[i];
         // 5th-order weighting
         } else if (weightOrder == 5){
             sc = 2.0 + hv[i];
@@ -283,6 +284,7 @@ kernel void integrateChargeDensity(
     }
 
     // accumulation
+    threadgroup_barrier(mem_flags::mem_threadgroup);
     for (int i = 0; i < weightOrder+1; i++) {
         for (int j = 0; j < weightOrder+1; j++) {
             ii = i1+(i-prm.ngb);
@@ -290,6 +292,40 @@ kernel void integrateChargeDensity(
             atomic_fetch_add_explicit(&(rho[ii+jj*(nx+1)]), sf[i][0]*sf[j][1]*prm.scale, memory_order_relaxed);
         }
     }
+
+    // debug print
+    if (gid == 2){
+        for (int i = 0; i < weightOrder+1; i++) {
+            for (int j = 0; j < weightOrder+1; j++) {
+                int nsf = weightOrder+1;
+                print[0 + i*3 + j*3*nsf] = i1+(i-prm.ngb);
+                print[1 + i*3 + j*3*nsf] = j1+(j-prm.ngb);
+                print[2 + i*3 + j*3*nsf] = sf[i][0]*sf[j][1]*prm.scale;
+            }
+        }
+    }
+    if (gid == 3){
+        for (int i = 0; i < weightOrder+1; i++) {
+            for (int j = 0; j < weightOrder+1; j++) {
+                int nsf = weightOrder+1;
+                print[0 + i*3 + j*3*nsf + 1*3*nsf*nsf] = i1+(i-prm.ngb);
+                print[1 + i*3 + j*3*nsf + 1*3*nsf*nsf] = j1+(j-prm.ngb);
+                print[2 + i*3 + j*3*nsf + 1*3*nsf*nsf] = sf[i][0]*sf[j][1]*prm.scale;
+            }
+        }
+    }
+    if (gid == 18){
+        for (int i = 0; i < weightOrder+1; i++) {
+            for (int j = 0; j < weightOrder+1; j++) {
+                int nsf = weightOrder+1;
+                print[0 + i*3 + j*3*nsf + 2*3*nsf*nsf] = i1+(i-prm.ngb);
+                print[1 + i*3 + j*3*nsf + 2*3*nsf*nsf] = j1+(j-prm.ngb);
+                print[2 + i*3 + j*3*nsf + 2*3*nsf*nsf] = sf[i][0]*sf[j][1]*prm.scale;
+            }
+        }
+    }
+    // print[gid] = i1+(0-prm.ngb)+(j1+(0-prm.ngb))*(nx+1);
+    // print[gid] = sf[1][0]*sf[1][1]*prm.scale;
 }
 )";
 
@@ -689,6 +725,8 @@ kernel void integrateChargeDensity(
 
     // グリッドとスレッドグループのサイズ設定
     uint threadGroupNum = (prm->pNum + _threadGroupSize - 1) / _threadGroupSize;
+    // MTLSize gridSizeMetalStyle = MTLSizeMake(threadGroupNum, 1, 1);
+    // MTLSize threadGroupSize = MTLSizeMake(_threadGroupSize, 1, 1);
     MTLSize gridSizeMetalStyle = MTLSizeMake(threadGroupNum, 1, 1);
     MTLSize threadGroupSize = MTLSizeMake(_threadGroupSize, 1, 1);
 
@@ -697,6 +735,30 @@ kernel void integrateChargeDensity(
     [computeEncoder endEncoding];
     [commandBuffer commit];
     [commandBuffer waitUntilCompleted];
+
+    // デバッグ出力
+    // float* prt = (float*)printBuffer.contents;
+    // for (int idx = 0; idx < 110; idx++){
+    //     // NSLog(@"[integCDens_%@] prt[%d] = %d",_pName,idx,int(prt[idx]));
+    //     if (idx%3 != 2){
+    //         NSLog(@"[integCDens_%@] prt[%d] = %d",_pName,idx,int(prt[idx]));
+    //     }else{
+    //         NSLog(@"[integCDens_%@] prt[%d] = %e",_pName,idx,prt[idx]);
+    //     }
+    // }
+
+    // ParticleState* p = (ParticleState*)[_particleBuffer contents];
+    // NSLog(@"[integCDens_%@] p[3].x = %e, p[3].y = %e",_pName, p[3].x, p[3].y);
+
+    // // minmax
+    // float* rho = (float *)[rhoBuffer contents];
+    // float min_rho = 1e20, max_rho = -1e20;
+    // for(int i = 0; i < (prm->ngx+2*prm->ngb+1)*(prm->ngy+2*prm->ngb+1); i++){
+    //     if (rho[i] < min_rho)       { min_rho = rho[i]; }
+    //     else if(rho[i] > max_rho)   { max_rho = rho[i]; }
+    // }
+    // NSLog(@"[integCDens_%@] min_rho = %e, max_rho = %e",_pName , min_rho, max_rho);
+    // NSLog(@"[integCDens_%@] rho[i=25,j=19] = %e",_pName , rho[25+19*(prm->ngx+2*prm->ngb+1)]);
 
 };
 

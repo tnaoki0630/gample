@@ -36,16 +36,20 @@ struct ParamForComputing {
 };
 
 struct ParamForParticle {
+    // general
     NSString* pName;
     uint pNum;
     double q;
     double m;
     double w;
+    // generation
     NSString* genType;
     std::vector<double> genX;
     std::vector<double> genY;
     std::vector<double> genU;
     double genT;
+    // output
+    int outNum;
 };
 
 struct BoundaryConditionForParticle {

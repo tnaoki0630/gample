@@ -33,7 +33,7 @@ void outputPhaseSpace(int cycle, Particle* ptcl, Init* init, XmlLogger& logger){
         ofs.write(reinterpret_cast<const char*>(&p[idx].vz), sizeof(float));
         
         ofs.close();
-        NSLog(@"PhaseSpace successfully written to %@", filePath);
+        // NSLog(@"PhaseSpace successfully written to %@", filePath);
     }
 
 }

@@ -70,11 +70,16 @@ int main(int argc, const char * argv[]) {
         }
 
         // 初期化パラメータクラス作成
+        if (debug){ NSLog(@"parseInputFile"); }
         Init *init = [[Init alloc] parseInputFile:inputPath];
-
+        if(!init){
+            NSLog(@"[Fatal] parseInputFile Failed");
+            return -1;
+        }
 
         // logger の作成
         struct ParamForTimeIntegration timeParam = init.paramForTimeIntegration;
+        NSLog(@"timeParam.TimeStep = %f",timeParam.TimeStep);
         XmlLogger logger([[NSString stringWithFormat:@"%@_%s_log.xml", timeParam.ProjectName, timestamp.c_str()] UTF8String]);
         
         // パース結果の出力(debugprint.mm)
@@ -82,13 +87,27 @@ int main(int argc, const char * argv[]) {
 
         // 粒子クラスの初期化
         struct FlagForEquation EqFlags = init.flagForEquation;
+        NSLog(@"EqFlags.Particle = %d",EqFlags.Particle);
+        NSLog(@"EqFlags.EMField = %d",EqFlags.EMField);
+        NSLog(@"EqFlags.Collision = %d",EqFlags.MCCollision);
+
         NSMutableArray *ptclArr = [NSMutableArray arrayWithCapacity:EqFlags.Particle];
         for (int s = 0; s < EqFlags.Particle; s++) {
+            if (debug){ NSLog(@"initParticle#%d",s); }
             Particle *ptcl = [[Particle alloc] initWithDevice:device withParam:init specimen:s withLogger:logger];
+            if(!ptcl){
+                NSLog(@"[Fatal] initParticle(#%d) Failed",s);
+                return 1;
+            }
             [ptclArr addObject:ptcl];
         }
         // 電磁場クラスの初期化
+        if (debug){ NSLog(@"initField"); }
         EMField *fld = [[EMField alloc] initWithDevice:device withParam:init withLogger:logger];
+        if(!fld){
+            NSLog(@"[Fatal] initFld Failed");
+            return 1;
+        }
         // 初期場の計算
         [fld resetChargeDensity];
         [fld solvePoisson:logger];
@@ -96,33 +115,32 @@ int main(int argc, const char * argv[]) {
         Moment *mom = [[Moment alloc] initWithDevice:device withParam:init withLogger:logger];
         // 衝突計算クラスの初期化
         Collision *col = [[Collision alloc] initWithDevice:device withParam:init withParticles:ptclArr withLogger:logger];
+        if(!col){
+            NSLog(@"[Fatal] initCol Failed");
+            return 1;
+        }
 
         // 時間更新パラメータ
         int StartCycle = timeParam.Start;
         // リスタート
         if(StartCycle != 0){
             if(!loadProgress(StartCycle, ptclArr, fld, init)){
-                NSLog(@"restart failed.");
+                NSLog(@"[Fatal] restart failed.");
                 return 1;
             };
-            // 初期場出力
-            // for (int s = 0; s < EqFlags.Particle; s++) {
-            //     Particle *ptcl = [ptclArr objectAtIndex:s];
-            //     [ptcl integrateChargeDensity:fld  withMoment:mom withLogger:logger];
-            // }
-            // [fld solvePoisson:logger];
-            // outputField(StartCycle, fld, init, logger);
         }
-        outputField(0, fld, init, logger);
+        // 初期場出力
+        outputField(StartCycle, fld, init, logger);
         for(Particle* ptcl in ptclArr){
             [mom integrateMoments:ptcl withEMField:fld withLogger:logger];
-            outputMoments(0, mom, ptcl.pName, init, logger);
+            outputMoments(StartCycle, mom, ptcl.pName, init, logger);
         }
+
+        // 非定常ループ開始
         double dt = timeParam.TimeStep;
         double time = StartCycle*dt;
         double comp = 0.0; // 保証項
         double y,t;
-        // ループ開始
         for (int cycle = StartCycle+1; cycle <= timeParam.End; cycle++) {
             @autoreleasepool {
                 // ログ出力のオンオフ
@@ -139,39 +157,17 @@ int main(int argc, const char * argv[]) {
                 std::map<std::string,std::string> dataElapsedTime;
                 std::map<std::string,std::string> dataMemUsage;
 
-                // 電荷密度の初期化
-                [fld resetChargeDensity];
-
-                // 粒子ループ
-                std::vector<struct ParamForParticle> particles = init.paramForParticle;
-                for (int s = 0; s < EqFlags.Particle; s++) {
-                    Particle *ptcl = [ptclArr objectAtIndex:s];
-                    std::string pName = [particles[s].pName UTF8String];
-                    // 粒子の時間更新
-                    if (debug){ NSLog(@"update"); }
-                    MEASURE("update_"+pName, [ptcl update:dt withEMField:fld withMom:mom withLogger:logger], dataElapsedTime);
-                    // 流出粒子の処理
-                    if (debug){ NSLog(@"reducee"); }
-                    MEASURE("reduce_"+pName, [ptcl reduce:logger], dataElapsedTime);
-                    // 電荷密度の更新
-                    if (EqFlags.EMField == 1){
-                        if (debug){ NSLog(@"integCDens"); }
-                        MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld withMoment:mom withLogger:logger], dataElapsedTime);
-                    }
-                    // 粒子軌道の出力
-                    if (timeParam.ParticleOutput != 0 && cycle%timeParam.ParticleOutput == 0){
-                        outputPhaseSpace(cycle, ptcl, init, logger);
-                    }
-                    // モーメントの出力
-                    if (timeParam.FieldOutput != 0 && cycle%timeParam.FieldOutput == 0){
-                        [mom integrateMoments:ptcl withEMField:fld withLogger:logger];
-                        if (debug){ NSLog(@"moments"); }
-                        outputMoments(cycle, mom, particles[s].pName, init, logger);
-                    }
-                }
-
                 // 電場の更新
                 if (EqFlags.EMField == 1){
+                    // 電荷密度の初期化
+                    [fld resetChargeDensity];
+                    // 電荷密度の更新
+                    if (debug){ NSLog(@"integCDens"); }
+                    for (Particle* ptcl in ptclArr) {
+                        std::string pName = [ptcl.pName UTF8String];
+                        MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld withMoment:mom withLogger:logger], dataElapsedTime);
+                    }
+                    // 静電場計算
                     if (debug){ NSLog(@"poisson"); }
                     MEASURE("solvePoisson", [fld solvePoisson:logger], dataElapsedTime);
                     // 場の出力
@@ -180,14 +176,41 @@ int main(int argc, const char * argv[]) {
                     }
                 }
 
+                // 粒子更新
+                std::vector<struct ParamForParticle> particles = init.paramForParticle;
+                for (int s = 0; s < EqFlags.Particle; s++) {
+                    Particle *ptcl = [ptclArr objectAtIndex:s];
+                    std::string pName = [ptcl.pName UTF8String];
+                    // 粒子の時間更新
+                    if (debug){ NSLog(@"update"); }
+                    MEASURE("update_"+pName, [ptcl update:dt withEMField:fld withMom:mom withLogger:logger], dataElapsedTime);
+                    // 流出粒子の処理
+                    if (debug){ NSLog(@"reduce"); }
+                    MEASURE("reduce_"+pName, [ptcl reduce:logger], dataElapsedTime);
+                    // 粒子軌道の出力
+                    if (timeParam.ParticleOutput != 0 && cycle%timeParam.ParticleOutput == 0){
+                        outputPhaseSpace(cycle, ptcl, init, logger);
+                    }
+                    // モーメントの出力
+                    if (timeParam.FieldOutput != 0 && cycle%timeParam.FieldOutput == 0){
+                        [mom integrateMoments:ptcl withEMField:fld withLogger:logger];
+                        if (debug){ NSLog(@"moments"); }
+                        outputMoments(cycle, mom, ptcl.pName, init, logger);
+                    }
+                }
+
                 // 粒子生成
-                bool ret1,ret2;
+                bool ret;
                 if (debug){ NSLog(@"AI"); }
-                MEASURE("artificialIonization", ret1 = [col artificialIonization:dt withParticles:ptclArr withLogger:logger], dataElapsedTime);
+                MEASURE("artificialIonization", ret = [col artificialIonization:dt withParticles:ptclArr withLogger:logger], dataElapsedTime);
+                if (!ret){
+                    NSLog(@"injection failed.");
+                    return 1;
+                }
                 if (debug){ NSLog(@"HC"); }
-                MEASURE("hollowCathode", ret2 = [col hollowCathode:dt withParticles:ptclArr withLogger:logger], dataElapsedTime);
-                if (!ret1 || !ret2){
-                    NSLog(@"injection failed. ret1 = %d, ret2 = %d",ret1,ret2);
+                MEASURE("hollowCathode", ret = [col hollowCathode:dt withParticles:ptclArr withLogger:logger], dataElapsedTime);
+                if (!ret){
+                    NSLog(@"injection failed.");
                     return 1;
                 }
 
