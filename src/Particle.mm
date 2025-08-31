@@ -77,13 +77,6 @@ kernel void updateParticles(
     // get particle
     device ParticleState& p = ptcl[id];
 
-    // // debug print
-    // if (!isfinite(p.x)) {
-    //     print[id] = 1.0;
-    // }else{
-    //     print[id] = 0.0;
-    // }
-
     // electro-magnetic field on each ptcl
     float xh = p.x - 0.5;
     float yh = p.y - 0.5;
@@ -91,15 +84,16 @@ kernel void updateParticles(
     int j1 = int(p.y);
     int i2 = int(p.x);
     int j2 = int(yh);
+
     // protect
-    if (i1 < prm.ngb-1) i1 = prm.ngb-1;
-    if (i1 > prm.ngb-1+prm.ngx) i1 = prm.ngb-1+prm.ngx;
-    if (j1 < prm.ngb) j1 = prm.ngb;
-    if (j1 >= prm.ngb+prm.ngy) j1 = prm.ngb+prm.ngy-1;
-    if (i2 < prm.ngb) i2 = prm.ngb;
-    if (i2 >= prm.ngb+prm.ngx) i2 = prm.ngb+prm.ngx-1;
-    if (j2 < prm.ngb-1) j2 = prm.ngb-1;
-    if (j2 > prm.ngb-1+prm.ngy) j2 = prm.ngb-1+prm.ngy;
+    // if (i1 < prm.ngb-1) i1 = prm.ngb-1;
+    // if (i1 > prm.ngb-1+prm.ngx) i1 = prm.ngb-1+prm.ngx;
+    // if (j1 < prm.ngb) j1 = prm.ngb;
+    // if (j1 >= prm.ngb+prm.ngy) j1 = prm.ngb+prm.ngy-1;
+    // if (i2 < prm.ngb) i2 = prm.ngb;
+    // if (i2 >= prm.ngb+prm.ngx) i2 = prm.ngb+prm.ngx-1;
+    // if (j2 < prm.ngb-1) j2 = prm.ngb-1;
+    // if (j2 > prm.ngb-1+prm.ngy) j2 = prm.ngb-1+prm.ngy;
 
     float hv[2][2] ;
     hv[0][0] = xh  - float(i1);
@@ -221,11 +215,11 @@ kernel void updateParticles(
     }
 
     // debug print
-    if (!isfinite(p.x)) {
-        print[id] = 1.0;
-    }else{
-        print[id] = 0.0;
-    }
+    // if (!isfinite(p.x)) {
+    //     print[id] = 1.0;
+    // }else{
+    //     print[id] = 0.0;
+    // }
 }
 
 // 電荷密度更新カーネル
@@ -301,36 +295,16 @@ kernel void integrateChargeDensity(
     }
 
     // debug print
-    if (gid == 2){
-        for (int i = 0; i < weightOrder+1; i++) {
-            for (int j = 0; j < weightOrder+1; j++) {
-                int nsf = weightOrder+1;
-                print[0 + i*3 + j*3*nsf] = i1+(i-prm.ngb);
-                print[1 + i*3 + j*3*nsf] = j1+(j-prm.ngb);
-                print[2 + i*3 + j*3*nsf] = sf[i][0]*sf[j][1]*prm.scale;
-            }
-        }
-    }
-    if (gid == 3){
-        for (int i = 0; i < weightOrder+1; i++) {
-            for (int j = 0; j < weightOrder+1; j++) {
-                int nsf = weightOrder+1;
-                print[0 + i*3 + j*3*nsf + 1*3*nsf*nsf] = i1+(i-prm.ngb);
-                print[1 + i*3 + j*3*nsf + 1*3*nsf*nsf] = j1+(j-prm.ngb);
-                print[2 + i*3 + j*3*nsf + 1*3*nsf*nsf] = sf[i][0]*sf[j][1]*prm.scale;
-            }
-        }
-    }
-    if (gid == 18){
-        for (int i = 0; i < weightOrder+1; i++) {
-            for (int j = 0; j < weightOrder+1; j++) {
-                int nsf = weightOrder+1;
-                print[0 + i*3 + j*3*nsf + 2*3*nsf*nsf] = i1+(i-prm.ngb);
-                print[1 + i*3 + j*3*nsf + 2*3*nsf*nsf] = j1+(j-prm.ngb);
-                print[2 + i*3 + j*3*nsf + 2*3*nsf*nsf] = sf[i][0]*sf[j][1]*prm.scale;
-            }
-        }
-    }
+    // if (gid == 2){
+    //     for (int i = 0; i < weightOrder+1; i++) {
+    //         for (int j = 0; j < weightOrder+1; j++) {
+    //             int nsf = weightOrder+1;
+    //             print[0 + i*3 + j*3*nsf] = i1+(i-prm.ngb);
+    //             print[1 + i*3 + j*3*nsf] = j1+(j-prm.ngb);
+    //             print[2 + i*3 + j*3*nsf] = sf[i][0]*sf[j][1]*prm.scale;
+    //         }
+    //     }
+    // }
     // print[gid] = i1+(0-prm.ngb)+(j1+(0-prm.ngb))*(nx+1);
     // print[gid] = sf[1][0]*sf[1][1]*prm.scale;
 }
@@ -585,30 +559,30 @@ kernel void integrateChargeDensity(
     [commandBuffer waitUntilCompleted];
 
     // デバッグ出力
-    ParticleState* p = (ParticleState*)[_particleBuffer contents];
-    float* prt = (float*)printBuffer.contents;
-    float min_x = 1e20, max_x = -1e20;
-    float min_y = 1e20, max_y = -1e20;
-    float min_v = 1e20, max_v = -1e20;
-    float min = 1e20, max = -1e20;
-    for (int idx = 0; idx < prm->pNum; idx++){
-        if(p[idx].piflag == 0){
-            // debug print
-            // if (min > prt[idx]){ min = prt[idx]; }
-            // if (max < prt[idx]){ max = prt[idx]; }
-            if (prt[idx] > 1e-20){ NSLog(@"[update_%@] not finite: prt[%d] = %e",_pName,idx,prt[idx]); }
-            // position
-            if (min_x > p[idx].x){ min_x = p[idx].x; }
-            if (max_x < p[idx].x){ max_x = p[idx].x; }
-            if (min_y > p[idx].y){ min_y = p[idx].y; }
-            if (max_y < p[idx].y){ max_y = p[idx].y; }
-            // velocity
-            float v = sqrt(p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz);
-            if (v > c){ NSLog(@"[update_%@] exceeded speed of light: p[%d].v = %e",_pName,idx,v); }
-            if (min_v > v){ min_v = v; }
-            if (max_v < v){ max_v = v; }
-        }
-    }
+    // ParticleState* p = (ParticleState*)[_particleBuffer contents];
+    // float* prt = (float*)printBuffer.contents;
+    // float min_x = 1e20, max_x = -1e20;
+    // float min_y = 1e20, max_y = -1e20;
+    // float min_v = 1e20, max_v = -1e20;
+    // float min = 1e20, max = -1e20;
+    // for (int idx = 0; idx < prm->pNum; idx++){
+    //     if(p[idx].piflag == 0){
+    //         // debug print
+    //         // if (min > prt[idx]){ min = prt[idx]; }
+    //         // if (max < prt[idx]){ max = prt[idx]; }
+    //         if (prt[idx] > 1e-20){ NSLog(@"[update_%@] not finite: prt[%d] = %e",_pName,idx,prt[idx]); }
+    //         // position
+    //         if (min_x > p[idx].x){ min_x = p[idx].x; }
+    //         if (max_x < p[idx].x){ max_x = p[idx].x; }
+    //         if (min_y > p[idx].y){ min_y = p[idx].y; }
+    //         if (max_y < p[idx].y){ max_y = p[idx].y; }
+    //         // velocity
+    //         float v = sqrt(p[idx].vx*p[idx].vx+p[idx].vy*p[idx].vy+p[idx].vz*p[idx].vz);
+    //         if (v > c){ NSLog(@"[update_%@] exceeded speed of light: p[%d].v = %e",_pName,idx,v); }
+    //         if (min_v > v){ min_v = v; }
+    //         if (max_v < v){ max_v = v; }
+    //     }
+    // }
     // NSLog(@"debug print(%@): pNum = %d, min = %e, max = %e", _pName, prm->pNum, min, max);
     // NSLog(@"update(%@): pNum = %d, min_x = %e, max_x = %e, min_y = %e, max_y = %e, min_v = %e, max_v = %e", _pName, prm->pNum, min_x, max_x, min_y, max_y, min_v, max_v);
 
@@ -691,16 +665,16 @@ kernel void integrateChargeDensity(
     // update
     prm->pNum -= pulln;
     // check reduction
-    for (int k1 = 0; k1 < prm->pNum; k1++){
-        if (p[k1].piflag > 0){
-            NSLog(@"reduction failed: pName = %@, idx = %d", _pName, k1);
-        }else if( int(p[k1].x) < prm->ngb
-               || int(p[k1].x) > prm->ngb+prm->ngx
-               || int(p[k1].y) < prm->ngb
-               || int(p[k1].y) > prm->ngb+prm->ngy ){
-            NSLog(@"spilled particle is detected: pName = %@, idx = %d, p.x = %e, p.y = %e", _pName, k1, p[k1].x, p[k1].y);
-        }
-    }
+    // for (int k1 = 0; k1 < prm->pNum; k1++){
+    //     if (p[k1].piflag > 0){
+    //         NSLog(@"reduction failed: pName = %@, idx = %d", _pName, k1);
+    //     }else if( int(p[k1].x) < prm->ngb
+    //            || int(p[k1].x) > prm->ngb+prm->ngx
+    //            || int(p[k1].y) < prm->ngb
+    //            || int(p[k1].y) > prm->ngb+prm->ngy ){
+    //         NSLog(@"spilled particle is detected: pName = %@, idx = %d, p.x = %e, p.y = %e", _pName, k1, p[k1].x, p[k1].y);
+    //     }
+    // }
     // output log
     std::map<std::string, std::string>data ={
         {"particleNumber", std::to_string(prm->pNum)},

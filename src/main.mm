@@ -128,12 +128,13 @@ int main(int argc, const char * argv[]) {
                 NSLog(@"[Fatal] restart failed.");
                 return 1;
             };
-        }
-        // 初期場出力
-        outputField(StartCycle, fld, init, logger);
-        for(Particle* ptcl in ptclArr){
-            [mom integrateMoments:ptcl withEMField:fld withLogger:logger];
-            outputMoments(StartCycle, mom, ptcl.pName, init, logger);
+        }else{
+            // 初期場出力
+            outputField(StartCycle, fld, init, logger);
+            for(Particle* ptcl in ptclArr){
+                [mom integrateMoments:ptcl withEMField:fld withLogger:logger];
+                outputMoments(StartCycle, mom, ptcl.pName, init, logger);
+            }
         }
 
         // 非定常ループ開始

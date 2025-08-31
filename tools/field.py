@@ -2,6 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FFMpegWriter
 import sys
+import math
+
+# constants
+eps0 = 8.85418782e-12 # [F/m]
+ec = 1.60217663e-19 # [C]
 
 def getField(filename):
     with open(filename, 'rb') as f:
@@ -241,10 +246,12 @@ if __name__ == '__main__':
     args = sys.argv
 
     # カラーバー調整辞書(get で取り出した場合、無指定の変数は None を渡す)
-    # dict_cmin = {"rho":-10, "phi":-100, "Ex":-1e5, "Ey":-1e5, "electron_uy":-1e9}
-    # dict_cmax = {"rho":10,  "phi":700,  "Ex":1e5,  "Ey":1e5,  "electron_uy":1e9}
-    dict_cmin = {"rho":-1}
-    dict_cmax = {"rho":1}
+    dict_cmin = {}
+    dict_cmax = {}
+    dict_cmin = {"rho":-10, "phi":-100, "Ex":-1e5, "Ey":-1e5, "electron_uy":-1e9}
+    dict_cmax = {"rho":10,  "phi":700,  "Ex":1e5,  "Ey":1e5,  "electron_uy":1e9, "electron_T":60, "DebyeRes":0.2}
+    # dict_cmin = {"rho":-1}
+    # dict_cmax = {"rho":1}
 
     pname = args[1] # projectname
     if args[2].isdigit():
@@ -255,7 +262,7 @@ if __name__ == '__main__':
 
     print(f"Mesh info: ngx={mesh["ngx"]}, ngy={mesh["ngy"]}, ngb={mesh["ngb"]}, dx={mesh["dx"]}, dy={mesh["dy"]}")
     nx = mesh["ngx"]+2*mesh["ngb"]
-    ny = mesh["ngx"]+2*mesh["ngb"]
+    ny = mesh["ngy"]+2*mesh["ngb"]
 
     # plot EMField
     for name, type_id, arr in fields:
@@ -266,11 +273,36 @@ if __name__ == '__main__':
     
     # electron
     mesh, fields = getField("bin/"+pname+f"_Moments_electron_{cycle:08}.bin")
+    Pe = np.zeros((ny+1,nx+1))
     for name, type_id, arr in fields:
         print(f"{name}: type_id={type_id}, shape={arr.shape}, min={arr.min()}, max={arr.max()}")
         # plotField2d(arr, name, f"fig/{name}_wBuff.png" , type_id , True)
         plotField2d(arr, name, f"fig/{name}.png" , type_id , False,dict_cmin.get(name),dict_cmax.get(name))
         plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
+        if(name == "electron_n"): ne = arr # 1/cm3
+        if(name == "electron_Pxx"): Pe += arr
+        if(name == "electron_Pyy"): Pe += arr
+        if(name == "electron_Pzz"): Pe += arr
+    # temperature
+    name = "electron_T"
+    kb = 1.380649e-23 # [J/K]
+    KtoeV = 1.0/11604
+    type_id = 0
+    arr = np.where(ne > 0, Pe/(3*kb*ne*1e6)*KtoeV, 0) ## ne > 0 の要素だけ計算
+    print(f"{name}: min={arr.min()}, max={arr.max()}")
+    plotField2d(arr, name, f"fig/{name}.png" , type_id , False,dict_cmin.get(name),dict_cmax.get(name))
+    plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
+    # Debye length
+    dx = 0.0025e-2 # [m]
+    name = "DebyeRes"
+    type_id = 0
+    arr = np.zeros_like(Pe)
+    np.sqrt(eps0*Pe/(3*(ne*1e6)**2*ec**2)/dx, out=arr, where=(Pe > 0)&(ne > 0)) ## where を満たす要素だけ sqrt する
+    print(f"{name}: min={Pe.min()}, max={Pe.max()}")
+    print(f"{name}: min={arr.min()}, max={arr.max()}")
+    plotField2d(arr, name, f"fig/{name}.png" , type_id , False,dict_cmin.get(name),dict_cmax.get(name))
+    plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
+
     # ion
     mesh, fields = getField("bin/"+pname+f"_Moments_ion_Xe1_{cycle:08}.bin")
     for name, type_id, arr in fields:
@@ -284,12 +316,12 @@ if __name__ == '__main__':
         start = int(args[3])
         dt = int(args[4])
         end = int(args[2])
-        save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_n"   ,"[1/cm3]"  ,0,dt,start,end ,"fig/"+pname+"_electron_n.mp4"  ,cbar_vmin=dict_cmin.get("electron_n")  ,cbar_vmax=dict_cmax.get("electron_n") ,fps=15)
-        save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_ux"  ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_electron_ux.mp4" ,cbar_vmin=dict_cmin.get("electron_ux") ,cbar_vmax=dict_cmax.get("electron_ux"),fps=15)
-        save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_uy"  ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_electron_uy.mp4" ,cbar_vmin=dict_cmin.get("electron_uy") ,cbar_vmax=dict_cmax.get("electron_uy"),fps=15)
-        save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_n"    ,"[1/cm3]"  ,0,dt,start,end ,"fig/"+pname+"_ion_Xe1_n.mp4"   ,cbar_vmin=dict_cmin.get("ion_Xe1_n")   ,cbar_vmax=dict_cmax.get("ion_Xe1_n")  ,fps=15)
-        save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_ux"   ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_ion_Xe1_ux.mp4"  ,cbar_vmin=dict_cmin.get("ion_Xe1_ux")  ,cbar_vmax=dict_cmax.get("ion_Xe1_ux") ,fps=15)
-        save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_uy"   ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_ion_Xe1_uy.mp4"  ,cbar_vmin=dict_cmin.get("ion_Xe1_uy")  ,cbar_vmax=dict_cmax.get("ion_Xe1_uy") ,fps=15)
-        save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"rho"          ,"[esu/m3]" ,0,dt,start,end ,"fig/"+pname+"_rho.mp4"         ,cbar_vmin=dict_cmin.get("rho")         ,cbar_vmax=dict_cmax.get("rho")        ,fps=15)
-        save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"Ex"           ,"[V/m]"    ,1,dt,start,end ,"fig/"+pname+"_Ex.mp4"          ,cbar_vmin=dict_cmin.get("Ex")          ,cbar_vmax=dict_cmax.get("Ex")         ,fps=15)
-        save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"Ey"           ,"[V/m]"    ,2,dt,start,end ,"fig/"+pname+"_Ey.mp4"          ,cbar_vmin=dict_cmin.get("Ey")          ,cbar_vmax=dict_cmax.get("Ey")         ,fps=15)
+        save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_n"   ,"[1/cm3]"  ,0,dt,start,end ,"fig/"+pname+"_from"+args[3]+"_to"+args[2]+"_electron_n.mp4"  ,cbar_vmin=dict_cmin.get("electron_n")  ,cbar_vmax=dict_cmax.get("electron_n") ,fps=15)
+        save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_ux"  ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_from"+args[3]+"_to"+args[2]+"_electron_ux.mp4" ,cbar_vmin=dict_cmin.get("electron_ux") ,cbar_vmax=dict_cmax.get("electron_ux"),fps=15)
+        save_field_video("bin/"+pname+"_Moments_electron_{cycle:08}.bin" ,"electron_uy"  ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_from"+args[3]+"_to"+args[2]+"_electron_uy.mp4" ,cbar_vmin=dict_cmin.get("electron_uy") ,cbar_vmax=dict_cmax.get("electron_uy"),fps=15)
+        save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_n"    ,"[1/cm3]"  ,0,dt,start,end ,"fig/"+pname+"_from"+args[3]+"_to"+args[2]+"_ion_Xe1_n.mp4"   ,cbar_vmin=dict_cmin.get("ion_Xe1_n")   ,cbar_vmax=dict_cmax.get("ion_Xe1_n")  ,fps=15)
+        save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_ux"   ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_from"+args[3]+"_to"+args[2]+"_ion_Xe1_ux.mp4"  ,cbar_vmin=dict_cmin.get("ion_Xe1_ux")  ,cbar_vmax=dict_cmax.get("ion_Xe1_ux") ,fps=15)
+        save_field_video("bin/"+pname+"_Moments_ion_Xe1_{cycle:08}.bin"  ,"ion_Xe1_uy"   ,"[cm/s]"   ,0,dt,start,end ,"fig/"+pname+"_from"+args[3]+"_to"+args[2]+"_ion_Xe1_uy.mp4"  ,cbar_vmin=dict_cmin.get("ion_Xe1_uy")  ,cbar_vmax=dict_cmax.get("ion_Xe1_uy") ,fps=15)
+        save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"rho"          ,"[esu/m3]" ,0,dt,start,end ,"fig/"+pname+"_from"+args[3]+"_to"+args[2]+"_rho.mp4"         ,cbar_vmin=dict_cmin.get("rho")         ,cbar_vmax=dict_cmax.get("rho")        ,fps=15)
+        save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"Ex"           ,"[V/m]"    ,1,dt,start,end ,"fig/"+pname+"_from"+args[3]+"_to"+args[2]+"_Ex.mp4"          ,cbar_vmin=dict_cmin.get("Ex")          ,cbar_vmax=dict_cmax.get("Ex")         ,fps=15)
+        save_field_video("bin/"+pname+"_EMField_{cycle:08}.bin"          ,"Ey"           ,"[V/m]"    ,2,dt,start,end ,"fig/"+pname+"_from"+args[3]+"_to"+args[2]+"_Ey.mp4"          ,cbar_vmin=dict_cmin.get("Ey")          ,cbar_vmax=dict_cmax.get("Ey")         ,fps=15)

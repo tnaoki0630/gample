@@ -10,10 +10,10 @@
     "TimeStep":         5e-12,
     "LogOutput":        10,
     "ParticleOutput":   0,
-    "FieldOutput":      100,
+    "FieldOutput":      200,
     "ProgressOutput":   50000,
-    "ProjectName":      "org",
-    "RestartName":      "org"
+    "ProjectName":      "lowW",
+    "RestartName":      "lowW"
   },
   "ParamForComputing": {
     "MaximumParticleNumber":  20000000,
@@ -43,7 +43,7 @@
       "Charge":             -4.803204197e-10,
       "Mass":               9.10938188e-28,
       "WeightSetMethod":    "InitialNumDens",
-      "WeightValue":        5e10,
+      "WeightValue":        5e4,
       "GenerateType":       "uniform-Gaussian",
       "InitialTemp":        10
     },
@@ -54,7 +54,7 @@
       "Charge":             4.803204197e-10,
       "Mass":               2.1801714e-23,
       "WeightSetMethod":    "InitialNumDens",
-      "WeightValue":        5e10,
+      "WeightValue":        5e4,
       "GenerateType":       "uniform-Gaussian",
       "InitialTemp":        0.5
     }
@@ -70,7 +70,7 @@
       "ParticleName":       "ion_Xe1",
       "GenerateType":       "XsinusoidalIonization",
       "SrcSetMethod":       "CurrentDensity[A/m2]",
-      "SrcValue":           400,
+      "SrcValue":           400e-6,
       "GeneratePosX":       [0.25, 1.0],
       "GenerateTemp":       0.5,
       "GenTempForElectron": 10

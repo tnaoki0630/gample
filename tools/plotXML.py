@@ -146,7 +146,7 @@ if __name__ == '__main__':
     weight = 6.25e4 # 1/cm
     domainAR = (2.5*1.25)/(2.5*1.0) # mthesis vs benchmark
     scales = [weight*domainAR,weight*domainAR]
-    plot_values(cycles, values, labels, scales, "particle Number [1/cm]", dt=5e-6, xmin=0, xmax=20, ymin=0, ymax=8e11)
+    plot_values(cycles, values, labels, scales, "particle Number [1/cm]", dt=5e-6, xmin=0, xmax=20, ymin=0)
 
     cycles, Gamma_ic = parseXML('log_cp.xml', 'flowout_ion_Xe1', 'Xmin')
     cycles, Gamma_ia = parseXML('log_cp.xml', 'flowout_ion_Xe1', 'Xmax')
@@ -159,7 +159,7 @@ if __name__ == '__main__':
     values = [Gamma_e,Gamma_i]
     labels = ["Gamma_e","Gamma_i"]
     scales = [weight/Ly/dt,weight/Ly/dt]
-    plot_values(cycles, values, labels, scales, "particle Flux [1/cm2s]", dt=5e-6, xmin=0, xmax=20, ymin=0, ymax=4e17)
+    plot_values(cycles, values, labels, scales, "particle Flux [1/cm2s]", dt=5e-6, xmin=0, xmax=20, ymin=0)
     
     cycles, addn_HC = parseXML('log_cp.xml', 'hollowCathode', 'addn_injected')
     cycles, addn_HC_neg = parseXML('log_cp.xml', 'hollowCathode', 'addn_neglected')

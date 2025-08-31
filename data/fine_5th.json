@@ -5,34 +5,34 @@
     "MCCollision":  0
   },
   "ParamForTimeIntegration": {
-    "Start":            0,
-    "End":              200000,
+    "Start":            800000,
+    "End":              1600000,
     "TimeStep":         5e-12,
-    "LogOutput":        10,
+    "LogOutput":        1000,
     "ParticleOutput":   0,
-    "FieldOutput":      100,
+    "FieldOutput":      10000,
     "ProgressOutput":   50000,
-    "ProjectName":      "org",
-    "RestartName":      "org"
+    "ProjectName":      "fine",
+    "RestartName":      "fine"
   },
   "ParamForComputing": {
-    "MaximumParticleNumber":  20000000,
+    "MaximumParticleNumber":  50000000,
     "ThreadGroupSize":        32,
     "IntegrationChunkSize":   128,
     "MaxiterForPoisson":      100,
     "ToleranceForPoisson":    1e-6
   },
   "ParamForField": {
-    "NumberOfGridX":        500,
-    "NumberOfGridY":        200,
-    "GridSizeOfX":          0.005,
-    "GridSizeOfY":          0.005,
+    "NumberOfGridX":        1000,
+    "NumberOfGridY":        400,
+    "GridSizeOfX":          0.0025,
+    "GridSizeOfY":          0.0025,
     "InitializeTypeOfE":    "Uniform",
     "AmplitudeOfE":         [0.0, 0.0, 0.0],
     "InitializeTypeOfB":    "From1dXFile",
-    "FilePathOfBx":         "data/Bx.bin",
-    "FilePathOfBy":         "data/By.bin",
-    "FilePathOfBz":         "data/Bz.bin",
+    "FilePathOfBx":         "data/Bx_fine.bin",
+    "FilePathOfBy":         "data/By_fine.bin",
+    "FilePathOfBz":         "data/Bz_fine.bin",
     "WeightingOrder":       1
   },
   "ParamForParticle": [
