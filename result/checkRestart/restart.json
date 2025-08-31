@@ -5,36 +5,35 @@
     "MCCollision":  0
   },
   "ParamForTimeIntegration": {
-    "Start":            800000,
-    "End":              1600000,
+    "Start":            100,
+    "End":              200,
     "TimeStep":         5e-12,
-    "LogOutput":        1000,
+    "LogOutput":        1,
     "ParticleOutput":   0,
-    "FieldOutput":      10000,
-    "ProgressOutput":   50000,
-    "ProjectName":      "fine_5th",
-    "RestartName":      "fine"
+    "FieldOutput":      100,
+    "ProgressOutput":   100,
+    "ProjectName":      "restart_org",
+    "RestartName":      "org"
   },
   "ParamForComputing": {
-    "MaximumParticleNumber":  50000000,
+    "MaximumParticleNumber":  20000000,
     "ThreadGroupSize":        32,
     "IntegrationChunkSize":   128,
     "MaxiterForPoisson":      100,
     "ToleranceForPoisson":    1e-6
   },
   "ParamForField": {
-    "NumberOfGridX":        1000,
-    "NumberOfGridY":        400,
-    "GridSizeOfX":          0.0025,
-    "GridSizeOfY":          0.0025,
+    "NumberOfGridX":        500,
+    "NumberOfGridY":        200,
+    "GridSizeOfX":          0.005,
+    "GridSizeOfY":          0.005,
     "InitializeTypeOfE":    "Uniform",
     "AmplitudeOfE":         [0.0, 0.0, 0.0],
     "InitializeTypeOfB":    "From1dXFile",
-    "FilePathOfBx":         "data/Bx_fine.bin",
-    "FilePathOfBy":         "data/By_fine.bin",
-    "FilePathOfBz":         "data/Bz_fine.bin",
-    "WeightingOrder":       5,
-    "PtclPosOffset":        2
+    "FilePathOfBx":         "data/Bx.bin",
+    "FilePathOfBy":         "data/By.bin",
+    "FilePathOfBz":         "data/Bz.bin",
+    "WeightingOrder":       1
   },
   "ParamForParticle": [
     {

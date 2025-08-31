@@ -108,9 +108,7 @@ int main(int argc, const char * argv[]) {
             NSLog(@"[Fatal] initFld Failed");
             return 1;
         }
-        // 初期場の計算
-        [fld resetChargeDensity];
-        [fld solvePoisson:logger];
+
         // モーメント計算クラスの初期化
         Moment *mom = [[Moment alloc] initWithDevice:device withParam:init withLogger:logger];
         // 衝突計算クラスの初期化
@@ -120,21 +118,31 @@ int main(int argc, const char * argv[]) {
             return 1;
         }
 
-        // 時間更新パラメータ
-        int StartCycle = timeParam.Start;
+        // 電荷密度の初期化
+        [fld resetChargeDensity];
+
         // リスタート
+        int StartCycle = timeParam.Start;
         if(StartCycle != 0){
-            if(!loadProgress(StartCycle, ptclArr, fld, init)){
+            // 粒子状態読み込み
+            if(!loadProgress(StartCycle, ptclArr, init)){
                 NSLog(@"[Fatal] restart failed.");
                 return 1;
             };
-        }else{
-            // 初期場出力
-            outputField(StartCycle, fld, init, logger);
-            for(Particle* ptcl in ptclArr){
-                [mom integrateMoments:ptcl withEMField:fld withLogger:logger];
-                outputMoments(StartCycle, mom, ptcl.pName, init, logger);
+            // 電荷密度計算
+            for (Particle* ptcl in ptclArr) {
+                std::string pName = [ptcl.pName UTF8String];
+                [ptcl integrateChargeDensity:fld withMoment:mom withLogger:logger];
             }
+        }
+
+        // 初期場計算
+        [fld solvePoisson:logger];
+        // 初期場出力
+        outputField(StartCycle, fld, init, logger);
+        for(Particle* ptcl in ptclArr){
+            [mom integrateMoments:ptcl withEMField:fld withLogger:logger];
+            outputMoments(StartCycle, mom, ptcl.pName, init, logger);
         }
 
         // 非定常ループ開始
@@ -217,7 +225,7 @@ int main(int argc, const char * argv[]) {
 
                 // 途中経過出力
                 if (timeParam.FieldOutput != 0 && cycle%timeParam.ProgressOutput == 0){
-                    if(!saveProgress(cycle, ptclArr, fld, init)){
+                    if(!saveProgress(cycle, ptclArr, init)){
                         NSLog(@"output progress failed.");
                         return 1;
                     };

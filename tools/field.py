@@ -267,49 +267,49 @@ if __name__ == '__main__':
     # plot EMField
     for name, type_id, arr in fields:
         print(f"{name}: type_id={type_id}, shape={arr.shape}, min={arr.min()}, max={arr.max()}")
-        # plotField2d(arr, name, f"fig/{name}_wBuff.png" , type_id , True)
+        plotField2d(arr, name, f"fig/{name}_wBuff.png" , type_id , True,dict_cmin.get(name),dict_cmax.get(name))
         plotField2d(arr, name, f"fig/{name}.png" , type_id , False,dict_cmin.get(name),dict_cmax.get(name))
         plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
     
-    # electron
-    mesh, fields = getField("bin/"+pname+f"_Moments_electron_{cycle:08}.bin")
-    Pe = np.zeros((ny+1,nx+1))
-    for name, type_id, arr in fields:
-        print(f"{name}: type_id={type_id}, shape={arr.shape}, min={arr.min()}, max={arr.max()}")
-        # plotField2d(arr, name, f"fig/{name}_wBuff.png" , type_id , True)
-        plotField2d(arr, name, f"fig/{name}.png" , type_id , False,dict_cmin.get(name),dict_cmax.get(name))
-        plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
-        if(name == "electron_n"): ne = arr # 1/cm3
-        if(name == "electron_Pxx"): Pe += arr
-        if(name == "electron_Pyy"): Pe += arr
-        if(name == "electron_Pzz"): Pe += arr
-    # temperature
-    name = "electron_T"
-    kb = 1.380649e-23 # [J/K]
-    KtoeV = 1.0/11604
-    type_id = 0
-    arr = np.where(ne > 0, Pe/(3*kb*ne*1e6)*KtoeV, 0) ## ne > 0 の要素だけ計算
-    print(f"{name}: min={arr.min()}, max={arr.max()}")
-    plotField2d(arr, name, f"fig/{name}.png" , type_id , False,dict_cmin.get(name),dict_cmax.get(name))
-    plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
-    # Debye length
-    dx = 0.0025e-2 # [m]
-    name = "DebyeRes"
-    type_id = 0
-    arr = np.zeros_like(Pe)
-    np.sqrt(eps0*Pe/(3*(ne*1e6)**2*ec**2)/dx, out=arr, where=(Pe > 0)&(ne > 0)) ## where を満たす要素だけ sqrt する
-    print(f"{name}: min={Pe.min()}, max={Pe.max()}")
-    print(f"{name}: min={arr.min()}, max={arr.max()}")
-    plotField2d(arr, name, f"fig/{name}.png" , type_id , False,dict_cmin.get(name),dict_cmax.get(name))
-    plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
+    # # electron
+    # mesh, fields = getField("bin/"+pname+f"_Moments_electron_{cycle:08}.bin")
+    # Pe = np.zeros((ny+1,nx+1))
+    # for name, type_id, arr in fields:
+    #     print(f"{name}: type_id={type_id}, shape={arr.shape}, min={arr.min()}, max={arr.max()}")
+    #     # plotField2d(arr, name, f"fig/{name}_wBuff.png" , type_id , True)
+    #     plotField2d(arr, name, f"fig/{name}.png" , type_id , False,dict_cmin.get(name),dict_cmax.get(name))
+    #     plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
+    #     if(name == "electron_n"): ne = arr # 1/cm3
+    #     if(name == "electron_Pxx"): Pe += arr
+    #     if(name == "electron_Pyy"): Pe += arr
+    #     if(name == "electron_Pzz"): Pe += arr
+    # # temperature
+    # name = "electron_T"
+    # kb = 1.380649e-23 # [J/K]
+    # KtoeV = 1.0/11604
+    # type_id = 0
+    # arr = np.where(ne > 0, Pe/(3*kb*ne*1e6)*KtoeV, 0) ## ne > 0 の要素だけ計算
+    # print(f"{name}: min={arr.min()}, max={arr.max()}")
+    # plotField2d(arr, name, f"fig/{name}.png" , type_id , False,dict_cmin.get(name),dict_cmax.get(name))
+    # plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
+    # # Debye length
+    # dx = 0.0025e-2 # [m]
+    # name = "DebyeRes"
+    # type_id = 0
+    # arr = np.zeros_like(Pe)
+    # np.sqrt(eps0*Pe/(3*(ne*1e6)**2*ec**2)/dx, out=arr, where=(Pe > 0)&(ne > 0)) ## where を満たす要素だけ sqrt する
+    # print(f"{name}: min={Pe.min()}, max={Pe.max()}")
+    # print(f"{name}: min={arr.min()}, max={arr.max()}")
+    # plotField2d(arr, name, f"fig/{name}.png" , type_id , False,dict_cmin.get(name),dict_cmax.get(name))
+    # plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
 
-    # ion
-    mesh, fields = getField("bin/"+pname+f"_Moments_ion_Xe1_{cycle:08}.bin")
-    for name, type_id, arr in fields:
-        print(f"{name}: type_id={type_id}, shape={arr.shape}, min={arr.min()}, max={arr.max()}")
-        # plotField2d(arr, name, f"fig/{name}_wBuff.png" , type_id , True)
-        plotField2d(arr, name, f"fig/{name}.png" , type_id , False,dict_cmin.get(name),dict_cmax.get(name))
-        plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
+    # # ion
+    # mesh, fields = getField("bin/"+pname+f"_Moments_ion_Xe1_{cycle:08}.bin")
+    # for name, type_id, arr in fields:
+    #     print(f"{name}: type_id={type_id}, shape={arr.shape}, min={arr.min()}, max={arr.max()}")
+    #     # plotField2d(arr, name, f"fig/{name}_wBuff.png" , type_id , True)
+    #     plotField2d(arr, name, f"fig/{name}.png" , type_id , False,dict_cmin.get(name),dict_cmax.get(name))
+    #     plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , 2)
 
     # 動画保存(開始フレーム、最終フレームを数字で受け取り動画保存)
     if (len(args)==5):

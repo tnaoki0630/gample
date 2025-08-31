@@ -234,7 +234,7 @@ static void writeField(FILE* fp, const char* name, int type_id, float* array, in
     free(output);
 }
 
-BOOL saveProgress(int cycle, NSMutableArray* ptclArr, EMField* fld, Init* init){
+BOOL saveProgress(int cycle, NSMutableArray* ptclArr, Init* init){
     struct FlagForEquation EqFlags = init.flagForEquation;
     struct ParamForComputing compParam = init.paramForComputing;
     struct ParamForTimeIntegration timeParam = init.paramForTimeIntegration;
@@ -254,8 +254,8 @@ BOOL saveProgress(int cycle, NSMutableArray* ptclArr, EMField* fld, Init* init){
         NSLog(@"Restart data successfully written to %@", fileName);
     }
 
-    // 電場出力
-    if (EqFlags.EMField == 1){
+    // 電磁場出力
+    if (EqFlags.EMField == 2){
         uint nx = fld.ngx + 2*fld.ngb;
         uint ny = fld.ngy + 2*fld.ngb;
         NSString* fileNameEx = [NSString stringWithFormat:@"bin/%@_ProgressData_Ex_%08d.bin", timeParam.ProjectName, cycle];
@@ -279,16 +279,18 @@ BOOL saveProgress(int cycle, NSMutableArray* ptclArr, EMField* fld, Init* init){
     return YES;
 }
 
-BOOL loadProgress(int cycle, NSMutableArray* ptclArr, EMField* fld, Init* init){
+BOOL loadProgress(int cycle, NSMutableArray* ptclArr, Init* init){
     struct FlagForEquation EqFlags = init.flagForEquation;
     struct ParamForComputing compParam = init.paramForComputing;
     struct ParamForTimeIntegration timeParam = init.paramForTimeIntegration;
+    struct ParamForField fldParam = init.paramForField;
 
     // 粒子読み込み
     for (int s = 0; s < EqFlags.Particle; s++) {
         Particle *ptcl = [ptclArr objectAtIndex:s];
         SimulationParams* prm = (SimulationParams*)[[ptcl paramsBuffer] contents];
         ParticleState* p = (ParticleState*)[[ptcl particleBuffer] contents];
+        // debug print
         NSLog(@"before: p[0].x = %e, p[0].y = %e, p[0].vx = %e",p[0].x,p[0].y,p[0].vx);
         NSLog(@"before: p[1].x = %e, p[1].y = %e, p[1].vx = %e",p[1].x,p[1].y,p[1].vx);
         NSString* fileName = [NSString stringWithFormat:@"bin/%@_ProgressData_%@_%08d.bin", timeParam.RestartName, ptcl.pName, cycle];
@@ -297,14 +299,22 @@ BOOL loadProgress(int cycle, NSMutableArray* ptclArr, EMField* fld, Init* init){
             NSLog(@"[Error] load progress for %@ is failed.", ptcl.pName);
             return NO;
         }
+        // copy pNum to paramsBuffer
+        prm->pNum = pNum_recv/sizeof(ParticleState);
+        // translate particle position
+        if (fldParam.diff_ngb != 0){
+            for (int k = 0; k < prm->pNum; k++){
+                p[k].x += float(fldParam.diff_ngb);
+                p[k].y += float(fldParam.diff_ngb);
+            }
+        }
+        // debug print
         NSLog(@"after: p[0].x = %e, p[0].y = %e, p[0].vx = %e",p[0].x,p[0].y,p[0].vx);
         NSLog(@"after: p[1].x = %e, p[1].y = %e, p[1].vx = %e",p[1].x,p[1].y,p[1].vx);
-        // copy to buffer
-        prm->pNum = pNum_recv/sizeof(ParticleState);
     }
 
-    // 電場読み込み
-    if (EqFlags.EMField == 1){
+    // 電磁場読み込み
+    if (EqFlags.EMField == 2){
         uint nx = fld.ngx + 2*fld.ngb;
         uint ny = fld.ngy + 2*fld.ngb;
         uint ng_recv;
@@ -340,14 +350,14 @@ BOOL loadProgress(int cycle, NSMutableArray* ptclArr, EMField* fld, Init* init){
 BOOL saveBuffer(id<MTLBuffer> buffer, uint length, uint lengthMax, NSString* outPath){
     // 0) サイズチェック
     if(length > lengthMax){
-        NSLog(@"[Error] 書き出しサイズが確保中の配列サイズを超えています。");
+        NSLog(@"[Error] size check failed.");
         return NO;
     }
 
     // 1) MTLBuffer の内容を CPU アクセス可能な生ポインタとして取得
     void *rawPtr = [buffer contents];
     if (!rawPtr) {
-        NSLog(@"[Error] buffer.contents が NULL です。");
+        NSLog(@"[Error] buffer.contents is not available.");
         return NO;
     }
 
@@ -355,7 +365,7 @@ BOOL saveBuffer(id<MTLBuffer> buffer, uint length, uint lengthMax, NSString* out
     const char *cPath = [outPath fileSystemRepresentation];
     FILE *fp = fopen(cPath, "wb");
     if (!fp) {
-        NSLog(@"[Error] ファイルオープンに失敗しました: %s", cPath);
+        NSLog(@"[Error] file open failed: %s", cPath);
         return NO;
     }
 
@@ -364,7 +374,7 @@ BOOL saveBuffer(id<MTLBuffer> buffer, uint length, uint lengthMax, NSString* out
     fclose(fp);
 
     if (written != length) {
-        NSLog(@"[Error] fwrite の要素数が一致しません (written: %zu, expected: %lu)", written, (unsigned long)length);
+        NSLog(@"[Error] fwrite size not matched.(written: %zu, expected: %lu)", written, (unsigned long)length);
         return NO;
     }
 
@@ -385,7 +395,7 @@ BOOL loadBuffer(id<MTLBuffer> buffer, uint& length, uint lengthMax, NSString* in
     const char *cPath = [inPath fileSystemRepresentation];
     FILE *fp = fopen(cPath, "rb");
     if (!fp) {
-        NSLog(@"[Error] ファイルオープンに失敗しました: %s", cPath);
+        NSLog(@"[Error] file open failed: %s", cPath);
         return NO;
     }
 
@@ -394,7 +404,7 @@ BOOL loadBuffer(id<MTLBuffer> buffer, uint& length, uint lengthMax, NSString* in
     long fileSize = ftell(fp);
     rewind(fp);
     if (fileSize < 0) {
-        NSLog(@"[Error] ftell でファイルサイズ取得に失敗");
+        NSLog(@"[Error] get filesize failed.");
         fclose(fp);
         return NO;
     }
@@ -402,7 +412,7 @@ BOOL loadBuffer(id<MTLBuffer> buffer, uint& length, uint lengthMax, NSString* in
 
     // 3) サイズチェック
     if(length > lengthMax){
-        NSLog(@"[Error] 読み込みサイズが確保中の配列サイズを超えています。");
+        NSLog(@"[Error] check filesize failed.");
         fclose(fp);
         return NO;
     }
@@ -410,7 +420,7 @@ BOOL loadBuffer(id<MTLBuffer> buffer, uint& length, uint lengthMax, NSString* in
     // 4) MTLBuffer の内容を CPU アクセス可能な生ポインタとして取得
     void *rawPtr = [buffer contents];
     if (!rawPtr) {
-        NSLog(@"[Error] buffer.contents が NULL です。");
+        NSLog(@"[Error] buffer.contents is not available.");
         fclose(fp);
         return NO;
     }
@@ -418,7 +428,6 @@ BOOL loadBuffer(id<MTLBuffer> buffer, uint& length, uint lengthMax, NSString* in
     // 4) ファイルから rawPtr へ一気に読み込む
     size_t readBytes = fread(rawPtr, 1, fileSize, fp);
     fclose(fp);
-
 
     return YES;
 }

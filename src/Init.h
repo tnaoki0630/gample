@@ -86,6 +86,7 @@ struct ParamForField {
     NSString* FilePathBy;
     NSString* FilePathBz;
     int weightOrder;
+    int diff_ngb;
 };
 
 struct BoundaryConditionForField {

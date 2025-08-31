@@ -39,7 +39,7 @@ def write_1d_field(
 if __name__ == "__main__":
     dx = 2.5e-3
     ngx = 1000
-    ngb = 0
+    ngb = 2
     nx = ngx+2*ngb
 
     ## set param
@@ -65,8 +65,8 @@ if __name__ == "__main__":
         aa1 * np.exp(-0.5 * (bmx - x_max)**2 / (sgm1**2)) + bb1,
         aa2 * np.exp(-0.5 * (bmx - x_max)**2 / (sgm2**2)) + bb2
     )
-    write_1d_field("data/Bz_fine.bin", nx+1, dx, bs1d)
+    write_1d_field("data/Bz_fine_5th.bin", nx+1, dx, bs1d)
     ## output zeros
-    write_1d_field("data/Bx_fine.bin", nx, dx, np.zeros(nx+1))
-    write_1d_field("data/By_fine.bin", nx+1, dx, np.zeros(nx+2))
+    write_1d_field("data/Bx_fine_5th.bin", nx, dx, np.zeros(nx+1))
+    write_1d_field("data/By_fine_5th.bin", nx+1, dx, np.zeros(nx+2))
     print("done")
