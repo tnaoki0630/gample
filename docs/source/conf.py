@@ -1,4 +1,3 @@
-from pathlib import Path
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
@@ -28,5 +27,8 @@ language = 'Object-C++'
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
-breathe_projects = "gample"
+# -- Breathe 設定 (C++ 用) ------------------------------------
+breathe_projects = {
+    "gample": "../doxygen/xml"   # 後述の Doxygen 出力先
+}
 breathe_default_project = "gample"
