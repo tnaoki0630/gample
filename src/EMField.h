@@ -5,7 +5,7 @@
 #import "XmlLogger.h"
 @class Particle;
 
-/// \class ESField solver
+/// \class EMField
 /// \brief electro-static field solver
 /// \ingroup solvers
 @interface EMField : NSObject

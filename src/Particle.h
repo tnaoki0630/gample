@@ -43,7 +43,7 @@ struct SimulationParams {
         int ngb;
 };
 
-/// \class particle motion solver
+/// \class Particle
 /// \brief particle motion solver with Boris scheme
 /// \ingroup solvers
 @interface Particle : NSObject

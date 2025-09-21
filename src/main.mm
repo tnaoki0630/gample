@@ -25,10 +25,10 @@ std::map<std::string, std::string> parseArgs(int argc, const char* argv[]) {
     return options;
 }
 
-/** \defgroup solvers ソルバ
+/** \defgroup solvers
   * - 境界条件: Dirichlet/periodic
   * - 依存: AMGCL
-  * \see Particle motion solver, ESField solver
+  * \see Particle, EMField
   */
 
 int main(int argc, const char * argv[]) {
