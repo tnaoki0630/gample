@@ -1,0 +1,94 @@
+{
+  "FlagForEquation": {
+    "Particle":     2,
+    "EMField":      1,
+    "MCCollision":  0
+  },
+  "ParamForTimeIntegration": {
+    "Start":            0,
+    "End":              1000000,
+    "TimeStep":         5e-12,
+    "LogOutput":        200,
+    "ParticleOutput":   0,
+    "FieldOutput":      10000,
+    "ProgressOutput":   50000,
+    "ProjectName":      "org_3rd",
+    "RestartName":      "org_3rd"
+  },
+  "ParamForComputing": {
+    "MaximumParticleNumber":  30000000,
+    "ThreadGroupSize":        32,
+    "IntegrationChunkSize":   128,
+    "MaxiterForPoisson":      100,
+    "ToleranceForPoisson":    1e-6
+  },
+  "ParamForField": {
+    "NumberOfGridX":        500,
+    "NumberOfGridY":        200,
+    "GridSizeOfX":          0.005,
+    "GridSizeOfY":          0.005,
+    "InitializeTypeOfE":    "Uniform",
+    "AmplitudeOfE":         [0.0, 0.0, 0.0],
+    "InitializeTypeOfB":    "From1dXFile",
+    "FilePathOfBx":         "data/Bx_3rd.bin",
+    "FilePathOfBy":         "data/By_3rd.bin",
+    "FilePathOfBz":         "data/Bz_3rd.bin",
+    "WeightingOrder":       3,
+    "PtclPosOffset":        0
+  },
+  "ParamForParticle": [
+    {
+      "ParticleName":       "electron",
+      "pNumSetMethod":      "PtclNumPerCell",
+      "pNumValue":          80,
+      "Charge":             -4.803204197e-10,
+      "Mass":               9.10938188e-28,
+      "WeightSetMethod":    "InitialNumDens",
+      "WeightValue":        5e10,
+      "GenerateType":       "uniform-Gaussian",
+      "InitialTemp":        10
+    },
+    {
+      "ParticleName":       "ion_Xe1",
+      "pNumSetMethod":      "PtclNumPerCell",
+      "pNumValue":          80,
+      "Charge":             4.803204197e-10,
+      "Mass":               2.1801714e-23,
+      "WeightSetMethod":    "InitialNumDens",
+      "WeightValue":        5e10,
+      "GenerateType":       "uniform-Gaussian",
+      "InitialTemp":        0.5
+    }
+  ],
+  "BoundaryConditionForParticle": [
+    { "RegionName": "Xmin", "BCType": "Delete" },
+    { "RegionName": "Xmax", "BCType": "Delete" },
+    { "RegionName": "Ymin", "BCType": "periodic" },
+    { "RegionName": "Ymax", "BCType": "periodic" }
+  ],
+  "SourceForParticle": [
+    {
+      "ParticleName":       "ion_Xe1",
+      "GenerateType":       "XsinusoidalIonization",
+      "SrcSetMethod":       "CurrentDensity[A/m2]",
+      "SrcValue":           400,
+      "GeneratePosX":       [0.25, 1.0],
+      "GenerateTemp":       0.5,
+      "GenTempForElectron": 10
+    },
+    {
+      "ParticleName":   "electron",
+      "GenerateType":   "hollow-cathode",
+      "SrcSetMethod":   "BoundaryCurrentAtXmin",
+      "GeneratePosX":   [2.4, 2.4],
+      "GenerateTemp":   10
+    }
+  ],
+  "BoundaryConditionForField": [
+    { "RegionName": "Xmin", "BCType": "Dirichlet" , "Value": 200},
+    { "RegionName": "Xmax", "BCType": "Dirichlet" , "Value": 0},
+    { "RegionName": "Ymin", "BCType": "periodic"},
+    { "RegionName": "Ymax", "BCType": "periodic"},
+    { "RegionName": "hollow-cathode", "Value": 2.4}
+  ]
+}

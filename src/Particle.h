@@ -43,6 +43,9 @@ struct SimulationParams {
         int ngb;
 };
 
+/// \class particle motion solver
+/// \brief particle motion solver with Boris scheme
+/// \ingroup solvers
 @interface Particle : NSObject
 
 // metal関連

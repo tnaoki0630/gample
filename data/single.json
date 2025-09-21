@@ -6,19 +6,20 @@
   },
   "ParamForTimeIntegration": {
     "Start":            0,
-    "End":              500,
-    "TimeStep":         2e-12,
+    "End":              4000,
+    "TimeStep":         5e-14,
     "LogOutput":        1,
-    "ParticleOutput":   1,
+    "ParticleOutput":   0,
     "FieldOutput":      1,
-    "ProjectName":      "single"
+    "ProgressOutput":   0,
+    "ProjectName":      "single_5th"
   },
   "ParamForComputing": {
-    "MaximumParticleNumber":  20000000,
+    "MaximumParticleNumber":  2000,
     "ThreadGroupSize":        32,
     "IntegrationChunkSize":   128,
-    "MaxiterForPoisson":      100,
-    "ToleranceForPoisson":    1e-6
+    "MaxiterForPoisson":      10,
+    "ToleranceForPoisson":    1e-10
   },
   "ParamForField": {
     "NumberOfGridX":        40,
@@ -29,36 +30,39 @@
     "AmplitudeOfE":         [0.0, 0.0, 0.0],
     "InitializeTypeOfB":    "Uniform",
     "AmplitudeOfB":         [0.0, 0.0, 0.0],
-    "WeightingOrder":       1
+    "WeightingOrder":       5,
+    "PtclPosOffset":        0
   },
   "ParamForParticle": [
     {
       "ParticleName":       "electron",
       "pNumSetMethod":      "InitialParticleNumber",
-      "pNumValue":          20,
+      "pNumValue":          1,
       "Charge":             -4.803204197e-10,
       "Mass":               9.10938188e-28,
-      "WeightSetMethod":    "WeightValue",
-      "WeightValue":        3.125e4,
+      "WeightSetMethod":    "InitialNumDens",
+      "WeightValue":        5e10,
       "GenerateType":       "uniform-Gaussian",
-      "InitialPosX":        [0.05, 0.15],
-      "InitialPosY":        [0.05, 0.15]
+      "InitialPosX":        [0.1, 0.1],
+      "InitialPosY":        [0.1, 0.1],
+      "InitialVel":         [1e5, 0.0, 0.0],
+      "InitialTemp":        0
     },
     {
       "ParticleName":       "ion_Xe1",
       "pNumSetMethod":      "InitialParticleNumber",
-      "pNumValue":          20,
+      "pNumValue":          1,
       "Charge":             4.803204197e-10,
       "Mass":               2.1801714e-23,
-      "WeightSetMethod":    "WeightValue",
-      "WeightValue":        3.125e4,
+      "WeightSetMethod":    "InitialNumDens",
+      "WeightValue":        5e10,
       "GenerateType":       "uniform-Gaussian",
-      "InitialPosX":        [0.05, 0.15],
-      "InitialPosY":        [0.05, 0.15]
+      "InitialPosX":        [0.05, 0.05],
+      "InitialPosY":        [0.05, 0.05],
+      "InitialTemp":        0
     }
   ],
-  "SourceForParticle": [
-  ],
+  "SourceForParticle": [],
   "BoundaryConditionForParticle": [
     { "RegionName": "Xmin", "BCType": "Delete" },
     { "RegionName": "Xmax", "BCType": "Delete" },
@@ -66,7 +70,7 @@
     { "RegionName": "Ymax", "BCType": "periodic" }
   ],
   "BoundaryConditionForField": [
-    { "RegionName": "Xmin", "BCType": "Dirichlet" , "Value": 200},
+    { "RegionName": "Xmin", "BCType": "Dirichlet" , "Value": 0},
     { "RegionName": "Xmax", "BCType": "Dirichlet" , "Value": 0},
     { "RegionName": "Ymin", "BCType": "periodic"},
     { "RegionName": "Ymax", "BCType": "periodic"}

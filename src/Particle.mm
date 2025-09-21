@@ -58,6 +58,7 @@ constant int BC_Xmax        [[function_constant(1)]];
 constant int BC_Ymin        [[function_constant(2)]];
 constant int BC_Ymax        [[function_constant(3)]];
 constant int weightOrder   [[function_constant(4)]];
+constant int BorisOrder    [[function_constant(5)]];
 
 // 粒子更新カーネル
 kernel void updateParticles(
@@ -80,20 +81,10 @@ kernel void updateParticles(
     // electro-magnetic field on each ptcl
     float xh = p.x - 0.5;
     float yh = p.y - 0.5;
-    int i1 = int(xh);
-    int j1 = int(p.y);
-    int i2 = int(p.x);
-    int j2 = int(yh);
-
-    // protect
-    // if (i1 < prm.ngb-1) i1 = prm.ngb-1;
-    // if (i1 > prm.ngb-1+prm.ngx) i1 = prm.ngb-1+prm.ngx;
-    // if (j1 < prm.ngb) j1 = prm.ngb;
-    // if (j1 >= prm.ngb+prm.ngy) j1 = prm.ngb+prm.ngy-1;
-    // if (i2 < prm.ngb) i2 = prm.ngb;
-    // if (i2 >= prm.ngb+prm.ngx) i2 = prm.ngb+prm.ngx-1;
-    // if (j2 < prm.ngb-1) j2 = prm.ngb-1;
-    // if (j2 > prm.ngb-1+prm.ngy) j2 = prm.ngb-1+prm.ngy;
+    int i1 = int(floor(xh));
+    int j1 = int(floor(p.y));
+    int i2 = int(floor(p.x));
+    int j2 = int(floor(yh));
 
     float hv[2][2] ;
     hv[0][0] = xh  - float(i1);
@@ -110,6 +101,16 @@ kernel void updateParticles(
             if (weightOrder == 1){
                 sf[0][i][j] = 1.0 - hv[i][j];
                 sf[1][i][j] = hv[i][j];
+            // 3rd-order weighting
+            } else if (weightOrder == 3){
+                sc = 1.0 + hv[i][j];
+                sf[0][i][j] = 1.0/6.0 *pow(2.0-sc,3);
+                sc = hv[i][j];
+                sf[1][i][j] = 1.0/6.0 *(4.0 -6.0*pow(sc,2) +3.0*pow(sc,3));
+                sc = 1.0 - hv[i][j];
+                sf[2][i][j] = 1.0/6.0 *(4.0 -6.0*pow(sc,2) +3.0*pow(sc,3));
+                sc = 2.0 - hv[i][j];
+                sf[3][i][j] = 1.0/6.0 *pow(2.0-sc,3);
             // 5th-order weighting
             } else if (weightOrder == 5){
                 sc = 2.0 + hv[i][j];
@@ -150,16 +151,43 @@ kernel void updateParticles(
             Bpz += sf[i][0][0]*sf[j][1][1]*Bz[ii+jj*(nx+2)];
         }
     }
-    
-    // acceleration by electric field
-    float umx = p.vx + prm.constE*Epx;
-    float umy = p.vy + prm.constE*Epy;
-    float umz = p.vz + prm.constE*Epz;
+
+    // preparing for acceleration
+    float etx = prm.constE*Epx;
+    float ety = prm.constE*Epy;
+    float etz = prm.constE*Epz;
 
     // preparing for rotation
     float btx = prm.constB*Bpx;
     float bty = prm.constB*Bpy;
     float btz = prm.constB*Bpz;
+    float btbt = btx*btx + bty*bty + btz*btz;
+
+    // high-order Boris
+    if (BorisOrder != 2){
+        float fN1, fN2;
+        if (BorisOrder == 4){
+            fN1 = (1.0 + btbt/3.0);
+            fN2 = 1.0/3.0;
+        }else if (BorisOrder == 6){
+            fN1 = (1.0 + btbt/3.0 + 2.0*btbt*btbt/15.0);
+            fN2 = (1.0/3.0 + 2.0*btbt/15.0);
+        }
+        float etbt = etx*btx + ety*bty + etz*btz;
+        // update et
+        etx = fN1*etx + fN2*etbt*btx;
+        ety = fN1*ety + fN2*etbt*bty;
+        etz = fN1*etz + fN2*etbt*btz;
+        // update bt
+        btx = fN1*btx;
+        bty = fN1*bty;
+        btz = fN1*btz;
+    }
+
+    // half-acceleration by electric field
+    float umx = p.vx + etx;
+    float umy = p.vy + ety;
+    float umz = p.vz + etz;
 
     // vector product
     float v0x = umx + umy*btz - umz*bty;
@@ -167,7 +195,6 @@ kernel void updateParticles(
     float v0z = umz + umx*bty - umy*btx;
 
     // rotation by magnetic field
-    float btbt = btx*btx + bty*bty + btz*btz;
     float ssx = 2*btx/(1+btbt);
     float ssy = 2*bty/(1+btbt);
     float ssz = 2*btz/(1+btbt);
@@ -175,7 +202,7 @@ kernel void updateParticles(
     float upy = umy + v0z*ssx - v0x*ssz;
     float upz = umz + v0x*ssy - v0y*ssx;
 
-    // acceleration by electric field
+    // half-acceleration by electric field
     p.vx = upx + prm.constE*Epx;
     p.vy = upy + prm.constE*Epy;
     p.vz = upz + prm.constE*Epz;
@@ -214,12 +241,39 @@ kernel void updateParticles(
         }
     }
 
+    // reflect boundary
+    if (BC_Xmin == 2){
+        if(int(floor(p.x)) < prm.ngb){
+            p.x = float(prm.ngb) + float(prm.ngb)-p.x;
+            p.vx = -p.vx;
+        }
+    }
+    if (BC_Xmax == 2){
+        if(int(floor(p.x)) >= prm.ngb+prm.ngx){
+            p.x = float(prm.ngb+prm.ngx) + float(prm.ngb+prm.ngx)-p.x;
+            p.vx = -p.vx;
+        }
+    }
+    if (BC_Ymin == 2){
+        if(int(floor(p.y)) < prm.ngb){
+            p.y = float(prm.ngb) + float(prm.ngb)-p.y;
+            p.vy = -p.vy;
+        }
+    }
+    if (BC_Ymax == 2){
+        if(int(floor(p.y)) >= prm.ngb+prm.ngy){
+            p.y = float(prm.ngb+prm.ngy) + float(prm.ngb+prm.ngy)-p.y;
+            p.vy = -p.vy;
+        }
+    }
+
     // debug print
     // if (!isfinite(p.x)) {
     //     print[id] = 1.0;
     // }else{
     //     print[id] = 0.0;
     // }
+    print[id] = Epx;
 }
 
 // 電荷密度更新カーネル
@@ -227,70 +281,89 @@ kernel void integrateChargeDensity(
                         device ParticleState* ptcl          [[ buffer(0) ]],
                         constant integrationParams& prm     [[ buffer(1) ]],
                         device atomic_float* rho            [[ buffer(2) ]],
-                        device float* print                 [[ buffer(3) ]],
+                        device atomic_float* jx             [[ buffer(3) ]],
+                        device atomic_float* jy             [[ buffer(4) ]],
+                        device float* print                 [[ buffer(5) ]],
                         uint gid                            [[ thread_position_in_grid ]]
                         ) {
     
     // 粒子数を超えたらスキップ
-    print[gid] = 0.0;
+    // print[gid] = 0.0;
     if(gid >= prm.pNum) return;
 
     // 変数定義
     const int nx = prm.ngx + 2*prm.ngb;
     const int ny = prm.ngy + 2*prm.ngb;
     const int ng = (nx+1)*(ny+1);
-    int i1, j1;
-    float hv[2];
-    float sc;
-    float sf[6][2];
-    int ii, jj;
 
     // 粒子を取得
     device ParticleState& p = ptcl[gid];
 
     // electro-magnetic field on each ptcl
-    i1 = int(p.x);
-    j1 = int(p.y);
+    float xh = p.x - 0.5;
+    float yh = p.y - 0.5;
+    int i1 = int(floor(xh));
+    int j1 = int(floor(p.y));
+    int i2 = int(floor(p.x));
+    int j2 = int(floor(yh));
 
-    // protect
-    if (i1 < prm.ngb-1) i1 = prm.ngb-1;
-    if (i1 > prm.ngb-1+prm.ngx) i1 = prm.ngb-1+prm.ngx;
-    if (j1 < prm.ngb) j1 = prm.ngb;
-    if (j1 >= prm.ngb+prm.ngy) j1 = prm.ngb+prm.ngy-1;
-    
-    hv[0] = p.x - float(i1);
-    hv[1] = p.y - float(j1);
+    float hv[2][2] ;
+    hv[0][0] = xh  - float(i1);
+    hv[0][1] = p.y - float(j1);
+    hv[1][0] = p.x - float(i2);
+    hv[1][1] = yh  - float(j2);
     
     // weighting
+    float sc;
+    float sf[6][2][2];
     for (int i = 0; i < 2; i++) {
-        // 1st-order weighting
-        if (weightOrder == 1){
-            sf[0][i] = 1.0 - hv[i];
-            sf[1][i] = hv[i];
-        // 5th-order weighting
-        } else if (weightOrder == 5){
-            sc = 2.0 + hv[i];
-            sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
-            sc = 1.0 + hv[i];
-            sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = hv[i];
-            sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 1.0 - hv[i];
-            sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
-            sc = 2.0 - hv[i];
-            sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
-            sc = 3.0 - hv[i];
-            sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
+        for (int j = 0; j < 2; j++) {
+            // 1st-order weighting
+            if (weightOrder == 1){
+                sf[0][i][j] = 1.0 - hv[i][j];
+                sf[1][i][j] = hv[i][j];
+            // 3rd-order weighting
+            } else if (weightOrder == 3){
+                sc = 1.0 + hv[i][j];
+                sf[0][i][j] = 1.0/6.0 *pow(2.0-sc,3);
+                sc = hv[i][j];
+                sf[1][i][j] = 1.0/6.0 *(4.0 -6.0*pow(sc,2) +3.0*pow(sc,3));
+                sc = 1.0 - hv[i][j];
+                sf[2][i][j] = 1.0/6.0 *(4.0 -6.0*pow(sc,2) +3.0*pow(sc,3));
+                sc = 2.0 - hv[i][j];
+                sf[3][i][j] = 1.0/6.0 *pow(2.0-sc,3);
+            // 5th-order weighting
+            } else if (weightOrder == 5){
+                sc = 2.0 + hv[i][j];
+                sf[0][i][j] = 1.0/120.0 *pow(3.0-sc, 5);
+                sc = 1.0 + hv[i][j];
+                sf[1][i][j] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+                sc = hv[i][j];
+                sf[2][i][j] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+                sc = 1.0 - hv[i][j];
+                sf[3][i][j] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+                sc = 2.0 - hv[i][j];
+                sf[4][i][j] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+                sc = 3.0 - hv[i][j];
+                sf[5][i][j] = 1.0/120.0 *pow(3.0-sc, 5);
+            }
         }
     }
 
     // accumulation
     threadgroup_barrier(mem_flags::mem_threadgroup);
+    int ii,jj;
     for (int i = 0; i < weightOrder+1; i++) {
         for (int j = 0; j < weightOrder+1; j++) {
-            ii = i1+(i-prm.ngb);
+            ii = i2+(i-prm.ngb);
             jj = j1+(j-prm.ngb);
-            atomic_fetch_add_explicit(&(rho[ii+jj*(nx+1)]), sf[i][0]*sf[j][1]*prm.scale, memory_order_relaxed);
+            atomic_fetch_add_explicit(&(rho[ii+jj*(nx+1)]), sf[i][1][0]*sf[j][0][1]*prm.scale, memory_order_relaxed);
+            ii = i1+(i-prm.ngb+1);
+            jj = j1+(j-prm.ngb);
+            atomic_fetch_add_explicit(&(jx[ii+jj*(nx+2)]), sf[i][0][0]*sf[j][0][1]*prm.scale*p.vx, memory_order_relaxed);
+            ii = i2+(i-prm.ngb);
+            jj = j2+(j-prm.ngb+1);
+            atomic_fetch_add_explicit(&(jy[ii+jj*(nx+1)]), sf[i][1][0]*sf[j][1][1]*prm.scale*p.vy, memory_order_relaxed);
         }
     }
 
@@ -321,6 +394,7 @@ kernel void integrateChargeDensity(
     float _m;
     float _q;
     float _w;
+    double _lastKE;
 }
 
 // 初期設定
@@ -340,6 +414,9 @@ kernel void integrateChargeDensity(
         _m = particleParam[s].m;
         _q = particleParam[s].q;
         _w = particleParam[s].w;
+        
+        // 統計量
+        _energy_last = 0.0;
 
         // 並列計算パラメータ
         _integrationChunkSize = compParam.integrationChunkSize;
@@ -379,6 +456,8 @@ kernel void integrateChargeDensity(
                     BC = 0;
                 }else if ([pBCs[pos].type isEqualToString:@"Delete"]){
                     BC = 1;
+                }else if ([pBCs[pos].type isEqualToString:@"Reflect"]){
+                    BC = 2;
                 }else{
                     BC = -1; // error
                 }
@@ -389,6 +468,8 @@ kernel void integrateChargeDensity(
                     BC = 0;
                 }else if ([pBCs[pos].type isEqualToString:@"Delete"]){
                     BC = 1;
+                }else if ([pBCs[pos].type isEqualToString:@"Reflect"]){
+                    BC = 2;
                 }else{
                     BC = -1; // error
                 }
@@ -399,6 +480,8 @@ kernel void integrateChargeDensity(
                     BC = 0;
                 }else if ([pBCs[pos].type isEqualToString:@"Delete"]){
                     BC = 1;
+                }else if ([pBCs[pos].type isEqualToString:@"Reflect"]){
+                    BC = 2;
                 }else{
                     BC = -1; // error
                 }
@@ -409,6 +492,8 @@ kernel void integrateChargeDensity(
                     BC = 0;
                 }else if ([pBCs[pos].type isEqualToString:@"Delete"]){
                     BC = 1;
+                }else if ([pBCs[pos].type isEqualToString:@"Reflect"]){
+                    BC = 2;
                 }else{
                     BC = -1; // error
                 }
@@ -424,6 +509,9 @@ kernel void integrateChargeDensity(
         // weighting order
         int wo = fieldParam.weightOrder;
         [fc setConstantValue:&wo type:MTLDataTypeInt atIndex:4];
+        // Boris order
+        int bo = fieldParam.BorisOrder;
+        [fc setConstantValue:&bo type:MTLDataTypeInt atIndex:5];
 
         // 引数付きでカーネルを作成
         id<MTLFunction> updateParticlesFunction = [library newFunctionWithName:@"updateParticles" constantValues:fc error:&error];
@@ -502,6 +590,12 @@ kernel void integrateChargeDensity(
         int ny = fieldParam.ngy + 2*fieldParam.ngb;
         size_t EMbuffSize = sizeof(float)*(nx+1)*(ny+1);
     }
+
+    // デバッグ出力ファイル初期化
+    std::ofstream ofs([[NSString stringWithFormat:@"debug_%@.csv", _pName] UTF8String]);
+    ofs << "idx,x,y,vx,vy,print\n";
+    ofs.close();
+
     return self;
 }
 
@@ -514,6 +608,9 @@ kernel void integrateChargeDensity(
     prm->constB = 0.5*_q*dt/_m/c;
     prm->constX = dt/fld.dx;
     prm->constY = dt/fld.dy;
+
+    // const bool woMetal = true; // validation
+    const bool woMetal = false; // validation
     
     // EMFieldのバッファを直接使用
     id<MTLBuffer> ExBuffer = [fld ExBuffer];
@@ -523,44 +620,227 @@ kernel void integrateChargeDensity(
     id<MTLBuffer> ByBuffer = [fld ByBuffer];
     id<MTLBuffer> BzBuffer = [fld BzBuffer];
     
-    // コマンドバッファとエンコーダの作成
-    id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
-    id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
-    
     // Moment のバッファを使用
     id<MTLBuffer> printBuffer = [mom printBuffer];
 
-    // パイプラインとバッファの設定
-    [computeEncoder setComputePipelineState:_updateParticlesPipeline];
-    [computeEncoder setBuffer:_particleBuffer   offset:0 atIndex:0];
-    [computeEncoder setBuffer:_paramsBuffer     offset:0 atIndex:1];
-    [computeEncoder setBuffer:ExBuffer          offset:0 atIndex:2];
-    [computeEncoder setBuffer:EyBuffer          offset:0 atIndex:3];
-    [computeEncoder setBuffer:EzBuffer          offset:0 atIndex:4];
-    [computeEncoder setBuffer:BxBuffer          offset:0 atIndex:5];
-    [computeEncoder setBuffer:ByBuffer          offset:0 atIndex:6];
-    [computeEncoder setBuffer:BzBuffer          offset:0 atIndex:7];
-    [computeEncoder setBuffer:printBuffer       offset:0 atIndex:8];
+    if (!woMetal){
 
-    
-    // グリッドとスレッドグループのサイズ設定
-    uint gridSize = prm->pNum;
-    uint threadGroupNum = (gridSize + _threadGroupSize - 1) / _threadGroupSize;
-    MTLSize threadGroupSize = MTLSizeMake(_threadGroupSize, 1, 1);
-    MTLSize gridSizeMetalStyle = MTLSizeMake(threadGroupNum, 1, 1);
-    
-    // ディスパッチ
-    [computeEncoder dispatchThreadgroups:gridSizeMetalStyle
-                            threadsPerThreadgroup:threadGroupSize];
+        // コマンドバッファとエンコーダの作成
+        id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
+        id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
 
-    // エンコーディングと実行
-    [computeEncoder endEncoding];
-    [commandBuffer commit];
-    [commandBuffer waitUntilCompleted];
+        // パイプラインとバッファの設定
+        [computeEncoder setComputePipelineState:_updateParticlesPipeline];
+        [computeEncoder setBuffer:_particleBuffer   offset:0 atIndex:0];
+        [computeEncoder setBuffer:_paramsBuffer     offset:0 atIndex:1];
+        [computeEncoder setBuffer:ExBuffer          offset:0 atIndex:2];
+        [computeEncoder setBuffer:EyBuffer          offset:0 atIndex:3];
+        [computeEncoder setBuffer:EzBuffer          offset:0 atIndex:4];
+        [computeEncoder setBuffer:BxBuffer          offset:0 atIndex:5];
+        [computeEncoder setBuffer:ByBuffer          offset:0 atIndex:6];
+        [computeEncoder setBuffer:BzBuffer          offset:0 atIndex:7];
+        [computeEncoder setBuffer:printBuffer       offset:0 atIndex:8];
+
+        
+        // グリッドとスレッドグループのサイズ設定
+        uint gridSize = prm->pNum;
+        uint threadGroupNum = (gridSize + _threadGroupSize - 1) / _threadGroupSize;
+        MTLSize threadGroupSize = MTLSizeMake(_threadGroupSize, 1, 1);
+        MTLSize gridSizeMetalStyle = MTLSizeMake(threadGroupNum, 1, 1);
+        
+        // ディスパッチ
+        [computeEncoder dispatchThreadgroups:gridSizeMetalStyle
+                                threadsPerThreadgroup:threadGroupSize];
+
+        // エンコーディングと実行
+        [computeEncoder endEncoding];
+        [commandBuffer commit];
+        [commandBuffer waitUntilCompleted];
+    }else{
+        int weightOrder = 1;
+        ParticleState* ptcl = (ParticleState*)[_particleBuffer contents];
+        float* Ex = (float *)[ExBuffer contents];
+        float* Ey = (float *)[EyBuffer contents];
+        float* Ez = (float *)[EzBuffer contents];
+        float* Bx = (float *)[BxBuffer contents];
+        float* By = (float *)[ByBuffer contents];
+        float* Bz = (float *)[BzBuffer contents];
+        int BC_Xmin = 1;
+        int BC_Xmax = 1;
+        int BC_Ymin = 0;
+        int BC_Ymax = 0;
+        for (int idx = 0; idx < prm->pNum; idx++){
+            // get particle
+            ParticleState& p = ptcl[idx];
+
+            // electro-magnetic field on each ptcl
+            float xh = p.x - 0.5;
+            float yh = p.y - 0.5;
+            int i1 = int(xh);
+            int j1 = int(p.y);
+            int i2 = int(p.x);
+            int j2 = int(yh);
+
+            float hv[2][2] ;
+            hv[0][0] = xh  - float(i1);
+            hv[0][1] = p.y - float(j1);
+            hv[1][0] = p.x - float(i2);
+            hv[1][1] = yh  - float(j2);
+            
+            // weighting
+            float sc;
+            float sf[6][2][2];
+            for (int i = 0; i < 2; i++) {
+                for (int j = 0; j < 2; j++) {
+                    // 1st-order weighting
+                    if (weightOrder == 1){
+                        sf[0][i][j] = 1.0 - hv[i][j];
+                        sf[1][i][j] = hv[i][j];
+                    // 3rd-order weighting
+                    } else if (weightOrder == 3){
+                        sc = 1.0 + hv[i][j];
+                        sf[0][i][j] = 1.0/6.0 *pow(2.0-sc,3);
+                        sc = hv[i][j];
+                        sf[1][i][j] = 1.0/6.0 *(4.0 -6.0*pow(sc,2) +3.0*pow(sc,3));
+                        sc = 1.0 - hv[i][j];
+                        sf[2][i][j] = 1.0/6.0 *(4.0 -6.0*pow(sc,2) +3.0*pow(sc,3));
+                        sc = 2.0 - hv[i][j];
+                        sf[3][i][j] = 1.0/6.0 *pow(2.0-sc,3);
+                    // 5th-order weighting
+                    } else if (weightOrder == 5){
+                        sc = 2.0 + hv[i][j];
+                        sf[0][i][j] = 1.0/120.0 *pow(3.0-sc, 5);
+                        sc = 1.0 + hv[i][j];
+                        sf[1][i][j] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+                        sc = hv[i][j];
+                        sf[2][i][j] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+                        sc = 1.0 - hv[i][j];
+                        sf[3][i][j] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+                        sc = 2.0 - hv[i][j];
+                        sf[4][i][j] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+                        sc = 3.0 - hv[i][j];
+                        sf[5][i][j] = 1.0/120.0 *pow(3.0-sc, 5);
+                    }
+                }
+            }
+
+            // EMField for particle
+            float Epx = 0.0;
+            float Epy = 0.0;
+            float Epz = 0.0;
+            float Bpx = 0.0;
+            float Bpy = 0.0;
+            float Bpz = 0.0;
+            int ii, jj;
+            const int nx = (prm->ngx + 2*prm->ngb);
+            for (int i = 0; i < weightOrder+1; i++) {
+                for (int j = 0; j < weightOrder+1; j++) {
+                    ii = i1+(i-prm->ngb+1);
+                    jj = j1+(j-prm->ngb);
+                    Epx += sf[i][0][0]*sf[j][0][1]*Ex[ii+jj*(nx+2)];
+                    ii = i2+(i-prm->ngb);
+                    jj = j2+(j-prm->ngb+1);
+                    Epy += sf[i][1][0]*sf[j][1][1]*Ey[ii+jj*(nx+1)];
+                    ii = i1+(i-prm->ngb+1);
+                    jj = j2+(j-prm->ngb+1);
+                    Bpz += sf[i][0][0]*sf[j][1][1]*Bz[ii+jj*(nx+2)];
+                }
+            }
+            
+            // acceleration by electric field
+            float umx = p.vx + prm->constE*Epx;
+            float umy = p.vy + prm->constE*Epy;
+            float umz = p.vz + prm->constE*Epz;
+
+            // preparing for rotation
+            float btx = prm->constB*Bpx;
+            float bty = prm->constB*Bpy;
+            float btz = prm->constB*Bpz;
+
+            // vector product
+            float v0x = umx + umy*btz - umz*bty;
+            float v0y = umy + umz*btx - umx*btz;
+            float v0z = umz + umx*bty - umy*btx;
+
+            // rotation by magnetic field
+            float btbt = btx*btx + bty*bty + btz*btz;
+            float ssx = 2*btx/(1+btbt);
+            float ssy = 2*bty/(1+btbt);
+            float ssz = 2*btz/(1+btbt);
+            float upx = umx + v0y*ssz - v0z*ssy;
+            float upy = umy + v0z*ssx - v0x*ssz;
+            float upz = umz + v0x*ssy - v0y*ssx;
+
+            // acceleration by electric field
+            p.vx = upx + prm->constE*Epx;
+            p.vy = upy + prm->constE*Epy;
+            p.vz = upz + prm->constE*Epz;
+
+            // updating position
+            p.x = p.x + p.vx * prm->constX;
+            p.y = p.y + p.vy * prm->constY;
+
+            // periodic boundary
+            if (BC_Xmin == 0) {
+                p.x = fmod(p.x + float(prm->ngx - prm->ngb), float(prm->ngx)) + float(prm->ngb);
+            }
+            if (BC_Ymin == 0) {
+                p.y = fmod(p.y + float(prm->ngy - prm->ngb), float(prm->ngy)) + float(prm->ngb);
+            }
+
+            // delete boundary
+            if (BC_Xmin == 1){
+                if(int(floor(p.x)) < prm->ngb){
+                    p.piflag = 1;
+                }
+            }
+            if (BC_Xmax == 1){
+                if(int(floor(p.x)) >= prm->ngb+prm->ngx){
+                    p.piflag = 2;
+                }
+            }
+            if (BC_Ymin == 1){
+                if(int(floor(p.y)) < prm->ngb){
+                    p.piflag = 3;
+                }
+            }
+            if (BC_Ymax == 1){
+                if(int(floor(p.y)) >= prm->ngb+prm->ngy){
+                    p.piflag = 4;
+                }
+            }
+
+            // reflect boundary
+            if (BC_Xmin == 2){
+                if(int(floor(p.x)) < prm->ngb){
+                    p.x = float(prm->ngb) + float(prm->ngb)-p.x;
+                    p.vx = -p.vx;
+                }
+            }
+            if (BC_Xmax == 2){
+                if(int(floor(p.x)) >= prm->ngb+prm->ngx){
+                    p.x = float(prm->ngb+prm->ngx) + float(prm->ngb+prm->ngx)-p.x;
+                    p.vx = -p.vx;
+                }
+            }
+            if (BC_Ymin == 2){
+                if(int(floor(p.y)) < prm->ngb){
+                    p.y = float(prm->ngb) + float(prm->ngb)-p.y;
+                    p.vy = -p.vy;
+                }
+            }
+            if (BC_Ymax == 2){
+                if(int(floor(p.y)) >= prm->ngb+prm->ngy){
+                    p.y = float(prm->ngb+prm->ngy) + float(prm->ngb+prm->ngy)-p.y;
+                    p.vy = -p.vy;
+                }
+            }
+        }
+    }
 
     // デバッグ出力
-    // ParticleState* p = (ParticleState*)[_particleBuffer contents];
-    // float* prt = (float*)printBuffer.contents;
+    ParticleState* p = (ParticleState*)[_particleBuffer contents];
+    float* prt = (float*)printBuffer.contents;
     // float min_x = 1e20, max_x = -1e20;
     // float min_y = 1e20, max_y = -1e20;
     // float min_v = 1e20, max_v = -1e20;
@@ -568,9 +848,10 @@ kernel void integrateChargeDensity(
     // for (int idx = 0; idx < prm->pNum; idx++){
     //     if(p[idx].piflag == 0){
     //         // debug print
-    //         // if (min > prt[idx]){ min = prt[idx]; }
-    //         // if (max < prt[idx]){ max = prt[idx]; }
-    //         if (prt[idx] > 1e-20){ NSLog(@"[update_%@] not finite: prt[%d] = %e",_pName,idx,prt[idx]); }
+    //         if (min > prt[idx]){ min = prt[idx]; }
+    //         if (max < prt[idx]){ max = prt[idx]; }
+    //         if (prt[idx] < 0.0){ NSLog(@"Epx is negative(%@): Epx = %e, idx = %d",_pName,prt[idx],idx); }
+    //         // if (prt[idx] > 1e-20){ NSLog(@"[update_%@] not finite: prt[%d] = %e",_pName,idx,prt[idx]); }
     //         // position
     //         if (min_x > p[idx].x){ min_x = p[idx].x; }
     //         if (max_x < p[idx].x){ max_x = p[idx].x; }
@@ -583,6 +864,13 @@ kernel void integrateChargeDensity(
     //         if (max_v < v){ max_v = v; }
     //     }
     // }
+    // csv出力
+    std::ofstream ofs([[NSString stringWithFormat:@"debug_%@.csv", _pName] UTF8String], std::ios::app);
+    for (int idx = 0; idx < 1; ++idx) {
+        ofs << idx << "," << p[idx].x << "," << p[idx].y << "," << p[idx].vx << "," << p[idx].vy << "," << prt[idx] << "\n";
+        // NSLog(@"debug print(%@): p.x = %e, p.y = %e",_pName,p[idx].x,p[idx].y);
+    }
+    ofs.close();
     // NSLog(@"debug print(%@): pNum = %d, min = %e, max = %e", _pName, prm->pNum, min, max);
     // NSLog(@"update(%@): pNum = %d, min_x = %e, max_x = %e, min_y = %e, max_y = %e, min_v = %e, max_v = %e", _pName, prm->pNum, min_x, max_x, min_y, max_y, min_v, max_v);
 
@@ -665,16 +953,19 @@ kernel void integrateChargeDensity(
     // update
     prm->pNum -= pulln;
     // check reduction
-    // for (int k1 = 0; k1 < prm->pNum; k1++){
-    //     if (p[k1].piflag > 0){
-    //         NSLog(@"reduction failed: pName = %@, idx = %d", _pName, k1);
-    //     }else if( int(p[k1].x) < prm->ngb
-    //            || int(p[k1].x) > prm->ngb+prm->ngx
-    //            || int(p[k1].y) < prm->ngb
-    //            || int(p[k1].y) > prm->ngb+prm->ngy ){
-    //         NSLog(@"spilled particle is detected: pName = %@, idx = %d, p.x = %e, p.y = %e", _pName, k1, p[k1].x, p[k1].y);
-    //     }
-    // }
+    double energy = 0.0;
+    for (int k1 = 0; k1 < prm->pNum; k1++){
+        if (p[k1].piflag > 0){
+            NSLog(@"reduction failed: pName = %@, idx = %d", _pName, k1);
+        }else if( int(p[k1].x) < prm->ngb
+               || int(p[k1].x) > prm->ngb+prm->ngx
+               || int(p[k1].y) < prm->ngb
+               || int(p[k1].y) > prm->ngb+prm->ngy ){
+            NSLog(@"spilled particle is detected: pName = %@, idx = %d, p.x = %e, p.y = %e", _pName, k1, p[k1].x, p[k1].y);
+        }else{
+            energy += (double)0.5*_m*(p[k1].vx*p[k1].vx+p[k1].vy*p[k1].vy+p[k1].vz*p[k1].vz)*_w;
+        }
+    }
     // output log
     std::map<std::string, std::string>data ={
         {"particleNumber", std::to_string(prm->pNum)},
@@ -683,42 +974,116 @@ kernel void integrateChargeDensity(
         {"Xmax", std::to_string(_pinum_Xmax)},
         {"Ymin", std::to_string(_pinum_Ymin)},
         {"Ymax", std::to_string(_pinum_Ymax)},
+        {"totalKineticEnergy", fmtSci(energy*ergtoev, 6)},
+        {"totalKEincrement", fmtSci((energy-_lastKE)*ergtoev, 6)},
     };
     NSString* secName = [NSString stringWithFormat:@"flowout_%@", _pName];
     logger.logSection([secName UTF8String], data);
+    // store current KE
+    _lastKE = energy;
 }
 
 - (void)integrateChargeDensity:(EMField*)fld withMoment:(Moment*)mom withLogger:(XmlLogger&)logger{
     // obtain buffer
     id<MTLBuffer> rhoBuffer = [fld rhoBuffer];
+    id<MTLBuffer> jxBuffer = [fld jxBuffer];
+    id<MTLBuffer> jyBuffer = [fld jyBuffer];
     id<MTLBuffer> printBuffer = [mom printBuffer];
     SimulationParams* prm = (SimulationParams*)[_paramsBuffer contents];
     integrationParams* intgPrm = (integrationParams*)[_integrationParamsBuffer contents];
     intgPrm->pNum = prm->pNum;
     
-    // コマンドバッファとエンコーダの作成
-    id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
-    id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
-    
-    // パイプラインとバッファの設定
-    [computeEncoder setComputePipelineState:_integrateChargeDensityPipeline];
-    [computeEncoder setBuffer:_particleBuffer           offset:0 atIndex:0];
-    [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
-    [computeEncoder setBuffer:rhoBuffer                 offset:0 atIndex:2];
-    [computeEncoder setBuffer:printBuffer               offset:0 atIndex:3];
+    // const bool woMetal = true; // validation of atomic calculation
+    const bool woMetal = false; // validation of atomic calculation
 
-    // グリッドとスレッドグループのサイズ設定
-    uint threadGroupNum = (prm->pNum + _threadGroupSize - 1) / _threadGroupSize;
-    // MTLSize gridSizeMetalStyle = MTLSizeMake(threadGroupNum, 1, 1);
-    // MTLSize threadGroupSize = MTLSizeMake(_threadGroupSize, 1, 1);
-    MTLSize gridSizeMetalStyle = MTLSizeMake(threadGroupNum, 1, 1);
-    MTLSize threadGroupSize = MTLSizeMake(_threadGroupSize, 1, 1);
+    if(!woMetal){
+        // コマンドバッファとエンコーダの作成
+        id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
+        id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
+        
+        // パイプラインとバッファの設定
+        [computeEncoder setComputePipelineState:_integrateChargeDensityPipeline];
+        [computeEncoder setBuffer:_particleBuffer           offset:0 atIndex:0];
+        [computeEncoder setBuffer:_integrationParamsBuffer  offset:0 atIndex:1];
+        [computeEncoder setBuffer:rhoBuffer                 offset:0 atIndex:2];
+        [computeEncoder setBuffer:jxBuffer                  offset:0 atIndex:3];
+        [computeEncoder setBuffer:jyBuffer                  offset:0 atIndex:4];
+        [computeEncoder setBuffer:printBuffer               offset:0 atIndex:5];
 
-    // ディスパッチ/エンコーディング/実行
-    [computeEncoder dispatchThreadgroups:gridSizeMetalStyle threadsPerThreadgroup:threadGroupSize];
-    [computeEncoder endEncoding];
-    [commandBuffer commit];
-    [commandBuffer waitUntilCompleted];
+        // グリッドとスレッドグループのサイズ設定
+        uint threadGroupNum = (prm->pNum + _threadGroupSize - 1) / _threadGroupSize;
+        MTLSize gridSizeMetalStyle = MTLSizeMake(threadGroupNum, 1, 1);
+        MTLSize threadGroupSize = MTLSizeMake(_threadGroupSize, 1, 1);
+
+        // ディスパッチ/エンコーディング/実行
+        [computeEncoder dispatchThreadgroups:gridSizeMetalStyle threadsPerThreadgroup:threadGroupSize];
+        [computeEncoder endEncoding];
+        [commandBuffer commit];
+        [commandBuffer waitUntilCompleted];
+    }else{
+        int weightOrder = 3;
+        ParticleState* p = (ParticleState*)[_particleBuffer contents];
+        float* rho = (float *)[rhoBuffer contents];
+        for (int idx = 0; idx < intgPrm->pNum; idx++){
+            int nx = intgPrm->ngx + 2*intgPrm->ngb;
+            int ny = intgPrm->ngy + 2*intgPrm->ngb;
+            int ng = (nx+1)*(ny+1);
+            int i1, j1;
+            float hv[2];
+            float sc;
+            float sf[6][2];
+            int ii, jj;
+
+            // electro-magnetic field on each ptcl
+            i1 = int(p[idx].x);
+            j1 = int(p[idx].y);
+            
+            hv[0] = p[idx].x - float(i1);
+            hv[1] = p[idx].y - float(j1);
+            
+            // weighting
+            for (int i = 0; i < 2; i++) {
+                // 1st-order weighting
+                if (weightOrder == 1){
+                    sf[0][i] = 1.0 - hv[i];
+                    sf[1][i] = hv[i];
+                // 3rd-order weighting
+                } else if (weightOrder == 3){
+                    sc = 1.0 + hv[i];
+                    sf[0][i] = 1.0/6.0 *pow(2.0-sc,3);
+                    sc = hv[i];
+                    sf[1][i] = 1.0/6.0 *(4.0 -6.0*pow(sc,2) +3.0*pow(sc,3));
+                    sc = 1.0 - hv[i];
+                    sf[2][i] = 1.0/6.0 *(4.0 -6.0*pow(sc,2) +3.0*pow(sc,3));
+                    sc = 2.0 - hv[i];
+                    sf[3][i] = 1.0/6.0 *pow(2.0-sc,3);
+                // 5th-order weighting
+                } else if (weightOrder == 5){
+                    sc = 2.0 + hv[i];
+                    sf[0][i] = 1.0/120.0 *pow(3.0-sc, 5);
+                    sc = 1.0 + hv[i];
+                    sf[1][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+                    sc = hv[i];
+                    sf[2][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+                    sc = 1.0 - hv[i];
+                    sf[3][i] = 1.0/60.0 *(33.0 -30.0*pow(sc,2) +15.0*pow(sc,4) -5.0*pow(sc,5));
+                    sc = 2.0 - hv[i];
+                    sf[4][i] = 1.0/120.0 *(51.0 +75.0*sc -210.0*pow(sc,2) +150.0*pow(sc,3) -45.0*pow(sc,4) +5.0*pow(sc,5));
+                    sc = 3.0 - hv[i];
+                    sf[5][i] = 1.0/120.0 *pow(3.0-sc, 5);
+                }
+            }
+
+            // accumulation
+            for (int i = 0; i < weightOrder+1; i++) {
+                for (int j = 0; j < weightOrder+1; j++) {
+                    ii = i1+(i-intgPrm->ngb);
+                    jj = j1+(j-intgPrm->ngb);
+                    rho[ii+jj*(nx+1)] += sf[i][0]*sf[j][1]*intgPrm->scale;
+                }
+            }
+        }
+    }
 
     // デバッグ出力
     // float* prt = (float*)printBuffer.contents;

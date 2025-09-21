@@ -5,11 +5,14 @@
 #import "XmlLogger.h"
 @class Particle;
 
+/// \class EMField
+/// \brief electro-static field solver
+/// \ingroup solvers
 @interface EMField : NSObject
 // 関数
 - (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam withLogger:(XmlLogger&)logger;
 - (void)outputCSRmtx:(int)n row:(std::vector<int>)row_ptr collumn:(std::vector<int>)col_idx value:(std::vector<float>)val;
-- (void)solvePoisson:(XmlLogger&)logger;
+- (void)solvePoisson:(double)dt withLogger:(XmlLogger&)logger;
 - (void)resetChargeDensity;
 - (void)checkChargeDensity;
 - (bool)load1dField:(std::vector<float>&)field withFilePath:(NSString*)filePath;
@@ -17,6 +20,8 @@
 // アクセサ
 - (float*)phi;
 - (id<MTLBuffer>)rhoBuffer;
+- (id<MTLBuffer>)jxBuffer;
+- (id<MTLBuffer>)jyBuffer;
 - (id<MTLBuffer>)ExBuffer;
 - (id<MTLBuffer>)EyBuffer;
 - (id<MTLBuffer>)EzBuffer;

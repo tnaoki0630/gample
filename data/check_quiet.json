@@ -1,0 +1,73 @@
+{
+  "FlagForEquation": {
+    "Particle":     2,
+    "EMField":      1,
+    "MCCollision":  0
+  },
+  "ParamForTimeIntegration": {
+    "Start":            0,
+    "End":              20000,
+    "TimeStep":         5e-12,
+    "LogOutput":        10,
+    "ParticleOutput":   1,
+    "FieldOutput":      10,
+    "ProgressOutput":   20000,
+    "ProjectName":      "gaussian_static_small"
+  },
+  "ParamForComputing": {
+    "MaximumParticleNumber":  20000000,
+    "ThreadGroupSize":        32,
+    "IntegrationChunkSize":   128,
+    "MaxiterForPoisson":      100,
+    "ToleranceForPoisson":    1e-10
+  },
+  "ParamForField": {
+    "NumberOfGridX":        20,
+    "NumberOfGridY":        20,
+    "GridSizeOfX":          0.005,
+    "GridSizeOfY":          0.005,
+    "InitializeTypeOfE":    "Uniform",
+    "AmplitudeOfE":         [0.0, 0.0, 0.0],
+    "InitializeTypeOfB":    "Uniform",
+    "AmplitudeOfB":         [0.0, 0.0, 0.0],
+    "WeightingOrder":       3,
+    "PtclPosOffset":        0
+  },
+  "ParamForParticle": [
+    {
+      "ParticleName":       "electron",
+      "pNumSetMethod":      "PtclNumPerCell",
+      "pNumValue":          100,
+      "Charge":             -4.803204197e-10,
+      "Mass":               9.10938188e-28,
+      "WeightSetMethod":    "InitialNumDens",
+      "WeightValue":        5e10,
+      "GenerateType":       "uniform-Gaussian",
+      "InitialTemp":        0
+    },
+    {
+      "ParticleName":       "ion_Xe1",
+      "pNumSetMethod":      "PtclNumPerCell",
+      "pNumValue":          100,
+      "Charge":             4.803204197e-10,
+      "Mass":               2.1801714e-26,
+      "WeightSetMethod":    "InitialNumDens",
+      "WeightValue":        5e10,
+      "GenerateType":       "uniform-Gaussian",
+      "InitialTemp":        0
+    }
+  ],
+  "SourceForParticle": [],
+  "BoundaryConditionForParticle": [
+    { "RegionName": "Xmin", "BCType": "Delete" },
+    { "RegionName": "Xmax", "BCType": "Delete" },
+    { "RegionName": "Ymin", "BCType": "periodic" },
+    { "RegionName": "Ymax", "BCType": "periodic" }
+  ],
+  "BoundaryConditionForField": [
+    { "RegionName": "Xmin", "BCType": "Dirichlet" , "Value": 0},
+    { "RegionName": "Xmax", "BCType": "Dirichlet" , "Value": 0},
+    { "RegionName": "Ymin", "BCType": "periodic"},
+    { "RegionName": "Ymax", "BCType": "periodic"}
+  ]
+}

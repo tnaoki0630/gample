@@ -255,26 +255,26 @@ BOOL saveProgress(int cycle, NSMutableArray* ptclArr, Init* init){
     }
 
     // 電磁場出力
-    if (EqFlags.EMField == 2){
-        uint nx = fld.ngx + 2*fld.ngb;
-        uint ny = fld.ngy + 2*fld.ngb;
-        NSString* fileNameEx = [NSString stringWithFormat:@"bin/%@_ProgressData_Ex_%08d.bin", timeParam.ProjectName, cycle];
-        NSString* fileNameEy = [NSString stringWithFormat:@"bin/%@_ProgressData_Ey_%08d.bin", timeParam.ProjectName, cycle];
-        NSString* fileNameEz = [NSString stringWithFormat:@"bin/%@_ProgressData_Ez_%08d.bin", timeParam.ProjectName, cycle];
-        NSString* fileNameBx = [NSString stringWithFormat:@"bin/%@_ProgressData_Bx_%08d.bin", timeParam.ProjectName, cycle];
-        NSString* fileNameBy = [NSString stringWithFormat:@"bin/%@_ProgressData_By_%08d.bin", timeParam.ProjectName, cycle];
-        NSString* fileNameBz = [NSString stringWithFormat:@"bin/%@_ProgressData_Bz_%08d.bin", timeParam.ProjectName, cycle];
-        if( !saveBuffer(fld.ExBuffer, (nx+2)*(ny+1)*sizeof(float), (nx+2)*(ny+1)*sizeof(float), fileNameEx) ||
-            !saveBuffer(fld.EyBuffer, (nx+1)*(ny+2)*sizeof(float), (nx+1)*(ny+2)*sizeof(float), fileNameEy) ||
-            !saveBuffer(fld.EzBuffer, (nx+1)*(ny+1)*sizeof(float), (nx+1)*(ny+1)*sizeof(float), fileNameEz) ||
-            !saveBuffer(fld.BxBuffer, (nx+1)*(ny+2)*sizeof(float), (nx+1)*(ny+2)*sizeof(float), fileNameBx) ||
-            !saveBuffer(fld.ByBuffer, (nx+2)*(ny+1)*sizeof(float), (nx+2)*(ny+1)*sizeof(float), fileNameBy) ||
-            !saveBuffer(fld.BzBuffer, (nx+2)*(ny+2)*sizeof(float), (nx+2)*(ny+2)*sizeof(float), fileNameBz)){
-            NSLog(@"[Error] output progress for field is failed.");
-            return NO;
-        }
-        NSLog(@"Restart data successfully written to %@ ~ %@", fileNameEx, fileNameBz);
-    }
+    // if (EqFlags.EMField == 2){
+    //     uint nx = fld.ngx + 2*fld.ngb;
+    //     uint ny = fld.ngy + 2*fld.ngb;
+    //     NSString* fileNameEx = [NSString stringWithFormat:@"bin/%@_ProgressData_Ex_%08d.bin", timeParam.ProjectName, cycle];
+    //     NSString* fileNameEy = [NSString stringWithFormat:@"bin/%@_ProgressData_Ey_%08d.bin", timeParam.ProjectName, cycle];
+    //     NSString* fileNameEz = [NSString stringWithFormat:@"bin/%@_ProgressData_Ez_%08d.bin", timeParam.ProjectName, cycle];
+    //     NSString* fileNameBx = [NSString stringWithFormat:@"bin/%@_ProgressData_Bx_%08d.bin", timeParam.ProjectName, cycle];
+    //     NSString* fileNameBy = [NSString stringWithFormat:@"bin/%@_ProgressData_By_%08d.bin", timeParam.ProjectName, cycle];
+    //     NSString* fileNameBz = [NSString stringWithFormat:@"bin/%@_ProgressData_Bz_%08d.bin", timeParam.ProjectName, cycle];
+    //     if( !saveBuffer(fld.ExBuffer, (nx+2)*(ny+1)*sizeof(float), (nx+2)*(ny+1)*sizeof(float), fileNameEx) ||
+    //         !saveBuffer(fld.EyBuffer, (nx+1)*(ny+2)*sizeof(float), (nx+1)*(ny+2)*sizeof(float), fileNameEy) ||
+    //         !saveBuffer(fld.EzBuffer, (nx+1)*(ny+1)*sizeof(float), (nx+1)*(ny+1)*sizeof(float), fileNameEz) ||
+    //         !saveBuffer(fld.BxBuffer, (nx+1)*(ny+2)*sizeof(float), (nx+1)*(ny+2)*sizeof(float), fileNameBx) ||
+    //         !saveBuffer(fld.ByBuffer, (nx+2)*(ny+1)*sizeof(float), (nx+2)*(ny+1)*sizeof(float), fileNameBy) ||
+    //         !saveBuffer(fld.BzBuffer, (nx+2)*(ny+2)*sizeof(float), (nx+2)*(ny+2)*sizeof(float), fileNameBz)){
+    //         NSLog(@"[Error] output progress for field is failed.");
+    //         return NO;
+    //     }
+    //     NSLog(@"Restart data successfully written to %@ ~ %@", fileNameEx, fileNameBz);
+    // }
 
     return YES;
 }
@@ -314,26 +314,26 @@ BOOL loadProgress(int cycle, NSMutableArray* ptclArr, Init* init){
     }
 
     // 電磁場読み込み
-    if (EqFlags.EMField == 2){
-        uint nx = fld.ngx + 2*fld.ngb;
-        uint ny = fld.ngy + 2*fld.ngb;
-        uint ng_recv;
-        NSString* fileNameEx = [NSString stringWithFormat:@"bin/%@_ProgressData_Ex_%08d.bin", timeParam.RestartName, cycle];
-        NSString* fileNameEy = [NSString stringWithFormat:@"bin/%@_ProgressData_Ey_%08d.bin", timeParam.RestartName, cycle];
-        NSString* fileNameEz = [NSString stringWithFormat:@"bin/%@_ProgressData_Ez_%08d.bin", timeParam.RestartName, cycle];
-        NSString* fileNameBx = [NSString stringWithFormat:@"bin/%@_ProgressData_Bx_%08d.bin", timeParam.RestartName, cycle];
-        NSString* fileNameBy = [NSString stringWithFormat:@"bin/%@_ProgressData_By_%08d.bin", timeParam.RestartName, cycle];
-        NSString* fileNameBz = [NSString stringWithFormat:@"bin/%@_ProgressData_Bz_%08d.bin", timeParam.RestartName, cycle];
-        if( !loadBuffer(fld.ExBuffer, ng_recv, (nx+2)*(ny+1)*sizeof(float), fileNameEx) ||
-            !loadBuffer(fld.EyBuffer, ng_recv, (nx+1)*(ny+2)*sizeof(float), fileNameEy) ||
-            !loadBuffer(fld.EzBuffer, ng_recv, (nx+1)*(ny+1)*sizeof(float), fileNameEz) ||
-            !loadBuffer(fld.BxBuffer, ng_recv, (nx+1)*(ny+2)*sizeof(float), fileNameBx) ||
-            !loadBuffer(fld.ByBuffer, ng_recv, (nx+2)*(ny+1)*sizeof(float), fileNameBy) ||
-            !loadBuffer(fld.BzBuffer, ng_recv, (nx+2)*(ny+2)*sizeof(float), fileNameBz)){
-            NSLog(@"[Error] load progress for field is failed.");
-            return NO;
-        }
-    }
+    // if (EqFlags.EMField == 2){
+    //     uint nx = fld.ngx + 2*fld.ngb;
+    //     uint ny = fld.ngy + 2*fld.ngb;
+    //     uint ng_recv;
+    //     NSString* fileNameEx = [NSString stringWithFormat:@"bin/%@_ProgressData_Ex_%08d.bin", timeParam.RestartName, cycle];
+    //     NSString* fileNameEy = [NSString stringWithFormat:@"bin/%@_ProgressData_Ey_%08d.bin", timeParam.RestartName, cycle];
+    //     NSString* fileNameEz = [NSString stringWithFormat:@"bin/%@_ProgressData_Ez_%08d.bin", timeParam.RestartName, cycle];
+    //     NSString* fileNameBx = [NSString stringWithFormat:@"bin/%@_ProgressData_Bx_%08d.bin", timeParam.RestartName, cycle];
+    //     NSString* fileNameBy = [NSString stringWithFormat:@"bin/%@_ProgressData_By_%08d.bin", timeParam.RestartName, cycle];
+    //     NSString* fileNameBz = [NSString stringWithFormat:@"bin/%@_ProgressData_Bz_%08d.bin", timeParam.RestartName, cycle];
+    //     if( !loadBuffer(fld.ExBuffer, ng_recv, (nx+2)*(ny+1)*sizeof(float), fileNameEx) ||
+    //         !loadBuffer(fld.EyBuffer, ng_recv, (nx+1)*(ny+2)*sizeof(float), fileNameEy) ||
+    //         !loadBuffer(fld.EzBuffer, ng_recv, (nx+1)*(ny+1)*sizeof(float), fileNameEz) ||
+    //         !loadBuffer(fld.BxBuffer, ng_recv, (nx+1)*(ny+2)*sizeof(float), fileNameBx) ||
+    //         !loadBuffer(fld.ByBuffer, ng_recv, (nx+2)*(ny+1)*sizeof(float), fileNameBy) ||
+    //         !loadBuffer(fld.BzBuffer, ng_recv, (nx+2)*(ny+2)*sizeof(float), fileNameBz)){
+    //         NSLog(@"[Error] load progress for field is failed.");
+    //         return NO;
+    //     }
+    // }
 
     return YES;
 }

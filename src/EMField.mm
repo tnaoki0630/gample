@@ -29,6 +29,8 @@ typedef amgcl::make_solver<
 @interface EMField () {
     id<MTLDevice> _device;
     id<MTLBuffer> _rhoBuffer;    // 電荷密度
+    id<MTLBuffer> _jxBuffer;    // 電流密度
+    id<MTLBuffer> _jyBuffer;    // 電流密度
     id<MTLBuffer> _atomicRhoBuffer;    // 電荷密度
     double* _phi;                 // 電位
     id<MTLBuffer> _ExBuffer;     // 電場 x成分
@@ -76,6 +78,7 @@ typedef amgcl::make_solver<
     std::vector<double> _rhs_BC;
     std::unique_ptr<Solver> _solver;    // smart pointer
     double _cathodePos;
+    double _lastEE;
 }
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam  withLogger:(XmlLogger&)logger{
@@ -104,6 +107,8 @@ typedef amgcl::make_solver<
         
         // Metal バッファの作成
         _rhoBuffer = [device newBufferWithLength:sizeof(float)*(_nx+1)*(_ny+1) options:MTLResourceStorageModeShared];
+        _jxBuffer = [device newBufferWithLength:sizeof(float)*(_nx+2)*(_ny+1) options:MTLResourceStorageModeShared];
+        _jyBuffer = [device newBufferWithLength:sizeof(float)*(_nx+1)*(_ny+2) options:MTLResourceStorageModeShared];
         _ExBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+2)*(_ny+1) options:MTLResourceStorageModeShared];
         _EyBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+1)*(_ny+2) options:MTLResourceStorageModeShared];
         _EzBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+1)*(_ny+1) options:MTLResourceStorageModeShared];
@@ -415,6 +420,12 @@ typedef amgcl::make_solver<
             // );
         }
     }
+    
+    // 時系列ファイル初期化
+    std::ofstream ofs([[NSString stringWithFormat:@"timeseries_EMField_point_%d.csv", 1] UTF8String]);
+    ofs << "i,j,phi,Ex,Ey\n";
+    ofs.close();
+
     return self;
 }
 
@@ -505,12 +516,99 @@ typedef amgcl::make_solver<
     ofs.close();
 }
 
-- (void)solvePoisson:(XmlLogger&)logger{
+- (void)solvePoisson:(double)dt withLogger:(XmlLogger&)logger{
+    // エネルギー保存計算（particle update と同タイミングの情報を取得したいので，solveの前に計算）
+    float* jx = (float*)_jxBuffer.contents;
+    float* jy = (float*)_jyBuffer.contents;
+    float* Ex = (float*)_ExBuffer.contents;
+    float* Ey = (float*)_EyBuffer.contents;
+    // total
+    double energy = 0.0;
+    double joule = 0.0;
+    // x-dir
+    for (int i = 0; i < (_nx+2)*(_ny+1); i++){
+        energy += (double)Ex[i]*Ex[i];
+        joule += (double)Ex[i]*jx[i];
+    }
+    // y-dir
+    for (int i = 0; i < (_nx+1)*(_ny+2); i++){
+        energy += (double)Ey[i]*Ey[i];
+        joule += (double)Ey[i]*jy[i];
+    }
+    energy *= (double)_dx*_dy/2;  // erg/m
+    joule *= (double)dt*_dx*_dy; // erg/m
+
     // 電荷密度の取得
     float* rho = (float*)_rhoBuffer.contents;
 
-    // 周期境界の処理
     int idx_in, idx_out;
+    // Dirichlet,Neumannの処理
+    if (![_BC_Xmin isEqualToString:@"periodic"]){
+        for (int j = 0; j <= _ny; j++){
+            // min側
+            if ([_BC_Xmin isEqualToString:@"Dirichlet"]){
+                for (int i = 0; i <= _ngb; i++){
+                    idx_in = i + j*(_nx+1);
+                    idx_out = _ngb+1 + j*(_nx+1);
+                    rho[idx_out] += rho[idx_in];
+                }
+            }else if ([_BC_Xmin isEqualToString:@"Neumann"]){
+                for (int i = 0; i < _ngb; i++){
+                    idx_in = i + j*(_nx+1);
+                    idx_out = _ngb + j*(_nx+1);
+                    rho[idx_out] += rho[idx_in];
+                }
+            }
+            // max側
+            if ([_BC_Xmax isEqualToString:@"Dirichlet"]){
+                for (int i = 0; i <= _ngb; i++){
+                    idx_in = _ngb+_ngx+i + j*(_nx+1);
+                    idx_out = _ngb+_ngx-1 + j*(_nx+1);
+                    rho[idx_out] += rho[idx_in];
+                }
+            }else if ([_BC_Xmax isEqualToString:@"Neumann"]){
+                for (int i = 0; i < _ngb; i++){
+                    idx_in = _ngb+_ngx+i + j*(_nx+1);
+                    idx_out = _ngb+_ngx + j*(_nx+1);
+                    rho[idx_out] += rho[idx_in];
+                }
+            }
+        }
+    }
+    if (![_BC_Ymin isEqualToString:@"periodic"]){
+        for (int i = 0; i <= _nx; i++){
+            // min側
+            if ([_BC_Ymin isEqualToString:@"Dirichlet"]){
+                for (int j = 0; j <= _ngb; j++){
+                    idx_in = i + j*(_nx+1);
+                    idx_out = i + (_ngb+1)*(_nx+1);
+                    rho[idx_out] += rho[idx_in];
+                }
+            }else if ([_BC_Ymin isEqualToString:@"Neumann"]){
+                for (int j = 0; j < _ngb; j++){
+                    idx_in = i + j*(_nx+1);
+                    idx_out = i + (_ngb)*(_nx+1);
+                    rho[idx_out] += rho[idx_in];
+                }
+            }
+            // max側
+            if ([_BC_Ymax isEqualToString:@"Dirichlet"]){
+                for (int j = 0; j <= _ngb; j++){
+                    idx_in = i + (_ngb+_ngy+j)*(_nx+1);
+                    idx_out = i + (_ngb+_ngy-1)*(_nx+1);
+                    rho[idx_out] += rho[idx_in];
+                }
+            }else if ([_BC_Ymax isEqualToString:@"Neumann"]){
+                for (int j = 0; j < _ngb; j++){
+                    idx_in = i + (_ngb+_ngy+j)*(_nx+1);
+                    idx_out = i + (_ngb+_ngy)*(_nx+1);
+                    rho[idx_out] += rho[idx_in];
+                }
+            }
+        }
+    }
+
+    // 周期境界の処理
     if ([_BC_Xmin isEqualToString:@"periodic"]){
         for (int j = 0; j <= _ny; j++){
             // min側（境界の値を持つ）
@@ -545,8 +643,6 @@ typedef amgcl::make_solver<
             }
         }
     }
-    // Derichlet, Neumann の時は領域端の電荷密度を参照しないので無視。
-    // 電荷密度保存を考えると領域内に足し込んだ方がいいのかもしれないが、いったん放置。
 
     // 右辺ベクトルの更新
     int arrSize = (_nkx+1)*(_nky+1);
@@ -581,7 +677,8 @@ typedef amgcl::make_solver<
         } else if ([_BC_Ymin isEqualToString:@"periodic"]){
             isBottom = false;
             isTop = false;
-            idx_in_j = (j-(_ngb+1)+_ngy-1)%_ngy;
+            // idx_in_j = (j-(_ngb+1)+_ngy-1)%_ngy;
+            idx_in_j = (j-(_ngb+1)+_ngy)%_ngy;
         }
         // Ey13[0:1,0:2]
         if ([_BC_Ymax isEqualToString:@"Dirichlet"]){
@@ -779,13 +876,13 @@ typedef amgcl::make_solver<
         {"iteration", std::to_string(iters)},
         {"error", fmtSci(error, 6)},
         {"meanCathode", fmtSci(mean*sVtoV, 6)},
+        {"totalElectricEnergy", fmtSci(energy*ergtoev, 6)},
+        {"totalEEincrement", fmtSci(energy*ergtoev, 6)},
+        {"jouleHeating", fmtSci(joule*ergtoev, 6)},
     };
     logger.logSection("solvePoisson", data);
     // NSLog(@"mean = %e",mean*sVtoV);
 
-    // metalバッファの取得
-    float* Ex = (float*)_ExBuffer.contents;
-    float* Ey = (float*)_EyBuffer.contents;
     // 勾配計算
     for (int i = 0; i <= _nx+1; ++i) {
         for (int j = 0; j <= _ny; ++j) {
@@ -800,15 +897,29 @@ typedef amgcl::make_solver<
         }
     }
 
+    // csv出力
+    int filn = 1;
+    int point_i = _ngx/4;
+    int point_j = _ngy/2;
+    std::ofstream ofs([[NSString stringWithFormat:@"timeseries_EMField_point_%d.csv", filn] UTF8String], std::ios::app);
+    ofs << point_i << "," << point_j << "," << _phi[(point_i+_ngb+1)+(point_j+_ngb+1)*(_nx+3)] << "," << Ex[(point_i+_ngb+1)+(point_j+_ngb)*(_nx+2)] << "," << Ey[(point_i+_ngb)+(point_j+_ngb+1)*(_nx+1)] << "\n";
+    ofs.close();
 }
 
 - (void)resetChargeDensity{
     // 電荷密度の取得
     float* rho = (float*)_rhoBuffer.contents;
+    float* jx = (float*)_jxBuffer.contents;
+    float* jy = (float*)_jyBuffer.contents;
     // 電荷密度の初期化
-    int arrSize = (_nx+1) * (_ny+1);
-    for (int i = 0; i < arrSize; i++){
+    for (int i = 0; i < (_nx+1)*(_ny+1); i++){
         rho[i] = 0.0f;
+    }
+    for (int i = 0; i < (_nx+2)*(_ny+1); i++){
+        jx[i] = 0.0f;
+    }
+    for (int i = 0; i < (_nx+1)*(_ny+2); i++){
+        jy[i] = 0.0f;
     }
 }
 
@@ -838,6 +949,8 @@ typedef amgcl::make_solver<
 }
 // 電荷密度へのアクセサ
 - (id<MTLBuffer>)rhoBuffer { return _rhoBuffer; }
+- (id<MTLBuffer>)jxBuffer { return _jxBuffer; }
+- (id<MTLBuffer>)jyBuffer { return _jyBuffer; }
 - (id<MTLBuffer>)atomicRhoBuffer { return _atomicRhoBuffer; }
 
 // 電場バッファへのアクセサ

@@ -25,10 +25,18 @@ std::map<std::string, std::string> parseArgs(int argc, const char* argv[]) {
     return options;
 }
 
+/** \defgroup solvers ソルバ
+  * - 境界条件: Dirichlet/periodic
+  * - 依存: AMGCL
+  * \see Particle motion solver, ESField solver
+  */
+
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
         // flags
         const bool debug = false;
+        // const bool neglectIonMotion = true;
+        const bool neglectIonMotion = false;
 
         // 所要時間計測
         auto start = std::chrono::high_resolution_clock::now();
@@ -137,7 +145,11 @@ int main(int argc, const char * argv[]) {
         }
 
         // 初期場計算
-        [fld solvePoisson:logger];
+        for (Particle* ptcl in ptclArr) {
+            std::string pName = [ptcl.pName UTF8String];
+            [ptcl integrateChargeDensity:fld withMoment:mom withLogger:logger];
+        }
+        [fld solvePoisson:0 withLogger:logger];
         // 初期場出力
         outputField(StartCycle, fld, init, logger);
         for(Particle* ptcl in ptclArr){
@@ -168,21 +180,23 @@ int main(int argc, const char * argv[]) {
 
                 // 電場の更新
                 if (EqFlags.EMField == 1){
-                    // 電荷密度の初期化
-                    [fld resetChargeDensity];
-                    // 電荷密度の更新
-                    if (debug){ NSLog(@"integCDens"); }
-                    for (Particle* ptcl in ptclArr) {
-                        std::string pName = [ptcl.pName UTF8String];
-                        MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld withMoment:mom withLogger:logger], dataElapsedTime);
-                    }
                     // 静電場計算
                     if (debug){ NSLog(@"poisson"); }
-                    MEASURE("solvePoisson", [fld solvePoisson:logger], dataElapsedTime);
+                    MEASURE("solvePoisson", [fld solvePoisson:dt withLogger:logger], dataElapsedTime);
                     // 場の出力
                     if (timeParam.FieldOutput != 0 && cycle%timeParam.FieldOutput == 0){
                         outputField(cycle, fld, init, logger);
                     }
+                }
+
+
+                // 電荷密度の初期化
+                [fld resetChargeDensity];
+                // 電荷密度の更新
+                if (debug){ NSLog(@"integCDens"); }
+                for (Particle* ptcl in ptclArr) {
+                    std::string pName = [ptcl.pName UTF8String];
+                    MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld withMoment:mom withLogger:logger], dataElapsedTime);
                 }
 
                 // 粒子更新
@@ -190,6 +204,8 @@ int main(int argc, const char * argv[]) {
                 for (int s = 0; s < EqFlags.Particle; s++) {
                     Particle *ptcl = [ptclArr objectAtIndex:s];
                     std::string pName = [ptcl.pName UTF8String];
+                    // neglectIonMotion
+                    if (neglectIonMotion and ![ptcl.pName isEqualToString:@"electron"]){ continue; }
                     // 粒子の時間更新
                     if (debug){ NSLog(@"update"); }
                     MEASURE("update_"+pName, [ptcl update:dt withEMField:fld withMom:mom withLogger:logger], dataElapsedTime);

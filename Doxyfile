@@ -4,3 +4,12 @@ GENERATE_XML           = YES
 FILE_PATTERNS          = *.hpp *.cpp *.mm
 INPUT                  = src include
 
+HAVE_DOT               = YES
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+DOT_IMAGE_FORMAT       = svg
+
+EXTRACT_ALL            = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_NO_PARAMDOC       = YES
+WARN_AS_ERROR          = YES

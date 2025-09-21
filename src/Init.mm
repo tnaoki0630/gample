@@ -63,7 +63,6 @@
         _flagEquation.Particle    = [mergedFlagD[@"Particle"]    integerValue];
         _flagEquation.EMField     = [mergedFlagD[@"EMField"]     integerValue];
         _flagEquation.MCCollision = [mergedFlagD[@"MCCollision"] integerValue];
-        NSLog(@"_flagEquation.Particle = %d", _flagEquation.Particle);
 
         // ParamForTimeIntegration
         NSDictionary *timeD = root[@"ParamForTimeIntegration"];
@@ -138,6 +137,7 @@
         _field.FilePathBy   = mergedFldD[@"FilePathOfBy"];
         _field.FilePathBz   = mergedFldD[@"FilePathOfBz"];
         _field.weightOrder  = [mergedFldD[@"WeightingOrder"] integerValue];
+        _field.BorisOrder  = [mergedFldD[@"BorisOrder"] integerValue];
         _field.ngb          = _field.weightOrder/2; // 1st->0, 5th->2
         _field.diff_ngb     = [mergedFldD[@"PtclPosOffset"] integerValue]; // ngb_new - ngb_old
 
@@ -214,6 +214,7 @@
             p.genT = [mergedD[@"InitialTemp"] doubleValue]*eVtoK;
             _particles.push_back(p);
         }
+        NSLog(@"set particle done.");
         
         // SourceForParticle
         NSArray *srcArr = root[@"SourceForParticle"];
@@ -236,7 +237,7 @@
             if([mergedD[@"SrcSetMethod"] isEqualToString:@"Source[1/cm/s]"]){
                 src.src = [mergedD[@"SrcValue"] doubleValue];
             }else if([mergedD[@"SrcSetMethod"] isEqualToString:@"CurrentDensity[A/m2]"]){
-                src.src = [mergedD[@"SrcValue"] doubleValue]*JtosJ*_field.ngy*_field.dy/ec; // 単一電荷を仮定しているので注意
+                src.src = [mergedD[@"SrcValue"] doubleValue]*JtosJ*_field.ngy*_field.dy/ec; // 単一電荷を仮定
             }
             // hollow-cathode
             else if([mergedD[@"SrcSetMethod"] isEqualToString:@"BoundaryCurrentAtXmin"]){
@@ -272,6 +273,7 @@
             src.genT_ele              = [mergedD[@"GenTempForElectron"] doubleValue]*eVtoK;
             _particleSources.push_back(src);
         }
+        NSLog(@"set source done.");
         
         // BoundaryConditionForParticle
         NSArray *pbcArr = root[@"BoundaryConditionForParticle"];
@@ -292,6 +294,7 @@
             bc.type     = d[@"BCType"];
             _particleBoundaries.push_back(bc);
         }
+        NSLog(@"set pBC done.");
     }
     return self;
 }
@@ -383,6 +386,7 @@
         @"FilePathOfBy":        @"undefined",
         @"FilePathOfBz":        @"undefined",
         @"WeightingOrder":      @5,
+        @"BorisOrder":          @2,
         @"PtclPosOffset":       @0,
     } mutableCopy];
 }

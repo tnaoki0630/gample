@@ -64,24 +64,34 @@ kernel void integrateMoments(
     device ParticleState& p = ptcl[gid];
 
     // electro-magnetic field on each ptcl
-    i1 = int(p.x);
-    j1 = int(p.y);
+    i1 = int(p.x+1e-20);
+    j1 = int(p.y+1e-20);
     
     // protect
-    if (i1 < prm.ngb-1) i1 = prm.ngb-1;
-    if (i1 > prm.ngb-1+prm.ngx) i1 = prm.ngb-1+prm.ngx;
-    if (j1 < prm.ngb) j1 = prm.ngb;
-    if (j1 >= prm.ngb+prm.ngy) j1 = prm.ngb+prm.ngy-1;
+    // if (i1 < prm.ngb-1) i1 = prm.ngb-1;
+    // if (i1 > prm.ngb-1+prm.ngx) i1 = prm.ngb-1+prm.ngx;
+    // if (j1 < prm.ngb) j1 = prm.ngb;
+    // if (j1 >= prm.ngb+prm.ngy) j1 = prm.ngb+prm.ngy-1;
 
     hv[0] = p.x - float(i1);
     hv[1] = p.y - float(j1);
     
-    // 5th-order weighting
+    // high-order weighting
     for (int i = 0; i < 2; i++) {
         // 1st-order weighting
         if (weightOrder == 1){
             sf[0][i] = 1.0 - hv[i];
             sf[1][i] = hv[i];
+        // 3rd-order weighting
+        } else if (weightOrder == 3){
+            sc = 1.0 + hv[i];
+            sf[0][i] = 1.0/6.0 *pow(2.0-sc,3);
+            sc = hv[i];
+            sf[1][i] = 1.0/6.0 *(4.0 -6.0*pow(sc,2) +3.0*pow(sc,3));
+            sc = 1.0 - hv[i];
+            sf[2][i] = 1.0/6.0 *(4.0 -6.0*pow(sc,2) +3.0*pow(sc,3));
+            sc = 2.0 - hv[i];
+            sf[3][i] = 1.0/6.0 *pow(2.0-sc,3);
         // 5th-order weighting
         } else if (weightOrder == 5){
             sc = 2.0 + hv[i];

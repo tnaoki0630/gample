@@ -79,17 +79,38 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
     float rx = rand01(rng);
     float ry = rand01(rng);
     if (genType == 0 || genType == 3){
+        // uniform
         p_ele.x = prm.Xmin + rx*(prm.Xmax-prm.Xmin);
         p_ele.y = prm.Ymin + ry*(prm.Ymax-prm.Ymin);
     }else if (genType == 1){
+        // Xsinusoidal
         p_ele.x = (prm.Xmin+prm.Xmax)/2 + (prm.Xmax-prm.Xmin)/PI*asin(2*rx-1.0);
         p_ele.y = prm.Ymin + ry*(prm.Ymax-prm.Ymin);
     }else if (genType == 2){
+        // Ysinusoidal
         p_ele.x = prm.Xmin + rx*(prm.Xmax-prm.Xmin);
         p_ele.y = (prm.Ymin+prm.Ymax)/2 + (prm.Ymax-prm.Ymin)/PI*asin(2*ry-1.0);
+    }else if (genType == 4){
+        // equal division
+        int addn_x = (int)round(sqrt(prm.addn*(prm.Xmax-prm.Xmin)/(prm.Ymax-prm.Ymin))); // It is desirable that ppc be a perfect square.
+        int addn_y = prm.addn/addn_x;
+        float delta_x = (prm.Xmax-prm.Xmin)/addn_x;
+        float delta_y = (prm.Ymax-prm.Ymin)/addn_y;
+        p_ele.x = prm.Xmin + delta_x*(0.5+id%addn_x);
+        p_ele.y = prm.Ymin + delta_y*(0.5+id/addn_x);
+    }else if (genType == 5){
+        // Xgaussian
+        float rz = rand01(rng);
+        p_ele.x = (prm.Xmin+prm.Xmax)/2 + (prm.Xmax-prm.Xmin)*sqrt(-log(rx))*cos(2.0*PI*rz);
+        p_ele.y = prm.Ymin + ry*(prm.Ymax-prm.Ymin);
+    }else if (genType == 6){
+        // Ygaussian
+        float rz = rand01(rng);
+        p_ele.x = prm.Xmin + rx*(prm.Xmax-prm.Xmin);
+        p_ele.y = (prm.Ymin+prm.Ymax)/2 + (prm.Ymax-prm.Ymin)*sqrt(-log(rz))*cos(2.0*PI*ry);
     }
     
-    // shefted-Maxwellian for velocity 
+    // shifted-Maxwellian for velocity 
     float rv1 = rand01(rng);
     float rv2 = rand01(rng);
     p_ele.vx = prm.ele_genU[0] + prm.ele_vth*sqrt(-log(rv1))*cos(2.0*PI*rv2);
@@ -128,6 +149,12 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
         // position
         p_ion.x = p_ele.x;
         p_ion.y = p_ele.y;
+        
+        // shift particle position
+        // p_ion.x -=  0.001/prm.dx;
+        // if (p_ion.x > 90.0 && p_ion.x < 110.0){
+        //     p_ion.x -= 0.001/prm.dx;
+        // }
         
         // Maxwellian(Box-Muller)
         rv1 = rand01(rng);
@@ -197,6 +224,12 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
             genType = 1;
         }else if([particleParam[0].genType isEqualToString:@"Ysinusoidal-Gaussian"]){
             genType = 2;
+        }else if([particleParam[0].genType isEqualToString:@"quietStart"]){
+            genType = 4;
+        }else if([particleParam[0].genType isEqualToString:@"Xgaussian-Gaussian"]){
+            genType = 5;
+        }else if([particleParam[0].genType isEqualToString:@"Ygaussian-Gaussian"]){
+            genType = 6;
         }
         [fc setConstantValue:&genType type:MTLDataTypeInt atIndex:0];
         id<MTLFunction> function = [library newFunctionWithName:@"artificialIonization" constantValues:fc error:&error];
@@ -301,6 +334,33 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
         // 粒子数更新
         eleParams->pNum = prm->addn;
         ionParams->pNum = prm->addn;
+
+        // debug print
+        ParticleState* p;
+        for (Particle* ptcl in ptclArr) {
+            // electron の状態を取得
+            if([ptcl.pName isEqualToString:@"electron"]){
+                p = (ParticleState*)[[ptcl particleBuffer] contents];
+                break;
+            }
+        }
+        float* prt = (float*)_printBuffer.contents;
+        for (int i = 0; i < prm->addn; i++){
+            if (prt[i] > 1e-20){
+                NSLog(@"[AI] detected not finite: prt[%d] = %e",i,prt[i]);
+                // NSLog(@"[AI] detected over light speed: prt[%d] = %e",i,prt[i]);
+            }
+        }
+        // // quiet start
+        // int addn_x = (int)round(sqrt(prm->addn*(prm->Xmax-prm->Xmin)/(prm->Ymax-prm->Ymin))); // It is desirable that ppc be a perfect square.
+        // int addn_y = prm->addn/addn_x;
+        // float delta_x = (prm->Xmax-prm->Xmin)/addn_x;
+        // float delta_y = (prm->Ymax-prm->Ymin)/addn_y;
+        // for (int i = 0; i < prm->addn; i+=1){
+        //     NSLog(@"[AI] p[pNum+%d].x = %e, p.x(@cpu) = %e, p[n].y = %e, p[n].vx = %e, p[n].vy = %e, p[n].vz = %e",i,p[i].x,(float)((prm->Xmin + delta_x*(0.5+i%addn_x))/prm->dx),p[i].y,p[i].vx,p[i].vy,p[i].vz);
+        // }
+        // NSLog(@"[AI] addn = %d, addn_x = %d, addn_y = %d, delta_x = %e, delta_y = %e",prm->addn,addn_x,addn_y,delta_x,delta_y);
+        // NSLog(@"[AI] delX_gen = %e, delY_gen = %e",prm->Xmax-prm->Xmin, prm->Ymax-prm->Ymin);
 
         // 生成条件のカーネルをセット（それぞれ1条件のみ対応）
         _existAI = false;
