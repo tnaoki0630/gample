@@ -1,3 +1,4 @@
+from pathlib import Path
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
@@ -26,3 +27,9 @@ language = 'Object-C++'
 
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
+
+# conf.py からの絶対パスに解決（相対パスズレ対策）
+breathe_projects = {
+    "gample": str((Path(__file__).parents[1] / "doxygen" / "xml").resolve())
+}
+breathe_default_project = "gample"
