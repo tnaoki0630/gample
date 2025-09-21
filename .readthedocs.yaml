@@ -1,0 +1,21 @@
+version: 2
+
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.13"
+  commands:
+    # C++ ドキュメント生成
+    - doxygen Doxyfile
+    # Sphinx ビルド
+    - sphinx-build -M html docs/source docs/build
+
+sphinx:
+  configuration: docs/source/conf.py   # 必須 (2025-01-20 以降)
+
+python:
+  install:
+    - method: pip
+      path: .                # プロジェクト自体 (setup.py/pyproject.toml がある場合)
+    - requirements: docs/requirements.txt  # 追加パッケージ
+
