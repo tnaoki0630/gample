@@ -5,7 +5,7 @@ build:
   apt_packages: [doxygen, graphviz]
   jobs:
     pre_build:
-      - doxygen Doxyfile   # ここで XML を生成
+      - doxygen Doxyfile
 sphinx:
   configuration: docs/source/conf.py
 python:

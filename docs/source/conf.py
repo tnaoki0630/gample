@@ -32,3 +32,4 @@ breathe_projects = {
     "gample": "../doxygen/xml"   # 後述の Doxygen 出力先
 }
 breathe_default_project = "gample"
+html_extra_path = ["../doxygen_html"]  # 出力にそのまま同梱

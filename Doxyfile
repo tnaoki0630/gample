@@ -1,9 +1,8 @@
-GENERATE_XML       = YES
-GENERATE_HTML      = NO
-OUTPUT_DIRECTORY   = docs/doxygen
-INPUT              = src include
-RECURSIVE          = YES
-FILE_PATTERNS      = *.h *.hpp *.cpp *.m *.mm
-EXTRACT_ALL        = YES
-HAVE_DOT           = YES
-DOT_IMAGE_FORMAT   = svg
+GENERATE_XML = YES
+GENERATE_HTML = YES
+HTML_OUTPUT  = doxygen_html
+HAVE_DOT = YES
+CALL_GRAPH = YES
+CALLER_GRAPH = YES
+REFERENCED_BY_RELATION = YES
+REFERENCES_RELATION    = YES
