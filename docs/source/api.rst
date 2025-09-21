@@ -1,5 +1,4 @@
 API Reference
 =============
 
-.. doxygenindex::
-   :project: gample
+.. doxygenindex::    :project: gample
