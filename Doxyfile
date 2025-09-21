@@ -1,6 +1,7 @@
 GENERATE_XML = YES
 GENERATE_HTML = YES
 HTML_OUTPUT  = doxygen_html
+FILE_PATTERNS = *.h *.hpp *.cpp *.m *.mm
 HAVE_DOT = YES
 CALL_GRAPH = YES
 CALLER_GRAPH = YES
