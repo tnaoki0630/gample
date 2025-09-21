@@ -1,0 +1,44 @@
+\doxysection{src/\+Resource\+Utils.h File Reference}
+\hypertarget{_resource_utils_8h}{}\label{_resource_utils_8h}\index{src/ResourceUtils.h@{src/ResourceUtils.h}}
+{\ttfamily import $<$mach/mach.\+h$>$}\newline
+{\ttfamily import $<$Foundation/\+Foundation.\+h$>$}\newline
+{\ttfamily import $<$chrono$>$}\newline
+{\ttfamily import $<$string$>$}\newline
+{\ttfamily import $<$map$>$}\newline
+Include dependency graph for Resource\+Utils.\+h\+:
+% FIG 0
+This graph shows which files directly or indirectly include this file\+:
+% FIG 1
+\doxysubsubsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+namespace \mbox{\hyperlink{namespace_memory_utils}{Memory\+Utils}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{_resource_utils_8h_a9a13ad941d6d618df06f242ac04fc15c}{MEASURE}}(name,  code,  data)
+\end{DoxyCompactItemize}
+
+
+\label{doc-define-members}
+\Hypertarget{_resource_utils_8h_doc-define-members}
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{_resource_utils_8h_a9a13ad941d6d618df06f242ac04fc15c}\index{ResourceUtils.h@{ResourceUtils.h}!MEASURE@{MEASURE}}
+\index{MEASURE@{MEASURE}!ResourceUtils.h@{ResourceUtils.h}}
+\doxysubsubsection{\texorpdfstring{MEASURE}{MEASURE}}
+{\footnotesize\ttfamily \label{_resource_utils_8h_a9a13ad941d6d618df06f242ac04fc15c} 
+\#define MEASURE(\begin{DoxyParamCaption}\item[{}]{name}{, }\item[{}]{code}{, }\item[{}]{data}{}\end{DoxyParamCaption})}
+
+{\bfseries Value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordflow}{do}\ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ \_start\ =\ std::chrono::high\_resolution\_clock::now();\ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ code;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ \_end\ =\ std::chrono::high\_resolution\_clock::now();\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ \_time\ =\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ std::chrono::duration\_cast<std::chrono::microseconds>(\_end\ -\/\ \_start).count();\ \(\backslash\)}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ (data)[(name)]\ =\ std::to\_string(\_time);\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}
+\DoxyCodeLine{\ \ \ \ \}\ \textcolor{keywordflow}{while}\ (0)}
+
+\end{DoxyCode}

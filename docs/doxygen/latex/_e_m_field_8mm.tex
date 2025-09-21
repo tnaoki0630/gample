@@ -1,0 +1,257 @@
+\doxysection{src/\+EMField.mm File Reference}
+\hypertarget{_e_m_field_8mm}{}\label{_e_m_field_8mm}\index{src/EMField.mm@{src/EMField.mm}}
+{\ttfamily import $<$Metal/\+Metal.\+h$>$}\newline
+{\ttfamily import $<$Accelerate/\+Accelerate.\+h$>$}\newline
+{\ttfamily import "{}EMField.\+h"{}}\newline
+{\ttfamily import "{}Constant.\+h"{}}\newline
+{\ttfamily import "{}Xml\+Logger.\+h"{}}\newline
+{\ttfamily \#include $<$amgcl/make\+\_\+solver.\+hpp$>$}\newline
+{\ttfamily \#include $<$amgcl/backend/builtin.\+hpp$>$}\newline
+{\ttfamily \#include $<$amgcl/solver/bicgstab.\+hpp$>$}\newline
+{\ttfamily \#include $<$amgcl/solver/cg.\+hpp$>$}\newline
+{\ttfamily \#include $<$amgcl/amg.\+hpp$>$}\newline
+{\ttfamily \#include $<$amgcl/coarsening/smoothed\+\_\+aggregation.\+hpp$>$}\newline
+{\ttfamily \#include $<$amgcl/relaxation/spai0.\+hpp$>$}\newline
+{\ttfamily \#include $<$amgcl/relaxation/chebyshev.\+hpp$>$}\newline
+{\ttfamily \#include $<$amgcl/adapter/crs\+\_\+tuple.\+hpp$>$}\newline
+Include dependency graph for EMField.\+mm\+:
+% FIG 0
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{_e_m_field_8mm_a598a3330b3c21701223ee0ca14316eca}{PI}}~3.\+141592653589793
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef amgcl\+::backend\+::builtin$<$ double $>$ \mbox{\hyperlink{_e_m_field_8mm_a9ddc44d761e77669b1fd69295faf6ecc}{Backend}}
+\item 
+typedef amgcl\+::make\+\_\+solver$<$ amgcl\+::amg$<$ \mbox{\hyperlink{_e_m_field_8mm_a9ddc44d761e77669b1fd69295faf6ecc}{Backend}}, amgcl\+::coarsening\+::smoothed\+\_\+aggregation, amgcl\+::relaxation\+::spai0 $>$, amgcl\+::solver\+::cg$<$ \mbox{\hyperlink{_e_m_field_8mm_a9ddc44d761e77669b1fd69295faf6ecc}{Backend}} $>$ $>$ \mbox{\hyperlink{_e_m_field_8mm_a048407fb0f51a36a40d9856a83f12405}{Solver}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+NSString \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{_e_m_field_8mm_a7ceab7597778f3403670cca7c75e491c}{\+\_\+\+BC\+\_\+\+Xmax}}
+\item 
+NSString \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{_e_m_field_8mm_a40e28386ee0381ee44ac0b6494f3d3d9}{\+\_\+\+BC\+\_\+\+Ymin}}
+\item 
+NSString \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{_e_m_field_8mm_a0644f7d8dc2c82baeb627244a2a8ae9f}{\+\_\+\+BC\+\_\+\+Ymax}}
+\item 
+std\+::vector$<$ double $>$ \mbox{\hyperlink{_e_m_field_8mm_a433ba314befe2613426113fc4f6b57ce}{\+\_\+phi\+\_\+\+Xmin}}
+\item 
+std\+::vector$<$ double $>$ \mbox{\hyperlink{_e_m_field_8mm_a267dcdae14e8818e4c01edecbef9b1a1}{\+\_\+phi\+\_\+\+Xmax}}
+\item 
+std\+::vector$<$ double $>$ \mbox{\hyperlink{_e_m_field_8mm_ab0ad291a1b0fcd20d16efa32442873e9}{\+\_\+phi\+\_\+\+Ymin}}
+\item 
+std\+::vector$<$ double $>$ \mbox{\hyperlink{_e_m_field_8mm_ae7925d5e7ffcec0d740cc174a7b9e2e1}{\+\_\+phi\+\_\+\+Ymax}}
+\item 
+std\+::vector$<$ double $>$ \mbox{\hyperlink{_e_m_field_8mm_a542682ae2df3ce39d6ec4f2ef4b6c9ef}{\+\_\+dphidx\+\_\+\+Xmin}}
+\item 
+std\+::vector$<$ double $>$ \mbox{\hyperlink{_e_m_field_8mm_a9a9fe602881d873e1fc6bfb78ec0cbd9}{\+\_\+dphidx\+\_\+\+Xmax}}
+\item 
+std\+::vector$<$ double $>$ \mbox{\hyperlink{_e_m_field_8mm_ae3d4c8c9dfd9b4e18a1ac56837e93558}{\+\_\+dphidy\+\_\+\+Ymin}}
+\item 
+std\+::vector$<$ double $>$ \mbox{\hyperlink{_e_m_field_8mm_a1a43834aa71f452f2701ca85a2a5a548}{\+\_\+dphidy\+\_\+\+Ymax}}
+\item 
+int \mbox{\hyperlink{_e_m_field_8mm_aa53d0ddcab76ff97dfee192134ccb38f}{\+\_\+nkx}}
+\item 
+int \mbox{\hyperlink{_e_m_field_8mm_a3cd03192b6118df7f8b8396b50c9bea0}{\+\_\+ikmin}}
+\item 
+int \mbox{\hyperlink{_e_m_field_8mm_a062b201d876f5404cb61341d4e20d50b}{\+\_\+nky}}
+\item 
+int \mbox{\hyperlink{_e_m_field_8mm_a0f502f23565d806082d3a8423f5b5c9f}{\+\_\+jkmin}}
+\item 
+double \mbox{\hyperlink{_e_m_field_8mm_a27952db75258e5872e8f92a1685e4a6b}{\+\_\+\+Cd}}
+\item 
+double \mbox{\hyperlink{_e_m_field_8mm_a5179291c19c672b6be7975d986f79388}{\+\_\+\+Cx}}
+\item 
+double \mbox{\hyperlink{_e_m_field_8mm_a3c06af312cb823ffc633c485a64e2ec4}{\+\_\+\+Cy}}
+\item 
+std\+::vector$<$ double $>$ \mbox{\hyperlink{_e_m_field_8mm_af9c144127dfb3c8c2ae396aa9c0a9b7e}{\+\_\+phi\+\_\+sol}}
+\item 
+std\+::vector$<$ double $>$ \mbox{\hyperlink{_e_m_field_8mm_a39619f1a6a0c7e3e4e9c68df04f60571}{\+\_\+rhs\+\_\+\+BC}}
+\item 
+std\+::unique\+\_\+ptr$<$ \mbox{\hyperlink{_e_m_field_8mm_a048407fb0f51a36a40d9856a83f12405}{Solver}} $>$ \mbox{\hyperlink{_e_m_field_8mm_ac22e40c705223542d5a7b49f113facc5}{\+\_\+solver}}
+\item 
+double \mbox{\hyperlink{_e_m_field_8mm_a090b9e9be9ea50238a9e4f8fedfe9b03}{\+\_\+cathode\+Pos}}
+\item 
+double \mbox{\hyperlink{_e_m_field_8mm_a52a0ab80ea1e3e246a6e8e029fd36c7d}{\+\_\+last\+EE}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-define-members}
+\Hypertarget{_e_m_field_8mm_doc-define-members}
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{_e_m_field_8mm_a598a3330b3c21701223ee0ca14316eca}\index{EMField.mm@{EMField.mm}!PI@{PI}}
+\index{PI@{PI}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{PI}{PI}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a598a3330b3c21701223ee0ca14316eca} 
+\#define PI~3.\+141592653589793}
+
+
+
+\label{doc-typedef-members}
+\Hypertarget{_e_m_field_8mm_doc-typedef-members}
+\doxysubsection{Typedef Documentation}
+\Hypertarget{_e_m_field_8mm_a9ddc44d761e77669b1fd69295faf6ecc}\index{EMField.mm@{EMField.mm}!Backend@{Backend}}
+\index{Backend@{Backend}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{Backend}{Backend}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a9ddc44d761e77669b1fd69295faf6ecc} 
+typedef amgcl\+::backend\+::builtin$<$double$>$ \mbox{\hyperlink{_e_m_field_8mm_a9ddc44d761e77669b1fd69295faf6ecc}{Backend}}}
+
+\Hypertarget{_e_m_field_8mm_a048407fb0f51a36a40d9856a83f12405}\index{EMField.mm@{EMField.mm}!Solver@{Solver}}
+\index{Solver@{Solver}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{Solver}{Solver}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a048407fb0f51a36a40d9856a83f12405} 
+typedef amgcl\+::make\+\_\+solver$<$ amgcl\+::amg$<$ \mbox{\hyperlink{_e_m_field_8mm_a9ddc44d761e77669b1fd69295faf6ecc}{Backend}}, amgcl\+::coarsening\+::smoothed\+\_\+aggregation, amgcl\+::relaxation\+::spai0 $>$, amgcl\+::solver\+::cg$<$\mbox{\hyperlink{_e_m_field_8mm_a9ddc44d761e77669b1fd69295faf6ecc}{Backend}}$>$$>$ \mbox{\hyperlink{_e_m_field_8mm_a048407fb0f51a36a40d9856a83f12405}{Solver}}}
+
+
+
+\label{doc-var-members}
+\Hypertarget{_e_m_field_8mm_doc-var-members}
+\doxysubsection{Variable Documentation}
+\Hypertarget{_e_m_field_8mm_a7ceab7597778f3403670cca7c75e491c}\index{EMField.mm@{EMField.mm}!\_BC\_Xmax@{\_BC\_Xmax}}
+\index{\_BC\_Xmax@{\_BC\_Xmax}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_BC\_Xmax}{\_BC\_Xmax}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a7ceab7597778f3403670cca7c75e491c} 
+NSString\texorpdfstring{$\ast$}{*} \+\_\+\+BC\+\_\+\+Xmax}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ }
+\DoxyCodeLine{\ \ \ \ NSString*\ \_BC\_Xmin}
+
+\end{DoxyCode}
+\Hypertarget{_e_m_field_8mm_a0644f7d8dc2c82baeb627244a2a8ae9f}\index{EMField.mm@{EMField.mm}!\_BC\_Ymax@{\_BC\_Ymax}}
+\index{\_BC\_Ymax@{\_BC\_Ymax}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_BC\_Ymax}{\_BC\_Ymax}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a0644f7d8dc2c82baeb627244a2a8ae9f} 
+NSString\texorpdfstring{$\ast$}{*} \+\_\+\+BC\+\_\+\+Ymax}
+
+\Hypertarget{_e_m_field_8mm_a40e28386ee0381ee44ac0b6494f3d3d9}\index{EMField.mm@{EMField.mm}!\_BC\_Ymin@{\_BC\_Ymin}}
+\index{\_BC\_Ymin@{\_BC\_Ymin}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_BC\_Ymin}{\_BC\_Ymin}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a40e28386ee0381ee44ac0b6494f3d3d9} 
+NSString\texorpdfstring{$\ast$}{*} \+\_\+\+BC\+\_\+\+Ymin}
+
+\Hypertarget{_e_m_field_8mm_a090b9e9be9ea50238a9e4f8fedfe9b03}\index{EMField.mm@{EMField.mm}!\_cathodePos@{\_cathodePos}}
+\index{\_cathodePos@{\_cathodePos}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_cathodePos}{\_cathodePos}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a090b9e9be9ea50238a9e4f8fedfe9b03} 
+double \+\_\+cathode\+Pos}
+
+\Hypertarget{_e_m_field_8mm_a27952db75258e5872e8f92a1685e4a6b}\index{EMField.mm@{EMField.mm}!\_Cd@{\_Cd}}
+\index{\_Cd@{\_Cd}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_Cd}{\_Cd}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a27952db75258e5872e8f92a1685e4a6b} 
+double \+\_\+\+Cd}
+
+\Hypertarget{_e_m_field_8mm_a5179291c19c672b6be7975d986f79388}\index{EMField.mm@{EMField.mm}!\_Cx@{\_Cx}}
+\index{\_Cx@{\_Cx}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_Cx}{\_Cx}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a5179291c19c672b6be7975d986f79388} 
+double \+\_\+\+Cx}
+
+\Hypertarget{_e_m_field_8mm_a3c06af312cb823ffc633c485a64e2ec4}\index{EMField.mm@{EMField.mm}!\_Cy@{\_Cy}}
+\index{\_Cy@{\_Cy}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_Cy}{\_Cy}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a3c06af312cb823ffc633c485a64e2ec4} 
+double \+\_\+\+Cy}
+
+\Hypertarget{_e_m_field_8mm_a9a9fe602881d873e1fc6bfb78ec0cbd9}\index{EMField.mm@{EMField.mm}!\_dphidx\_Xmax@{\_dphidx\_Xmax}}
+\index{\_dphidx\_Xmax@{\_dphidx\_Xmax}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_dphidx\_Xmax}{\_dphidx\_Xmax}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a9a9fe602881d873e1fc6bfb78ec0cbd9} 
+std\+::vector$<$double$>$ \+\_\+dphidx\+\_\+\+Xmax}
+
+\Hypertarget{_e_m_field_8mm_a542682ae2df3ce39d6ec4f2ef4b6c9ef}\index{EMField.mm@{EMField.mm}!\_dphidx\_Xmin@{\_dphidx\_Xmin}}
+\index{\_dphidx\_Xmin@{\_dphidx\_Xmin}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_dphidx\_Xmin}{\_dphidx\_Xmin}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a542682ae2df3ce39d6ec4f2ef4b6c9ef} 
+std\+::vector$<$double$>$ \+\_\+dphidx\+\_\+\+Xmin}
+
+\Hypertarget{_e_m_field_8mm_a1a43834aa71f452f2701ca85a2a5a548}\index{EMField.mm@{EMField.mm}!\_dphidy\_Ymax@{\_dphidy\_Ymax}}
+\index{\_dphidy\_Ymax@{\_dphidy\_Ymax}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_dphidy\_Ymax}{\_dphidy\_Ymax}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a1a43834aa71f452f2701ca85a2a5a548} 
+std\+::vector$<$double$>$ \+\_\+dphidy\+\_\+\+Ymax}
+
+\Hypertarget{_e_m_field_8mm_ae3d4c8c9dfd9b4e18a1ac56837e93558}\index{EMField.mm@{EMField.mm}!\_dphidy\_Ymin@{\_dphidy\_Ymin}}
+\index{\_dphidy\_Ymin@{\_dphidy\_Ymin}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_dphidy\_Ymin}{\_dphidy\_Ymin}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_ae3d4c8c9dfd9b4e18a1ac56837e93558} 
+std\+::vector$<$double$>$ \+\_\+dphidy\+\_\+\+Ymin}
+
+\Hypertarget{_e_m_field_8mm_a3cd03192b6118df7f8b8396b50c9bea0}\index{EMField.mm@{EMField.mm}!\_ikmin@{\_ikmin}}
+\index{\_ikmin@{\_ikmin}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_ikmin}{\_ikmin}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a3cd03192b6118df7f8b8396b50c9bea0} 
+int \+\_\+ikmin}
+
+\Hypertarget{_e_m_field_8mm_a0f502f23565d806082d3a8423f5b5c9f}\index{EMField.mm@{EMField.mm}!\_jkmin@{\_jkmin}}
+\index{\_jkmin@{\_jkmin}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_jkmin}{\_jkmin}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a0f502f23565d806082d3a8423f5b5c9f} 
+int \+\_\+jkmin}
+
+\Hypertarget{_e_m_field_8mm_a52a0ab80ea1e3e246a6e8e029fd36c7d}\index{EMField.mm@{EMField.mm}!\_lastEE@{\_lastEE}}
+\index{\_lastEE@{\_lastEE}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_lastEE}{\_lastEE}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a52a0ab80ea1e3e246a6e8e029fd36c7d} 
+double \+\_\+last\+EE}
+
+\Hypertarget{_e_m_field_8mm_aa53d0ddcab76ff97dfee192134ccb38f}\index{EMField.mm@{EMField.mm}!\_nkx@{\_nkx}}
+\index{\_nkx@{\_nkx}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_nkx}{\_nkx}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_aa53d0ddcab76ff97dfee192134ccb38f} 
+int \+\_\+nkx}
+
+\Hypertarget{_e_m_field_8mm_a062b201d876f5404cb61341d4e20d50b}\index{EMField.mm@{EMField.mm}!\_nky@{\_nky}}
+\index{\_nky@{\_nky}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_nky}{\_nky}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a062b201d876f5404cb61341d4e20d50b} 
+int \+\_\+nky}
+
+\Hypertarget{_e_m_field_8mm_af9c144127dfb3c8c2ae396aa9c0a9b7e}\index{EMField.mm@{EMField.mm}!\_phi\_sol@{\_phi\_sol}}
+\index{\_phi\_sol@{\_phi\_sol}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_phi\_sol}{\_phi\_sol}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_af9c144127dfb3c8c2ae396aa9c0a9b7e} 
+std\+::vector$<$double$>$ \+\_\+phi\+\_\+sol}
+
+\Hypertarget{_e_m_field_8mm_a267dcdae14e8818e4c01edecbef9b1a1}\index{EMField.mm@{EMField.mm}!\_phi\_Xmax@{\_phi\_Xmax}}
+\index{\_phi\_Xmax@{\_phi\_Xmax}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_phi\_Xmax}{\_phi\_Xmax}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a267dcdae14e8818e4c01edecbef9b1a1} 
+std\+::vector$<$double$>$ \+\_\+phi\+\_\+\+Xmax}
+
+\Hypertarget{_e_m_field_8mm_a433ba314befe2613426113fc4f6b57ce}\index{EMField.mm@{EMField.mm}!\_phi\_Xmin@{\_phi\_Xmin}}
+\index{\_phi\_Xmin@{\_phi\_Xmin}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_phi\_Xmin}{\_phi\_Xmin}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a433ba314befe2613426113fc4f6b57ce} 
+std\+::vector$<$double$>$ \+\_\+phi\+\_\+\+Xmin}
+
+\Hypertarget{_e_m_field_8mm_ae7925d5e7ffcec0d740cc174a7b9e2e1}\index{EMField.mm@{EMField.mm}!\_phi\_Ymax@{\_phi\_Ymax}}
+\index{\_phi\_Ymax@{\_phi\_Ymax}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_phi\_Ymax}{\_phi\_Ymax}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_ae7925d5e7ffcec0d740cc174a7b9e2e1} 
+std\+::vector$<$double$>$ \+\_\+phi\+\_\+\+Ymax}
+
+\Hypertarget{_e_m_field_8mm_ab0ad291a1b0fcd20d16efa32442873e9}\index{EMField.mm@{EMField.mm}!\_phi\_Ymin@{\_phi\_Ymin}}
+\index{\_phi\_Ymin@{\_phi\_Ymin}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_phi\_Ymin}{\_phi\_Ymin}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_ab0ad291a1b0fcd20d16efa32442873e9} 
+std\+::vector$<$double$>$ \+\_\+phi\+\_\+\+Ymin}
+
+\Hypertarget{_e_m_field_8mm_a39619f1a6a0c7e3e4e9c68df04f60571}\index{EMField.mm@{EMField.mm}!\_rhs\_BC@{\_rhs\_BC}}
+\index{\_rhs\_BC@{\_rhs\_BC}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_rhs\_BC}{\_rhs\_BC}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_a39619f1a6a0c7e3e4e9c68df04f60571} 
+std\+::vector$<$double$>$ \+\_\+rhs\+\_\+\+BC}
+
+\Hypertarget{_e_m_field_8mm_ac22e40c705223542d5a7b49f113facc5}\index{EMField.mm@{EMField.mm}!\_solver@{\_solver}}
+\index{\_solver@{\_solver}!EMField.mm@{EMField.mm}}
+\doxysubsubsection{\texorpdfstring{\_solver}{\_solver}}
+{\footnotesize\ttfamily \label{_e_m_field_8mm_ac22e40c705223542d5a7b49f113facc5} 
+std\+::unique\+\_\+ptr$<$\mbox{\hyperlink{_e_m_field_8mm_a048407fb0f51a36a40d9856a83f12405}{Solver}}$>$ \+\_\+solver}
+

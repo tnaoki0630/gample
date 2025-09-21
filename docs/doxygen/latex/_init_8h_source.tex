@@ -1,0 +1,123 @@
+\doxysection{Init.\+h}
+\hypertarget{_init_8h_source}{}\label{_init_8h_source}\index{src/Init.h@{src/Init.h}}
+\mbox{\hyperlink{_init_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ \#import\ "{}ParticleParam.h"{}}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#include\ <Foundation/Foundation.h>}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <array>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{keyword}{@interface\ }\mbox{\hyperlink{interface_init}{Init}}\ :\ NSObject}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ struct\ FlagForEquation\ \{}
+\DoxyCodeLine{00010\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{interface_init_a84c62b14d9a445647a3883b4d3aa35d4}{Particle}};}
+\DoxyCodeLine{00011\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{interface_init_a391237d03b0ec98534e02215be18cab3}{EMField}};}
+\DoxyCodeLine{00012\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{interface_init_ac1fdd4be88751abcd1450eb8e466a7dd}{MCCollision}};}
+\DoxyCodeLine{00013\ \};}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_init_1_1_param_for_time_integration}{ParamForTimeIntegration}}\ \{}
+\DoxyCodeLine{00016\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_init_1_1_param_for_time_integration_a2960615504d88a5bc52d685b3af25aa4}{Start}};}
+\DoxyCodeLine{00017\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_init_1_1_param_for_time_integration_ae805021ad227bbd755e0b8a019731772}{End}};}
+\DoxyCodeLine{00018\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_init_1_1_param_for_time_integration_ac275482ab527c45ece9371d99fe74e50}{TimeStep}};}
+\DoxyCodeLine{00019\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_init_1_1_param_for_time_integration_a5401016514455d743018f801374e9993}{LogOutput}};}
+\DoxyCodeLine{00020\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_init_1_1_param_for_time_integration_a2033b68f4c2f9300f564371e11ac2432}{ParticleOutput}};}
+\DoxyCodeLine{00021\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_init_1_1_param_for_time_integration_a3677ad06cdabb1f8d18a6e99b74e66ed}{FieldOutput}};}
+\DoxyCodeLine{00022\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_init_1_1_param_for_time_integration_a67be0f03955f411cac2b39d48f58c3e6}{ProgressOutput}};}
+\DoxyCodeLine{00023\ \ \ \ \ NSString*\ \mbox{\hyperlink{struct_init_1_1_param_for_time_integration_ad1c6fc2bb5b89f3c5cc60b6e013f48ba}{ProjectName}};}
+\DoxyCodeLine{00024\ \ \ \ \ NSString*\ \mbox{\hyperlink{struct_init_1_1_param_for_time_integration_a55bd5673e27ecfe5e79ac1664b30f939}{RestartName}};}
+\DoxyCodeLine{00025\ \};}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_init_1_1_param_for_computing}{ParamForComputing}}\ \{}
+\DoxyCodeLine{00028\ \ \ \ \ uint\ \mbox{\hyperlink{struct_init_1_1_param_for_computing_ac107777b12c84e28d3c2c49515d90af5}{pNumMax}};}
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_init_1_1_param_for_computing_ab4259385919b27ce9a5e1ef4125ed944}{threadGroupSize}};}
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_init_1_1_param_for_computing_a2bdb9491de00a2384f361739ce721064}{integrationChunkSize}};}
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_init_1_1_param_for_computing_a6c36f11c82ac2d072fbc69b15ddac60a}{aggrThreshold}};}
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_init_1_1_param_for_computing_ab6453d6fcb6efbfb1fcd9adc1f7775af}{chebDegree}};}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_init_1_1_param_for_computing_af036b857396a163770711f930d82977f}{amgCycleType}};}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_init_1_1_param_for_computing_aaae238e903f234bf23b22a7dfbc63334}{maxiter}};}
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_init_1_1_param_for_computing_a71dac6933fb6ccd5a786bfa7f74664b8}{tolerance}};}
+\DoxyCodeLine{00036\ \};}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_init_1_1_param_for_particle}{ParamForParticle}}\ \{}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{comment}{//\ general}}
+\DoxyCodeLine{00040\ \ \ \ \ NSString*\ \mbox{\hyperlink{struct_init_1_1_param_for_particle_a475c1e38c5de96f3344cd1a7fab26576}{pName}};}
+\DoxyCodeLine{00041\ \ \ \ \ uint\ \mbox{\hyperlink{struct_init_1_1_param_for_particle_ad0fd368c4d625b84f09828b589f75169}{pNum}};}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_init_1_1_param_for_particle_a457b2f232424e4b959c2f2044234b70d}{q}};}
+\DoxyCodeLine{00043\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_init_1_1_param_for_particle_a605992d8d3a9da9428f3fc8515076be3}{m}};}
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_init_1_1_param_for_particle_a0425b65fe38fa17f23d409f7569e885c}{w}};}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{comment}{//\ generation}}
+\DoxyCodeLine{00046\ \ \ \ \ NSString*\ \mbox{\hyperlink{struct_init_1_1_param_for_particle_aeea14081ff3a0bf7f167acb7c9566192}{genType}};}
+\DoxyCodeLine{00047\ \ \ \ \ std::vector<double>\ \mbox{\hyperlink{struct_init_1_1_param_for_particle_afee802b9d7ec308b1da3c418eff57f47}{genX}};}
+\DoxyCodeLine{00048\ \ \ \ \ std::vector<double>\ \mbox{\hyperlink{struct_init_1_1_param_for_particle_a114d292d1ce31303357959137c00df27}{genY}};}
+\DoxyCodeLine{00049\ \ \ \ \ std::vector<double>\ \mbox{\hyperlink{struct_init_1_1_param_for_particle_aaf31d0e287c90a4b1c2b7f752e64a6e8}{genU}};}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_init_1_1_param_for_particle_a4ff07fbad66a64c7115f9d936d3947d4}{genT}};}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{comment}{//\ output}}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_init_1_1_param_for_particle_a30cd42ae636a0d01c0dc1236803b638e}{outNum}};}
+\DoxyCodeLine{00053\ \};}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_init_1_1_boundary_condition_for_particle}{BoundaryConditionForParticle}}\ \{}
+\DoxyCodeLine{00056\ \ \ \ \ NSString*\ \mbox{\hyperlink{struct_init_1_1_boundary_condition_for_particle_aaec7a6e8f3709afe5f3bf594b10de564}{position}};}
+\DoxyCodeLine{00057\ \ \ \ \ NSString*\ \mbox{\hyperlink{struct_init_1_1_boundary_condition_for_particle_ac87ee879c550dc5668692afd02ad803e}{type}};}
+\DoxyCodeLine{00058\ \};}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_init_1_1_source_for_particle}{SourceForParticle}}\ \{}
+\DoxyCodeLine{00061\ \ \ \ \ NSString*\ \mbox{\hyperlink{struct_init_1_1_source_for_particle_aab5891462c9e9c35ed9ee63d06cd819c}{pName}};}
+\DoxyCodeLine{00062\ \ \ \ \ NSString*\ \mbox{\hyperlink{struct_init_1_1_source_for_particle_a04686db9036b646742dcd2fda3678a12}{genType}};}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_init_1_1_source_for_particle_aee56b3a30f2e6469f88aafa2af5a2af4}{src}};}
+\DoxyCodeLine{00064\ \ \ \ \ std::vector<double>\ \mbox{\hyperlink{struct_init_1_1_source_for_particle_a502f1c9dc002dde4287cb196dd0c15f7}{genX}};}
+\DoxyCodeLine{00065\ \ \ \ \ std::vector<double>\ \mbox{\hyperlink{struct_init_1_1_source_for_particle_a596b793ada5f95a83a942d82d05f81d1}{genY}};}
+\DoxyCodeLine{00066\ \ \ \ \ std::vector<double>\ \mbox{\hyperlink{struct_init_1_1_source_for_particle_a5418a6a4e72617ce0e0980a9bca5c5ad}{genU}};}
+\DoxyCodeLine{00067\ \ \ \ \ std::vector<double>\ \mbox{\hyperlink{struct_init_1_1_source_for_particle_a6d16890fa7a9b98d5f6e2e5da199f68d}{genU\_ele}};}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_init_1_1_source_for_particle_a1828314869c1b05e0af2a91171a5aaa5}{genT}};}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_init_1_1_source_for_particle_a59db09489961268258a29535d12aca81}{genT\_ele}};}
+\DoxyCodeLine{00070\ \};}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_init_1_1_param_for_field}{ParamForField}}\ \{}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_init_1_1_param_for_field_ac1e9dbaf393a53d6f58157df6a6908d4}{ngx}};}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_init_1_1_param_for_field_a7a5e7e7995384cf3247bb4b9acd7347a}{ngy}};}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_init_1_1_param_for_field_a29f2965b4b116f1b16cc388002b1eb2d}{ngb}};}
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_init_1_1_param_for_field_af4ee8313a755c923818061b4054a29ea}{dx}};}
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_init_1_1_param_for_field_a9e5936c35e48f885264dfe316912542f}{dy}};}
+\DoxyCodeLine{00078\ \ \ \ \ NSString*\ \mbox{\hyperlink{struct_init_1_1_param_for_field_aaa5167d46e29c9452778ad2a37886f15}{InitTypeE}};}
+\DoxyCodeLine{00079\ \ \ \ \ NSString*\ \mbox{\hyperlink{struct_init_1_1_param_for_field_a8361353bb874314f136bd59e7f2139fb}{InitTypeB}};}
+\DoxyCodeLine{00080\ \ \ \ \ std::vector<double>\ \mbox{\hyperlink{struct_init_1_1_param_for_field_a6de57d2113c45cf34720e6da77f89624}{ampE}};}
+\DoxyCodeLine{00081\ \ \ \ \ std::vector<double>\ \mbox{\hyperlink{struct_init_1_1_param_for_field_a9b248efb658dde7c624ca0823469d7a9}{ampB}};}
+\DoxyCodeLine{00082\ \ \ \ \ NSString*\ \mbox{\hyperlink{struct_init_1_1_param_for_field_a6e7d9e838bd1c685fc1d2c415bd0d06a}{FilePathEx}};}
+\DoxyCodeLine{00083\ \ \ \ \ NSString*\ \mbox{\hyperlink{struct_init_1_1_param_for_field_adc91d82b30d3344b625e3ce087c2a24c}{FilePathEy}};}
+\DoxyCodeLine{00084\ \ \ \ \ NSString*\ \mbox{\hyperlink{struct_init_1_1_param_for_field_a0213b8519f62653e1ab42f6efe16478b}{FilePathEz}};}
+\DoxyCodeLine{00085\ \ \ \ \ NSString*\ \mbox{\hyperlink{struct_init_1_1_param_for_field_ae5bc5da781f3b7f9e60c0554e75d075d}{FilePathBx}};}
+\DoxyCodeLine{00086\ \ \ \ \ NSString*\ \mbox{\hyperlink{struct_init_1_1_param_for_field_a1e0f3501ce49aec2070b9505919f8a70}{FilePathBy}};}
+\DoxyCodeLine{00087\ \ \ \ \ NSString*\ \mbox{\hyperlink{struct_init_1_1_param_for_field_ad057e2c98b8b430ba7057766cdeaedd7}{FilePathBz}};}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_init_1_1_param_for_field_a739aa1a36a271acbb30d57672dfff378}{weightOrder}};}
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_init_1_1_param_for_field_aa6b3af62197cd336cc84b8451bb37160}{BorisOrder}};}
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_init_1_1_param_for_field_a70f994a38bfae88e9458304aaf7d9398}{diff\_ngb}};}
+\DoxyCodeLine{00091\ \};}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_init_1_1_boundary_condition_for_field}{BoundaryConditionForField}}\ \{}
+\DoxyCodeLine{00094\ \ \ \ \ NSString*\ \mbox{\hyperlink{struct_init_1_1_boundary_condition_for_field_abb5dff7bb5895317aba28ef72f67df64}{position}};}
+\DoxyCodeLine{00095\ \ \ \ \ NSString*\ \mbox{\hyperlink{struct_init_1_1_boundary_condition_for_field_a6cd1f988173e9aef2a2b96bdcbbe60c7}{type}};}
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{keywordtype}{double}\ \mbox{\hyperlink{struct_init_1_1_boundary_condition_for_field_ab62fbf288df56030e522afb28d63a8cd}{val}};}
+\DoxyCodeLine{00097\ \};}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ -\/\ (instancetype)parseInputFile:(NSString*)inputFilePath;}
+\DoxyCodeLine{00100\ \textcolor{comment}{//\ デフォルト辞書}}
+\DoxyCodeLine{00101\ -\/\ (NSMutableDictionary*)\mbox{\hyperlink{interface_init_a88372d770925392f809079440485f8f5}{FlagForEquationDefault}};}
+\DoxyCodeLine{00102\ -\/\ (NSMutableDictionary*)\mbox{\hyperlink{interface_init_a018134b895b11fa9c2737de496ea7140}{ParamForTimeIntegrationDefault}};}
+\DoxyCodeLine{00103\ -\/\ (NSMutableDictionary*)\mbox{\hyperlink{interface_init_a4dd302ede65bd7f4864d8d436c25fc60}{ParamForParticleDefault}};}
+\DoxyCodeLine{00104\ -\/\ (NSMutableDictionary*)\mbox{\hyperlink{interface_init_a568347ddb05abc4ced67e290aa966181}{BoundaryCoditionDefault}};}
+\DoxyCodeLine{00105\ -\/\ (NSMutableDictionary*)\mbox{\hyperlink{interface_init_a8e9357436ee291a9e4be9bf411ef4924}{SourceForParticleDefault}};}
+\DoxyCodeLine{00106\ -\/\ (NSMutableDictionary*)\mbox{\hyperlink{interface_init_a0c4d8a8306569f96e7ae04cb54c20dc3}{ParamForFieldDefault}};}
+\DoxyCodeLine{00107\ \textcolor{comment}{//\ アクセサ}}
+\DoxyCodeLine{00108\ -\/\ (struct\ FlagForEquation)\mbox{\hyperlink{interface_init_a6ff956e2c67724b0c4f8f0a892d83e5a}{flagForEquation}};}
+\DoxyCodeLine{00109\ -\/\ (struct\ \mbox{\hyperlink{struct_init_1_1_param_for_time_integration}{ParamForTimeIntegration}})\mbox{\hyperlink{interface_init_aa4c5162f7dc74d38f3cc11c594cf3fff}{paramForTimeIntegration}};}
+\DoxyCodeLine{00110\ -\/\ (struct\ \mbox{\hyperlink{struct_init_1_1_param_for_computing}{ParamForComputing}})\mbox{\hyperlink{interface_init_aaf42e737559d85fcec9bf6c5a9a61545}{paramForComputing}};}
+\DoxyCodeLine{00111\ -\/\ (std::vector<struct\ ParamForParticle>)paramForParticle;}
+\DoxyCodeLine{00112\ -\/\ (std::vector<struct\ BoundaryConditionForParticle>)particleBoundaries;}
+\DoxyCodeLine{00113\ -\/\ (std::vector<struct\ SourceForParticle>)particleSources;}
+\DoxyCodeLine{00114\ -\/\ (struct\ \mbox{\hyperlink{struct_init_1_1_param_for_field}{ParamForField}})\mbox{\hyperlink{interface_init_a69b8c364ce03c0a41fa2d589cc4982ec}{paramForField}};}
+\DoxyCodeLine{00115\ -\/\ (std::vector<struct\ BoundaryConditionForField>)fieldBoundaries;}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \textcolor{keyword}{@end}}
+
+\end{DoxyCode}

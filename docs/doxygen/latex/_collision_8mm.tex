@@ -1,0 +1,79 @@
+\doxysection{src/\+Collision.mm File Reference}
+\hypertarget{_collision_8mm}{}\label{_collision_8mm}\index{src/Collision.mm@{src/Collision.mm}}
+{\ttfamily import "{}Collision.\+h"{}}\newline
+{\ttfamily import "{}Constant.\+h"{}}\newline
+{\ttfamily import $<$random$>$}\newline
+{\ttfamily import $<$string$>$}\newline
+{\ttfamily import $<$iostream$>$}\newline
+Include dependency graph for Collision.\+mm\+:
+% FIG 0
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+uint64\+\_\+t \mbox{\hyperlink{_collision_8mm_a17ff33d2751a71ed36f5c819297e9265}{\+\_\+master\+Seed}}
+\item 
+float \mbox{\hyperlink{_collision_8mm_a36e6d6c7914d3f2d86cf9371b5bcf2ca}{\+\_\+src\+Value}}
+\item 
+NSString \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{_collision_8mm_aee0c2c0c0d9bb713b80eadb4829ce807}{\+\_\+src\+Name}}
+\item 
+int \mbox{\hyperlink{_collision_8mm_a5a783cc1b49f348224d4e4b609862d5d}{\+\_\+src\+Value\+For\+HC}}
+\item 
+std\+::default\+\_\+random\+\_\+engine \mbox{\hyperlink{_collision_8mm_a04c0c3a91c4cc5a8c37c8a66a4b76382}{\+\_\+rnd\+Engine}}
+\item 
+bool \mbox{\hyperlink{_collision_8mm_a7a890ce4dfff638222c3e95ce5b3acdc}{\+\_\+exist\+AI}}
+\item 
+bool \mbox{\hyperlink{_collision_8mm_ae433c229826374c9e2fed55fd8887b92}{\+\_\+exist\+HC}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-var-members}
+\Hypertarget{_collision_8mm_doc-var-members}
+\doxysubsection{Variable Documentation}
+\Hypertarget{_collision_8mm_a7a890ce4dfff638222c3e95ce5b3acdc}\index{Collision.mm@{Collision.mm}!\_existAI@{\_existAI}}
+\index{\_existAI@{\_existAI}!Collision.mm@{Collision.mm}}
+\doxysubsubsection{\texorpdfstring{\_existAI}{\_existAI}}
+{\footnotesize\ttfamily \label{_collision_8mm_a7a890ce4dfff638222c3e95ce5b3acdc} 
+bool \+\_\+exist\+AI}
+
+\Hypertarget{_collision_8mm_ae433c229826374c9e2fed55fd8887b92}\index{Collision.mm@{Collision.mm}!\_existHC@{\_existHC}}
+\index{\_existHC@{\_existHC}!Collision.mm@{Collision.mm}}
+\doxysubsubsection{\texorpdfstring{\_existHC}{\_existHC}}
+{\footnotesize\ttfamily \label{_collision_8mm_ae433c229826374c9e2fed55fd8887b92} 
+bool \+\_\+exist\+HC}
+
+\Hypertarget{_collision_8mm_a17ff33d2751a71ed36f5c819297e9265}\index{Collision.mm@{Collision.mm}!\_masterSeed@{\_masterSeed}}
+\index{\_masterSeed@{\_masterSeed}!Collision.mm@{Collision.mm}}
+\doxysubsubsection{\texorpdfstring{\_masterSeed}{\_masterSeed}}
+{\footnotesize\ttfamily \label{_collision_8mm_a17ff33d2751a71ed36f5c819297e9265} 
+uint64\+\_\+t \+\_\+master\+Seed}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{size\_t}\ \_initializedStates}
+
+\end{DoxyCode}
+\Hypertarget{_collision_8mm_a04c0c3a91c4cc5a8c37c8a66a4b76382}\index{Collision.mm@{Collision.mm}!\_rndEngine@{\_rndEngine}}
+\index{\_rndEngine@{\_rndEngine}!Collision.mm@{Collision.mm}}
+\doxysubsubsection{\texorpdfstring{\_rndEngine}{\_rndEngine}}
+{\footnotesize\ttfamily \label{_collision_8mm_a04c0c3a91c4cc5a8c37c8a66a4b76382} 
+std\+::default\+\_\+random\+\_\+engine \+\_\+rnd\+Engine}
+
+\Hypertarget{_collision_8mm_aee0c2c0c0d9bb713b80eadb4829ce807}\index{Collision.mm@{Collision.mm}!\_srcName@{\_srcName}}
+\index{\_srcName@{\_srcName}!Collision.mm@{Collision.mm}}
+\doxysubsubsection{\texorpdfstring{\_srcName}{\_srcName}}
+{\footnotesize\ttfamily \label{_collision_8mm_aee0c2c0c0d9bb713b80eadb4829ce807} 
+NSString\texorpdfstring{$\ast$}{*} \+\_\+src\+Name}
+
+\Hypertarget{_collision_8mm_a36e6d6c7914d3f2d86cf9371b5bcf2ca}\index{Collision.mm@{Collision.mm}!\_srcValue@{\_srcValue}}
+\index{\_srcValue@{\_srcValue}!Collision.mm@{Collision.mm}}
+\doxysubsubsection{\texorpdfstring{\_srcValue}{\_srcValue}}
+{\footnotesize\ttfamily \label{_collision_8mm_a36e6d6c7914d3f2d86cf9371b5bcf2ca} 
+float \+\_\+src\+Value}
+
+\Hypertarget{_collision_8mm_a5a783cc1b49f348224d4e4b609862d5d}\index{Collision.mm@{Collision.mm}!\_srcValueForHC@{\_srcValueForHC}}
+\index{\_srcValueForHC@{\_srcValueForHC}!Collision.mm@{Collision.mm}}
+\doxysubsubsection{\texorpdfstring{\_srcValueForHC}{\_srcValueForHC}}
+{\footnotesize\ttfamily \label{_collision_8mm_a5a783cc1b49f348224d4e4b609862d5d} 
+int \+\_\+src\+Value\+For\+HC}
+

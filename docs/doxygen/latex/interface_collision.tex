@@ -1,0 +1,148 @@
+\doxysection{Collision Class Reference}
+\hypertarget{interface_collision}{}\label{interface_collision}\index{Collision@{Collision}}
+
+
+{\ttfamily \#include $<$Collision.\+h$>$}
+
+
+
+Inheritance diagram for Collision\+:
+% FIG 0
+
+
+Collaboration diagram for Collision\+:
+% FIG 1
+\doxysubsubsection*{Instance Methods}
+\begin{DoxyCompactItemize}
+\item 
+(instancetype) -\/ \mbox{\hyperlink{interface_collision_a9fcdf915428602c8757fc358950bba25}{init\+With\+Device\+:with\+Param\+:with\+Particles\+:with\+Logger\+:}}
+\item 
+(bool) -\/ \mbox{\hyperlink{interface_collision_a19edd397f3bf9c5e996b1e9a5410330d}{artificial\+Ionization\+:with\+Particles\+:with\+Logger\+:}}
+\item 
+(bool) -\/ \mbox{\hyperlink{interface_collision_a8380e382b9fe748be5fd7e3a12e35ea1}{hollow\+Cathode\+:with\+Particles\+:with\+Logger\+:}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Properties}
+\begin{DoxyCompactItemize}
+\item 
+id$<$ MTLDevice $>$ \mbox{\hyperlink{interface_collision_ab59fba6c39907803a0ada720e216b937}{device}}
+\item 
+id$<$ MTLCommand\+Queue $>$ \mbox{\hyperlink{interface_collision_a69350deb48338a7cafc46610b6629ea4}{command\+Queue}}
+\item 
+id$<$ MTLCompute\+Pipeline\+State $>$ \mbox{\hyperlink{interface_collision_a92d31628bb06e869b0345fbdae1801cc}{artificial\+Ionization\+Pipeline}}
+\item 
+id$<$ MTLCompute\+Pipeline\+State $>$ \mbox{\hyperlink{interface_collision_a994d3b3d2a14529fded189aa0ee3ae69}{hollow\+Cathode\+Pipeline}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_collision_a7ed9203e42d8cd9c98d596334babd572}{RNGState\+Buffer}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_collision_a64a8bef1fb0cb1c0a4c57d5e2f9fc1f1}{params\+Buffer}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_collision_a801efc5bbdb1d0749d2de3c63a86062d}{params\+For\+HCBuffer}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_collision_aeaf57aa8f127507502f52046d69c7dd4}{print\+Buffer}}
+\item 
+int \mbox{\hyperlink{interface_collision_aa80ca78154e3971a4df915e45cd3c38d}{p\+Num\+Max}}
+\item 
+uint \mbox{\hyperlink{interface_collision_a53623c21422c27f2fe0b201dd28962bd}{thread\+Group\+Size}}
+\item 
+uint \mbox{\hyperlink{interface_collision_a42bc389be85c31d3e8051d2a7cc3b0a3}{integration\+Chunk\+Size}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{interface_collision_doc-func-members}
+\doxysubsection{Method Documentation}
+\Hypertarget{interface_collision_a19edd397f3bf9c5e996b1e9a5410330d}\index{Collision@{Collision}!artificialIonization:withParticles:withLogger:@{artificialIonization:withParticles:withLogger:}}
+\index{artificialIonization:withParticles:withLogger:@{artificialIonization:withParticles:withLogger:}!Collision@{Collision}}
+\doxysubsubsection{\texorpdfstring{artificialIonization:withParticles:withLogger:}{artificialIonization:withParticles:withLogger:}}
+{\footnotesize\ttfamily \label{interface_collision_a19edd397f3bf9c5e996b1e9a5410330d} 
+-\/ (bool) artificial\+Ionization\+: \begin{DoxyParamCaption}\item[{(double)}]{dt}{}\item[{with\+Particles\+:(NSArray$<$\mbox{\hyperlink{interface_particle}{Particle}}\texorpdfstring{$\ast$}{*}$>$\texorpdfstring{$\ast$}{*})}]{ptcl\+Arr}{}\item[{with\+Logger\+:(\mbox{\hyperlink{class_xml_logger}{Xml\+Logger}}\&)}]{logger}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_collision_a8380e382b9fe748be5fd7e3a12e35ea1}\index{Collision@{Collision}!hollowCathode:withParticles:withLogger:@{hollowCathode:withParticles:withLogger:}}
+\index{hollowCathode:withParticles:withLogger:@{hollowCathode:withParticles:withLogger:}!Collision@{Collision}}
+\doxysubsubsection{\texorpdfstring{hollowCathode:withParticles:withLogger:}{hollowCathode:withParticles:withLogger:}}
+{\footnotesize\ttfamily \label{interface_collision_a8380e382b9fe748be5fd7e3a12e35ea1} 
+-\/ (bool) hollow\+Cathode\+: \begin{DoxyParamCaption}\item[{(double)}]{dt}{}\item[{with\+Particles\+:(NSArray$<$\mbox{\hyperlink{interface_particle}{Particle}}\texorpdfstring{$\ast$}{*}$>$\texorpdfstring{$\ast$}{*})}]{ptcl\+Arr}{}\item[{with\+Logger\+:(\mbox{\hyperlink{class_xml_logger}{Xml\+Logger}}\&)}]{logger}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_collision_a9fcdf915428602c8757fc358950bba25}\index{Collision@{Collision}!initWithDevice:withParam:withParticles:withLogger:@{initWithDevice:withParam:withParticles:withLogger:}}
+\index{initWithDevice:withParam:withParticles:withLogger:@{initWithDevice:withParam:withParticles:withLogger:}!Collision@{Collision}}
+\doxysubsubsection{\texorpdfstring{initWithDevice:withParam:withParticles:withLogger:}{initWithDevice:withParam:withParticles:withLogger:}}
+{\footnotesize\ttfamily \label{interface_collision_a9fcdf915428602c8757fc358950bba25} 
+-\/ (instancetype) init\+With\+Device\+: \begin{DoxyParamCaption}\item[{(id$<$MTLDevice$>$)}]{device}{}\item[{with\+Param\+:(\mbox{\hyperlink{interface_init}{Init}}\texorpdfstring{$\ast$}{*})}]{init\+Param}{}\item[{with\+Particles\+:(NSArray$<$\mbox{\hyperlink{interface_particle}{Particle}}\texorpdfstring{$\ast$}{*}$>$\texorpdfstring{$\ast$}{*})}]{ptcl\+Arr}{}\item[{with\+Logger\+:(\mbox{\hyperlink{class_xml_logger}{Xml\+Logger}}\&)}]{logger}{}\end{DoxyParamCaption}}
+
+
+
+\label{doc-property-members}
+\Hypertarget{interface_collision_doc-property-members}
+\doxysubsection{Property Documentation}
+\Hypertarget{interface_collision_a92d31628bb06e869b0345fbdae1801cc}\index{Collision@{Collision}!artificialIonizationPipeline@{artificialIonizationPipeline}}
+\index{artificialIonizationPipeline@{artificialIonizationPipeline}!Collision@{Collision}}
+\doxysubsubsection{\texorpdfstring{artificialIonizationPipeline}{artificialIonizationPipeline}}
+{\footnotesize\ttfamily \label{interface_collision_a92d31628bb06e869b0345fbdae1801cc} 
+-\/ (id$<$MTLCompute\+Pipeline\+State$>$) artificial\+Ionization\+Pipeline\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_collision_a69350deb48338a7cafc46610b6629ea4}\index{Collision@{Collision}!commandQueue@{commandQueue}}
+\index{commandQueue@{commandQueue}!Collision@{Collision}}
+\doxysubsubsection{\texorpdfstring{commandQueue}{commandQueue}}
+{\footnotesize\ttfamily \label{interface_collision_a69350deb48338a7cafc46610b6629ea4} 
+-\/ (id$<$MTLCommand\+Queue$>$) command\+Queue\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_collision_ab59fba6c39907803a0ada720e216b937}\index{Collision@{Collision}!device@{device}}
+\index{device@{device}!Collision@{Collision}}
+\doxysubsubsection{\texorpdfstring{device}{device}}
+{\footnotesize\ttfamily \label{interface_collision_ab59fba6c39907803a0ada720e216b937} 
+-\/ (id$<$MTLDevice$>$) device\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_collision_a994d3b3d2a14529fded189aa0ee3ae69}\index{Collision@{Collision}!hollowCathodePipeline@{hollowCathodePipeline}}
+\index{hollowCathodePipeline@{hollowCathodePipeline}!Collision@{Collision}}
+\doxysubsubsection{\texorpdfstring{hollowCathodePipeline}{hollowCathodePipeline}}
+{\footnotesize\ttfamily \label{interface_collision_a994d3b3d2a14529fded189aa0ee3ae69} 
+-\/ (id$<$MTLCompute\+Pipeline\+State$>$) hollow\+Cathode\+Pipeline\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_collision_a42bc389be85c31d3e8051d2a7cc3b0a3}\index{Collision@{Collision}!integrationChunkSize@{integrationChunkSize}}
+\index{integrationChunkSize@{integrationChunkSize}!Collision@{Collision}}
+\doxysubsubsection{\texorpdfstring{integrationChunkSize}{integrationChunkSize}}
+{\footnotesize\ttfamily \label{interface_collision_a42bc389be85c31d3e8051d2a7cc3b0a3} 
+-\/ (uint) integration\+Chunk\+Size\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [assign]}}
+
+\Hypertarget{interface_collision_a64a8bef1fb0cb1c0a4c57d5e2f9fc1f1}\index{Collision@{Collision}!paramsBuffer@{paramsBuffer}}
+\index{paramsBuffer@{paramsBuffer}!Collision@{Collision}}
+\doxysubsubsection{\texorpdfstring{paramsBuffer}{paramsBuffer}}
+{\footnotesize\ttfamily \label{interface_collision_a64a8bef1fb0cb1c0a4c57d5e2f9fc1f1} 
+-\/ (id$<$MTLBuffer$>$) params\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_collision_a801efc5bbdb1d0749d2de3c63a86062d}\index{Collision@{Collision}!paramsForHCBuffer@{paramsForHCBuffer}}
+\index{paramsForHCBuffer@{paramsForHCBuffer}!Collision@{Collision}}
+\doxysubsubsection{\texorpdfstring{paramsForHCBuffer}{paramsForHCBuffer}}
+{\footnotesize\ttfamily \label{interface_collision_a801efc5bbdb1d0749d2de3c63a86062d} 
+-\/ (id$<$MTLBuffer$>$) params\+For\+HCBuffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_collision_aa80ca78154e3971a4df915e45cd3c38d}\index{Collision@{Collision}!pNumMax@{pNumMax}}
+\index{pNumMax@{pNumMax}!Collision@{Collision}}
+\doxysubsubsection{\texorpdfstring{pNumMax}{pNumMax}}
+{\footnotesize\ttfamily \label{interface_collision_aa80ca78154e3971a4df915e45cd3c38d} 
+-\/ (int) p\+Num\+Max\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [assign]}}
+
+\Hypertarget{interface_collision_aeaf57aa8f127507502f52046d69c7dd4}\index{Collision@{Collision}!printBuffer@{printBuffer}}
+\index{printBuffer@{printBuffer}!Collision@{Collision}}
+\doxysubsubsection{\texorpdfstring{printBuffer}{printBuffer}}
+{\footnotesize\ttfamily \label{interface_collision_aeaf57aa8f127507502f52046d69c7dd4} 
+-\/ (id$<$MTLBuffer$>$) print\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_collision_a7ed9203e42d8cd9c98d596334babd572}\index{Collision@{Collision}!RNGStateBuffer@{RNGStateBuffer}}
+\index{RNGStateBuffer@{RNGStateBuffer}!Collision@{Collision}}
+\doxysubsubsection{\texorpdfstring{RNGStateBuffer}{RNGStateBuffer}}
+{\footnotesize\ttfamily \label{interface_collision_a7ed9203e42d8cd9c98d596334babd572} 
+-\/ (id$<$MTLBuffer$>$) RNGState\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_collision_a53623c21422c27f2fe0b201dd28962bd}\index{Collision@{Collision}!threadGroupSize@{threadGroupSize}}
+\index{threadGroupSize@{threadGroupSize}!Collision@{Collision}}
+\doxysubsubsection{\texorpdfstring{threadGroupSize}{threadGroupSize}}
+{\footnotesize\ttfamily \label{interface_collision_a53623c21422c27f2fe0b201dd28962bd} 
+-\/ (uint) thread\+Group\+Size\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [assign]}}
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/\mbox{\hyperlink{_collision_8h}{Collision.\+h}}\item 
+src/\mbox{\hyperlink{_collision_8mm}{Collision.\+mm}}\end{DoxyCompactItemize}

@@ -1,0 +1,103 @@
+\doxysection{Debug\+Print.\+h}
+\hypertarget{_debug_print_8h_source}{}\label{_debug_print_8h_source}\index{src/DebugPrint.h@{src/DebugPrint.h}}
+\mbox{\hyperlink{_debug_print_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#import\ <Foundation/Foundation.h>}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_init_8h}{Init.h}}"{}}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_xml_logger_8h}{XmlLogger.h}}"{}}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{_debug_print_8h_a39f3a0f83d782823c872658b829c2fd9}{printInitContents}}(\mbox{\hyperlink{interface_init}{Init}}*\ init,\ \mbox{\hyperlink{class_xml_logger}{XmlLogger}}\&\ logger)\{}
+\DoxyCodeLine{00006\ \ \ \ \ NSMutableString\ *log\ =\ [NSMutableString\ string];}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00008\ \ \ \ \ \textcolor{comment}{//\ FlagForEquation\ の出力}}
+\DoxyCodeLine{00009\ \ \ \ \ \textcolor{keyword}{struct\ }FlagForEquation\ flags\ =\ init.\mbox{\hyperlink{interface_init_a6ff956e2c67724b0c4f8f0a892d83e5a}{flagForEquation}};}
+\DoxyCodeLine{00010\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}-\/-\/-\/\ FlagForEquation\ -\/-\/-\/\(\backslash\)n"{}}];}
+\DoxyCodeLine{00011\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}Particle:\ \%d\(\backslash\)n"{}},\ flags.Particle];}
+\DoxyCodeLine{00012\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}EMField:\ \%d\(\backslash\)n"{}},\ flags.EMField];}
+\DoxyCodeLine{00013\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}MCCollision:\ \%d\(\backslash\)n"{}},\ flags.MCCollision];}
+\DoxyCodeLine{00014\ \ \ \ \ }
+\DoxyCodeLine{00015\ \ \ \ \ \textcolor{comment}{//\ ParamForTimeIntegration\ の出力}}
+\DoxyCodeLine{00016\ \ \ \ \ \textcolor{keyword}{struct\ }ParamForTimeIntegration\ timeParams\ =\ init.\mbox{\hyperlink{interface_init_aa4c5162f7dc74d38f3cc11c594cf3fff}{paramForTimeIntegration}};}
+\DoxyCodeLine{00017\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}-\/-\/-\/\ ParamForTimeIntegration\ -\/-\/-\/\(\backslash\)n"{}}];}
+\DoxyCodeLine{00018\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}End:\ \%d\(\backslash\)n"{}},\ timeParams.End];}
+\DoxyCodeLine{00019\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}ParticleOutput:\ \%d\(\backslash\)n"{}},\ timeParams.ParticleOutput];}
+\DoxyCodeLine{00020\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}FieldOutput:\ \%d\(\backslash\)n"{}},\ timeParams.FieldOutput];}
+\DoxyCodeLine{00021\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}TimeStep:\ \%e\(\backslash\)n"{}},\ timeParams.TimeStep];}
+\DoxyCodeLine{00022\ \ \ \ \ }
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{comment}{//\ ParamForComputing\ の出力}}
+\DoxyCodeLine{00024\ \ \ \ \ \textcolor{keyword}{struct\ }ParamForComputing\ compParams\ =\ init.\mbox{\hyperlink{interface_init_aaf42e737559d85fcec9bf6c5a9a61545}{paramForComputing}};}
+\DoxyCodeLine{00025\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}-\/-\/-\/\ ParamForComputing\ -\/-\/-\/\(\backslash\)n"{}}];}
+\DoxyCodeLine{00026\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}MaxParticleNumber:\ \%u\(\backslash\)n"{}},\ compParams.pNumMax];}
+\DoxyCodeLine{00027\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}threadGroupSize:\ \%d\(\backslash\)n"{}},\ compParams.threadGroupSize];}
+\DoxyCodeLine{00028\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}integrationChunkSize:\ \%d\(\backslash\)n"{}},\ compParams.integrationChunkSize];}
+\DoxyCodeLine{00029\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}maxiter:\ \%d\(\backslash\)n"{}},\ compParams.maxiter];}
+\DoxyCodeLine{00030\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}tolerance:\ \%e\(\backslash\)n"{}},\ compParams.tolerance];}
+\DoxyCodeLine{00031\ \ \ \ \ }
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{comment}{//\ ParamForParticle\ の出力}}
+\DoxyCodeLine{00033\ \ \ \ \ std::vector<struct\ ParamForParticle>\ particles\ =\ init.\mbox{\hyperlink{interface_init_af0eee4916254522a25806c7a2a252fa3}{paramForParticle}};}
+\DoxyCodeLine{00034\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}-\/-\/-\/\ ParamForParticle\ (\%zu\ entries)\ -\/-\/-\/\(\backslash\)n"{}},\ (\textcolor{keywordtype}{unsigned}\ long)particles.size()];}
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ particles.size();\ i++)\ \{}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}[Particle\ \%lu]\(\backslash\)n"{}},\ (\textcolor{keywordtype}{unsigned}\ long)i\ +\ 1];}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ Name:\ \%@\(\backslash\)n"{}},\ particles[i].pName];}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ InitialParticleNumber:\ \%u\(\backslash\)n"{}},\ particles[i].pNum];}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ Charge:\ \%e\(\backslash\)n"{}},\ particles[i].q];}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ Mass:\ \%e\(\backslash\)n"{}},\ particles[i].m];}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ Weight:\ \%e\(\backslash\)n"{}},\ particles[i].w];}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ genType:\ \%@\(\backslash\)n"{}},\ particles[i].genType];}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ initialXmin:\ \%e\(\backslash\)n"{}},\ particles[i].genX[0]];}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ initialXmax:\ \%e\(\backslash\)n"{}},\ particles[i].genX[1]];}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ initialYmin:\ \%e\(\backslash\)n"{}},\ particles[i].genY[0]];}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ initialYmax:\ \%e\(\backslash\)n"{}},\ particles[i].genY[1]];}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ initialT:\ \%e\(\backslash\)n"{}},\ particles[i].genT];}
+\DoxyCodeLine{00048\ \ \ \ \ \}}
+\DoxyCodeLine{00049\ \ \ \ \ }
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{comment}{//\ BoundaryConditionForParticle\ の出力}}
+\DoxyCodeLine{00051\ \ \ \ \ std::vector<struct\ BoundaryConditionForParticle>\ pBCs\ =\ init.\mbox{\hyperlink{interface_init_acd0be820fd8cd2e04e78b65027f3dc79}{particleBoundaries}};}
+\DoxyCodeLine{00052\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}-\/-\/-\/\ BoundaryConditionForParticle\ (\%zu\ entries)\ -\/-\/-\/\(\backslash\)n"{}},\ (\textcolor{keywordtype}{unsigned}\ long)pBCs.size()];}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ pBCs.size();\ i++)\ \{}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}[pBC\ \%d]\(\backslash\)n"{}},\ i\ +\ 1];}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ Position:\ \%@\(\backslash\)n"{}},\ pBCs[i].position];}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ Type:\ \%@\(\backslash\)n"{}},\ pBCs[i].type];}
+\DoxyCodeLine{00057\ \ \ \ \ \}}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{comment}{//\ SourceForParticle\ の出力}}
+\DoxyCodeLine{00060\ \ \ \ \ std::vector<struct\ SourceForParticle>\ sources\ =\ init.\mbox{\hyperlink{interface_init_a6a3aa23069ffdacfe0e7ef6532c2fc1d}{particleSources}};}
+\DoxyCodeLine{00061\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}-\/-\/-\/\ SourceForParticle\ (\%zu\ entries)\ -\/-\/-\/\(\backslash\)n"{}},\ sources.size()];}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ sources.size();\ i++)\ \{}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}[Source\ \%lu]\(\backslash\)n"{}},\ (\textcolor{keywordtype}{unsigned}\ long)i\ +\ 1];}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ pName:\ \%@\(\backslash\)n"{}},\ sources[i].pName];}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ genType:\ \%@\(\backslash\)n"{}},\ sources[i].genType];}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ src:\ \%e\(\backslash\)n"{}},\ sources[i].src];}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ genXmin:\ \%e\(\backslash\)n"{}},\ sources[i].genX[0]];}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ genXmax:\ \%e\(\backslash\)n"{}},\ sources[i].genX[1]];}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ genYmin:\ \%e\(\backslash\)n"{}},\ sources[i].genY[0]];}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ genYmax:\ \%e\(\backslash\)n"{}},\ sources[i].genY[1]];}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ genU:\ \%e\(\backslash\)n"{}},\ sources[i].genU[0]];}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ genV:\ \%e\(\backslash\)n"{}},\ sources[i].genU[1]];}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ genW:\ \%e\(\backslash\)n"{}},\ sources[i].genU[2]];}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ genT:\ \%e\(\backslash\)n"{}},\ sources[i].genT];}
+\DoxyCodeLine{00075\ \ \ \ \ \}}
+\DoxyCodeLine{00076\ \ \ \ \ }
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{comment}{//\ ParamForField\ の出力}}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keyword}{struct\ }ParamForField\ fieldParams\ =\ init.\mbox{\hyperlink{interface_init_a69b8c364ce03c0a41fa2d589cc4982ec}{paramForField}};}
+\DoxyCodeLine{00079\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}-\/-\/-\/\ ParamForField\ -\/-\/-\/\(\backslash\)n"{}}];}
+\DoxyCodeLine{00080\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}ngx:\ \%d\(\backslash\)n"{}},\ fieldParams.ngx];}
+\DoxyCodeLine{00081\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}ngy:\ \%d\(\backslash\)n"{}},\ fieldParams.ngy];}
+\DoxyCodeLine{00082\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}ngb:\ \%d\(\backslash\)n"{}},\ fieldParams.ngb];}
+\DoxyCodeLine{00083\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}dx:\ \%e\(\backslash\)n"{}},\ fieldParams.dx];}
+\DoxyCodeLine{00084\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}dy:\ \%e\(\backslash\)n"{}},\ fieldParams.dy];}
+\DoxyCodeLine{00085\ \ \ \ \ }
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{comment}{//\ BoundaryConditionForField\ の出力}}
+\DoxyCodeLine{00087\ \ \ \ \ std::vector<struct\ BoundaryConditionForField>\ fBCs\ =\ init.\mbox{\hyperlink{interface_init_ab140e57bb24594fdb2a4176973b51362}{fieldBoundaries}};}
+\DoxyCodeLine{00088\ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}-\/-\/-\/\ BoundaryConditionForField\ (\%zu\ entries)\ -\/-\/-\/\(\backslash\)n"{}},\ fBCs.size()];}
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ fBCs.size();\ i++)\ \{}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}[Boundary\ \%d]\(\backslash\)n"{}},\ i\ +\ 1];}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ Position:\ \%@\(\backslash\)n"{}},\ fBCs[i].position];}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ Type:\ \%@\(\backslash\)n"{}},\ fBCs[i].type];}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ [log\ appendFormat:\textcolor{stringliteral}{@"{}\ \ Value:\ \%e\(\backslash\)n"{}},\ fBCs[i].val];}
+\DoxyCodeLine{00094\ \ \ \ \ \}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \ \ logger.\mbox{\hyperlink{class_xml_logger_a9b85e7fdce76d1f03cc37d9c13d52785}{logComment}}([log\ UTF8String]);}
+\DoxyCodeLine{00097\ \}}
+
+\end{DoxyCode}

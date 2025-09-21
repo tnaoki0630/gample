@@ -1,0 +1,96 @@
+\doxysection{Xml\+Logger Class Reference}
+\hypertarget{class_xml_logger}{}\label{class_xml_logger}\index{XmlLogger@{XmlLogger}}
+
+
+{\ttfamily \#include $<$Xml\+Logger.\+h$>$}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{class_xml_logger_a35f0e562c78aae5d5301ebec225dcfb2}{Xml\+Logger}} (const std\+::string \&filename)
+\item 
+void \mbox{\hyperlink{class_xml_logger_a785c5e1a50ed777fc1ae872dd4f01e53}{log\+Cycle\+Start}} (int cycle, double time)
+\item 
+void \mbox{\hyperlink{class_xml_logger_ab733163e94aa3453e6b2c8dbae431b09}{log\+Section}} (const std\+::string \&name, const std\+::map$<$ std\+::string, std\+::string $>$ \&data)
+\item 
+void \mbox{\hyperlink{class_xml_logger_a5aac2a59fd2b87632797da247413ffba}{log\+Cycle\+End}} ()
+\item 
+void \mbox{\hyperlink{class_xml_logger_a9b85e7fdce76d1f03cc37d9c13d52785}{log\+Comment}} (const std\+::string \&comment)
+\item 
+void \mbox{\hyperlink{class_xml_logger_a32d9daa27254827283861134df06fd68}{swich\+Log}} (BOOL swich)
+\item 
+\mbox{\hyperlink{class_xml_logger_a54fdda77f2fcde541283e52df2a89a01}{\texorpdfstring{$\sim$}{\string~}\+Xml\+Logger}} ()
+\item 
+\mbox{\hyperlink{class_xml_logger_a3dd5aa4d7fe4123a4e04c340a5573f1c}{Xml\+Logger}} (const \mbox{\hyperlink{class_xml_logger}{Xml\+Logger}} \&)=delete
+\item 
+\mbox{\hyperlink{class_xml_logger}{Xml\+Logger}} \& \mbox{\hyperlink{class_xml_logger_ad144f3e44ac8aa09bd65a223dfb1aa4a}{operator=}} (const \mbox{\hyperlink{class_xml_logger}{Xml\+Logger}} \&)=delete
+\end{DoxyCompactItemize}
+
+
+\label{doc-constructors}
+\Hypertarget{class_xml_logger_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{class_xml_logger_a35f0e562c78aae5d5301ebec225dcfb2}\index{XmlLogger@{XmlLogger}!XmlLogger@{XmlLogger}}
+\index{XmlLogger@{XmlLogger}!XmlLogger@{XmlLogger}}
+\doxysubsubsection{\texorpdfstring{XmlLogger()}{XmlLogger()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \label{class_xml_logger_a35f0e562c78aae5d5301ebec225dcfb2} 
+Xml\+Logger\+::\+Xml\+Logger (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{filename}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [explicit]}}
+
+\Hypertarget{class_xml_logger_a54fdda77f2fcde541283e52df2a89a01}\index{XmlLogger@{XmlLogger}!````~XmlLogger@{\texorpdfstring{$\sim$}{\string~}XmlLogger}}
+\index{````~XmlLogger@{\texorpdfstring{$\sim$}{\string~}XmlLogger}!XmlLogger@{XmlLogger}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}XmlLogger()}{\string~XmlLogger()}}
+{\footnotesize\ttfamily \label{class_xml_logger_a54fdda77f2fcde541283e52df2a89a01} 
+Xml\+Logger\+::\texorpdfstring{$\sim$}{\string~}\+Xml\+Logger (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_xml_logger_a3dd5aa4d7fe4123a4e04c340a5573f1c}\index{XmlLogger@{XmlLogger}!XmlLogger@{XmlLogger}}
+\index{XmlLogger@{XmlLogger}!XmlLogger@{XmlLogger}}
+\doxysubsubsection{\texorpdfstring{XmlLogger()}{XmlLogger()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \label{class_xml_logger_a3dd5aa4d7fe4123a4e04c340a5573f1c} 
+Xml\+Logger\+::\+Xml\+Logger (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_xml_logger}{Xml\+Logger}} \&}]{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+
+
+\label{doc-func-members}
+\Hypertarget{class_xml_logger_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_xml_logger_a9b85e7fdce76d1f03cc37d9c13d52785}\index{XmlLogger@{XmlLogger}!logComment@{logComment}}
+\index{logComment@{logComment}!XmlLogger@{XmlLogger}}
+\doxysubsubsection{\texorpdfstring{logComment()}{logComment()}}
+{\footnotesize\ttfamily \label{class_xml_logger_a9b85e7fdce76d1f03cc37d9c13d52785} 
+void Xml\+Logger\+::log\+Comment (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{comment}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_xml_logger_a5aac2a59fd2b87632797da247413ffba}\index{XmlLogger@{XmlLogger}!logCycleEnd@{logCycleEnd}}
+\index{logCycleEnd@{logCycleEnd}!XmlLogger@{XmlLogger}}
+\doxysubsubsection{\texorpdfstring{logCycleEnd()}{logCycleEnd()}}
+{\footnotesize\ttfamily \label{class_xml_logger_a5aac2a59fd2b87632797da247413ffba} 
+void Xml\+Logger\+::log\+Cycle\+End (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_xml_logger_a785c5e1a50ed777fc1ae872dd4f01e53}\index{XmlLogger@{XmlLogger}!logCycleStart@{logCycleStart}}
+\index{logCycleStart@{logCycleStart}!XmlLogger@{XmlLogger}}
+\doxysubsubsection{\texorpdfstring{logCycleStart()}{logCycleStart()}}
+{\footnotesize\ttfamily \label{class_xml_logger_a785c5e1a50ed777fc1ae872dd4f01e53} 
+void Xml\+Logger\+::log\+Cycle\+Start (\begin{DoxyParamCaption}\item[{int}]{cycle}{, }\item[{double}]{time}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_xml_logger_ab733163e94aa3453e6b2c8dbae431b09}\index{XmlLogger@{XmlLogger}!logSection@{logSection}}
+\index{logSection@{logSection}!XmlLogger@{XmlLogger}}
+\doxysubsubsection{\texorpdfstring{logSection()}{logSection()}}
+{\footnotesize\ttfamily \label{class_xml_logger_ab733163e94aa3453e6b2c8dbae431b09} 
+void Xml\+Logger\+::log\+Section (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{name}{, }\item[{const std\+::map$<$ std\+::string, std\+::string $>$ \&}]{data}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\Hypertarget{class_xml_logger_ad144f3e44ac8aa09bd65a223dfb1aa4a}\index{XmlLogger@{XmlLogger}!operator=@{operator=}}
+\index{operator=@{operator=}!XmlLogger@{XmlLogger}}
+\doxysubsubsection{\texorpdfstring{operator=()}{operator=()}}
+{\footnotesize\ttfamily \label{class_xml_logger_ad144f3e44ac8aa09bd65a223dfb1aa4a} 
+\mbox{\hyperlink{class_xml_logger}{Xml\+Logger}} \& Xml\+Logger\+::operator= (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_xml_logger}{Xml\+Logger}} \&}]{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+\Hypertarget{class_xml_logger_a32d9daa27254827283861134df06fd68}\index{XmlLogger@{XmlLogger}!swichLog@{swichLog}}
+\index{swichLog@{swichLog}!XmlLogger@{XmlLogger}}
+\doxysubsubsection{\texorpdfstring{swichLog()}{swichLog()}}
+{\footnotesize\ttfamily \label{class_xml_logger_a32d9daa27254827283861134df06fd68} 
+void Xml\+Logger\+::swich\+Log (\begin{DoxyParamCaption}\item[{BOOL}]{swich}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/\mbox{\hyperlink{_xml_logger_8h}{Xml\+Logger.\+h}}\end{DoxyCompactItemize}

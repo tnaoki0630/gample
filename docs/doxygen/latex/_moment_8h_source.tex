@@ -1,0 +1,61 @@
+\doxysection{Moment.\+h}
+\hypertarget{_moment_8h_source}{}\label{_moment_8h_source}\index{src/Moment.h@{src/Moment.h}}
+\mbox{\hyperlink{_moment_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#import\ <Foundation/Foundation.h>}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#import\ <Metal/Metal.h>}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_init_8h}{Init.h}}"{}}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_e_m_field_8h}{EMField.h}}"{}}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_particle_8h}{Particle.h}}"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_xml_logger_8h}{XmlLogger.h}}"{}}}
+\DoxyCodeLine{00007\ \textcolor{keyword}{@class}\ \mbox{\hyperlink{interface_particle}{Particle}};}
+\DoxyCodeLine{00008\ \textcolor{keyword}{@class}\ \mbox{\hyperlink{interface_e_m_field}{EMField}};}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{comment}{//\ 積分計算用構造体}}
+\DoxyCodeLine{00012\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structintegration_params}{integrationParams}}\ \{}
+\DoxyCodeLine{00013\ \ \ \ \ uint\ \mbox{\hyperlink{structintegration_params_a4966cf9f1f1f7270a71896861969c209}{pNum}};}
+\DoxyCodeLine{00014\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{structintegration_params_a018b3cdeb96630f4bbc4f675ac087c6e}{ngx}};}
+\DoxyCodeLine{00015\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{structintegration_params_a9d870f3f42d48dc6c59f0c7779c748b2}{ngy}};}
+\DoxyCodeLine{00016\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{structintegration_params_a77546d21b5967cec6d2b4c5733a76a42}{ngb}};}
+\DoxyCodeLine{00017\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{structintegration_params_a93cbe2b7555e22711899dcb1aabe3d61}{scale}};}
+\DoxyCodeLine{00018\ \};}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{keyword}{@interface\ }\mbox{\hyperlink{interface_moment}{Moment}}\ :\ NSObject}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{comment}{//\ metal関連}}
+\DoxyCodeLine{00023\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLDevice>\ \mbox{\hyperlink{interface_moment_ac91ca854773429f8ed4d1069adc467d5}{device}};}
+\DoxyCodeLine{00024\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLCommandQueue>\ \mbox{\hyperlink{interface_moment_a3b31a45f9857ec60bb8a0c4481ebc2f2}{commandQueue}};}
+\DoxyCodeLine{00025\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLComputePipelineState>\ \mbox{\hyperlink{interface_moment_ac216df35f3212c154632639d639f15f2}{integrateMomentsPipeline}};}
+\DoxyCodeLine{00026\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_moment_ac8ab04bea8f067e4cd21ee3b3e45fab9}{integrationParamsBuffer}};}
+\DoxyCodeLine{00027\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_moment_a5619a63cf6e16b7170cd43aaa21b31fc}{nBuffer}};}
+\DoxyCodeLine{00028\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_moment_a5834f2cb4048b49cc1feb098f7556426}{uxBuffer}};}
+\DoxyCodeLine{00029\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_moment_af4af4eea92727ce5e51fda55d07d9599}{uyBuffer}};}
+\DoxyCodeLine{00030\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_moment_abefb67a1514e056d1290167e27904aed}{uzBuffer}};}
+\DoxyCodeLine{00031\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_moment_a2930d1e8dd430e77827802d17184f5dd}{PxxBuffer}};}
+\DoxyCodeLine{00032\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_moment_a11976b71e81ea85e84fc52c6f65d5e2a}{PxyBuffer}};}
+\DoxyCodeLine{00033\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_moment_a0df704b22842a68a8fcc6fa81eb2d8d8}{PxzBuffer}};}
+\DoxyCodeLine{00034\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_moment_af3bbfc49a355bece0dfebc3e265525ef}{PyyBuffer}};}
+\DoxyCodeLine{00035\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_moment_a142d5a1446665e101a38d6a5c60ebda9}{PyzBuffer}};}
+\DoxyCodeLine{00036\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_moment_a9cd1a7c9413be38f8087bc81a41f27de}{PzzBuffer}};}
+\DoxyCodeLine{00037\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_moment_aadac3f2ce5e635e5f07112b76a58fa67}{printBuffer}};}
+\DoxyCodeLine{00038\ \textcolor{keyword}{@property}\ (nonatomic)\ uint\ \mbox{\hyperlink{interface_moment_ac5f3917ad366c5d097722b037edc59a5}{threadGroupSize}};}
+\DoxyCodeLine{00039\ \textcolor{keyword}{@property}\ (nonatomic)\ uint\ \mbox{\hyperlink{interface_moment_ac0eddd72faa78b80514b9aee50acfda3}{integrationChunkSize}};}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ -\/\ (instancetype)initWithDevice:(\textcolor{keywordtype}{id}<MTLDevice>)device\ withParam:(\mbox{\hyperlink{interface_init}{Init}}*)initParam\ withLogger:(\mbox{\hyperlink{class_xml_logger}{XmlLogger}}\&)logger;}
+\DoxyCodeLine{00042\ -\/\ (void)integrateMoments:(\mbox{\hyperlink{interface_particle}{Particle}}*)ptcl\ withEMField:(\mbox{\hyperlink{interface_e_m_field}{EMField}}*)fld\ withLogger:(\mbox{\hyperlink{class_xml_logger}{XmlLogger}}\&)logger;}
+\DoxyCodeLine{00043\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_moment_a5619a63cf6e16b7170cd43aaa21b31fc}{nBuffer}};}
+\DoxyCodeLine{00044\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_moment_a5834f2cb4048b49cc1feb098f7556426}{uxBuffer}};}
+\DoxyCodeLine{00045\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_moment_af4af4eea92727ce5e51fda55d07d9599}{uyBuffer}};}
+\DoxyCodeLine{00046\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_moment_abefb67a1514e056d1290167e27904aed}{uzBuffer}};}
+\DoxyCodeLine{00047\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_moment_a2930d1e8dd430e77827802d17184f5dd}{PxxBuffer}};}
+\DoxyCodeLine{00048\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_moment_a11976b71e81ea85e84fc52c6f65d5e2a}{PxyBuffer}};}
+\DoxyCodeLine{00049\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_moment_a0df704b22842a68a8fcc6fa81eb2d8d8}{PxzBuffer}};}
+\DoxyCodeLine{00050\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_moment_af3bbfc49a355bece0dfebc3e265525ef}{PyyBuffer}};}
+\DoxyCodeLine{00051\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_moment_a142d5a1446665e101a38d6a5c60ebda9}{PyzBuffer}};}
+\DoxyCodeLine{00052\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_moment_a9cd1a7c9413be38f8087bc81a41f27de}{PzzBuffer}};}
+\DoxyCodeLine{00053\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_moment_aadac3f2ce5e635e5f07112b76a58fa67}{printBuffer}};}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \textcolor{keyword}{@end}}
+
+\end{DoxyCode}

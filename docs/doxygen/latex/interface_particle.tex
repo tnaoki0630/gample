@@ -1,0 +1,236 @@
+\doxysection{Particle Class Reference}
+\hypertarget{interface_particle}{}\label{interface_particle}\index{Particle@{Particle}}
+
+
+{\ttfamily \#include $<$Particle.\+h$>$}
+
+
+
+Inheritance diagram for Particle\+:
+% FIG 0
+
+
+Collaboration diagram for Particle\+:
+% FIG 1
+\doxysubsubsection*{Instance Methods}
+\begin{DoxyCompactItemize}
+\item 
+(instancetype) -\/ \mbox{\hyperlink{interface_particle_a46d37236d98f15be9b35dd379f712b1a}{init\+With\+Device\+:with\+Param\+:specimen\+:with\+Logger\+:}}
+\item 
+(void) -\/ \mbox{\hyperlink{interface_particle_ade5cfa775f3d69d5b5861abb0d33d418}{update\+:with\+EMField\+:with\+Mom\+:with\+Logger\+:}}
+\item 
+(void) -\/ \mbox{\hyperlink{interface_particle_a3f542910c5eec9024aab7248ce8b5a19}{reduce\+:}}
+\item 
+(void) -\/ \mbox{\hyperlink{interface_particle_ae78d6a4aab84c114dfc614e71256f1d3}{integrate\+Charge\+Density\+:with\+Moment\+:with\+Logger\+:}}
+\item 
+(int) -\/ \mbox{\hyperlink{interface_particle_ac1bab659a4ca45a6310184f875f1bf0a}{injection\+:with\+Param\+:with\+Current\+:with\+Logger\+:}}
+\item 
+(NSString \texorpdfstring{$\ast$}{*}) -\/ \mbox{\hyperlink{interface_particle_aabdd5fe9eed9ab665f96b70e11fea1d8}{p\+Name}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_particle_a36b2c68a8610c72a96a71b2bb7b834a3}{params\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_particle_a8c72d43d745f86866649ce5bd4ceb42a}{particle\+Buffer}}
+\item 
+(float) -\/ \mbox{\hyperlink{interface_particle_af4d6340e4560b49650a92da62188748a}{m}}
+\item 
+(float) -\/ \mbox{\hyperlink{interface_particle_ae014aa9cd4e8679c2bb17fc0632d40e5}{q}}
+\item 
+(float) -\/ \mbox{\hyperlink{interface_particle_aa4603339307dad2a2004cdddfc4b6f74}{w}}
+\item 
+(int) -\/ \mbox{\hyperlink{interface_particle_a935ed835ff3b369016f11599bede1a67}{pinum\+\_\+\+Xmin}}
+\item 
+(int) -\/ \mbox{\hyperlink{interface_particle_abc83282aa305679b3e047a45500aca63}{pinum\+\_\+\+Xmax}}
+\item 
+(int) -\/ \mbox{\hyperlink{interface_particle_acd81d69466080cb12b0e884803cc08c7}{pinum\+\_\+\+Ymin}}
+\item 
+(int) -\/ \mbox{\hyperlink{interface_particle_a7f6579727e24d98b2ff9a13c82c700bc}{pinum\+\_\+\+Ymax}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Properties}
+\begin{DoxyCompactItemize}
+\item 
+id$<$ MTLDevice $>$ \mbox{\hyperlink{interface_particle_ad9f25fcc3ebbb42411699c4ecb32ff34}{device}}
+\item 
+id$<$ MTLCommand\+Queue $>$ \mbox{\hyperlink{interface_particle_a22ffa4562e916a9472db690a9fba105b}{command\+Queue}}
+\item 
+id$<$ MTLCompute\+Pipeline\+State $>$ \mbox{\hyperlink{interface_particle_a12666eaf387613f6320b562ab47c1516}{update\+Particles\+Pipeline}}
+\item 
+id$<$ MTLCompute\+Pipeline\+State $>$ \mbox{\hyperlink{interface_particle_a0f5821b8580bbbfd6c3c7bb7e7ec6235}{integrate\+Charge\+Density\+Pipeline}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_particle_a74d0c5ebac0ae7a5dc3e1970e274a5cc}{particle\+Buffer}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_particle_af9c729e4ed7935d11b8b852b557d0cc4}{params\+Buffer}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_particle_adb8a4a2b1ca01c79aeaa9e5b46a31e99}{integration\+Params\+Buffer}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_particle_a6e064274a82243e169e863da5a932485}{print\+Buffer}}
+\item 
+uint \mbox{\hyperlink{interface_particle_a018b7cc1e5339118af31a8d7926e7b37}{thread\+Group\+Size}}
+\item 
+uint \mbox{\hyperlink{interface_particle_aac10a7cee42161f069f5c4e65bf58006}{integration\+Chunk\+Size}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{interface_particle_doc-func-members}
+\doxysubsection{Method Documentation}
+\Hypertarget{interface_particle_a46d37236d98f15be9b35dd379f712b1a}\index{Particle@{Particle}!initWithDevice:withParam:specimen:withLogger:@{initWithDevice:withParam:specimen:withLogger:}}
+\index{initWithDevice:withParam:specimen:withLogger:@{initWithDevice:withParam:specimen:withLogger:}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{initWithDevice:withParam:specimen:withLogger:}{initWithDevice:withParam:specimen:withLogger:}}
+{\footnotesize\ttfamily \label{interface_particle_a46d37236d98f15be9b35dd379f712b1a} 
+-\/ (instancetype) init\+With\+Device\+: \begin{DoxyParamCaption}\item[{(id$<$MTLDevice$>$)}]{device}{}\item[{with\+Param\+:(\mbox{\hyperlink{interface_init}{Init}}\texorpdfstring{$\ast$}{*})}]{init\+Param}{}\item[{specimen\+:(int)}]{s}{}\item[{with\+Logger\+:(\mbox{\hyperlink{class_xml_logger}{Xml\+Logger}}\&)}]{logger}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_particle_ac1bab659a4ca45a6310184f875f1bf0a}\index{Particle@{Particle}!injection:withParam:withCurrent:withLogger:@{injection:withParam:withCurrent:withLogger:}}
+\index{injection:withParam:withCurrent:withLogger:@{injection:withParam:withCurrent:withLogger:}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{injection:withParam:withCurrent:withLogger:}{injection:withParam:withCurrent:withLogger:}}
+{\footnotesize\ttfamily \label{interface_particle_ac1bab659a4ca45a6310184f875f1bf0a} 
+-\/ (int) injection\+: \begin{DoxyParamCaption}\item[{(double)}]{dt}{}\item[{with\+Param\+:(\mbox{\hyperlink{interface_init}{Init}}\texorpdfstring{$\ast$}{*})}]{init\+Param}{}\item[{with\+Current\+:(int\&)}]{current}{}\item[{with\+Logger\+:(\mbox{\hyperlink{class_xml_logger}{Xml\+Logger}}\&)}]{logger}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_particle_ae78d6a4aab84c114dfc614e71256f1d3}\index{Particle@{Particle}!integrateChargeDensity:withMoment:withLogger:@{integrateChargeDensity:withMoment:withLogger:}}
+\index{integrateChargeDensity:withMoment:withLogger:@{integrateChargeDensity:withMoment:withLogger:}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{integrateChargeDensity:withMoment:withLogger:}{integrateChargeDensity:withMoment:withLogger:}}
+{\footnotesize\ttfamily \label{interface_particle_ae78d6a4aab84c114dfc614e71256f1d3} 
+-\/ (void) integrate\+Charge\+Density\+: \begin{DoxyParamCaption}\item[{(\mbox{\hyperlink{interface_e_m_field}{EMField}}\texorpdfstring{$\ast$}{*})}]{fld}{}\item[{with\+Moment\+:(\mbox{\hyperlink{interface_moment}{Moment}}\texorpdfstring{$\ast$}{*})}]{mom}{}\item[{with\+Logger\+:(\mbox{\hyperlink{class_xml_logger}{Xml\+Logger}}\&)}]{logger}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_particle_af4d6340e4560b49650a92da62188748a}\index{Particle@{Particle}!m@{m}}
+\index{m@{m}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{m}{m}}
+{\footnotesize\ttfamily \label{interface_particle_af4d6340e4560b49650a92da62188748a} 
+-\/ (float) m \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_particle_a36b2c68a8610c72a96a71b2bb7b834a3}\index{Particle@{Particle}!paramsBuffer@{paramsBuffer}}
+\index{paramsBuffer@{paramsBuffer}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{paramsBuffer}{paramsBuffer}}
+{\footnotesize\ttfamily \label{interface_particle_a36b2c68a8610c72a96a71b2bb7b834a3} 
+-\/ (id$<$ MTLBuffer $>$) params\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_particle_a8c72d43d745f86866649ce5bd4ceb42a}\index{Particle@{Particle}!particleBuffer@{particleBuffer}}
+\index{particleBuffer@{particleBuffer}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{particleBuffer}{particleBuffer}}
+{\footnotesize\ttfamily \label{interface_particle_a8c72d43d745f86866649ce5bd4ceb42a} 
+-\/ (id$<$ MTLBuffer $>$) particle\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_particle_abc83282aa305679b3e047a45500aca63}\index{Particle@{Particle}!pinum\_Xmax@{pinum\_Xmax}}
+\index{pinum\_Xmax@{pinum\_Xmax}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{pinum\_Xmax}{pinum\_Xmax}}
+{\footnotesize\ttfamily \label{interface_particle_abc83282aa305679b3e047a45500aca63} 
+-\/ (int) pinum\+\_\+\+Xmax \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_particle_a935ed835ff3b369016f11599bede1a67}\index{Particle@{Particle}!pinum\_Xmin@{pinum\_Xmin}}
+\index{pinum\_Xmin@{pinum\_Xmin}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{pinum\_Xmin}{pinum\_Xmin}}
+{\footnotesize\ttfamily \label{interface_particle_a935ed835ff3b369016f11599bede1a67} 
+-\/ (int) pinum\+\_\+\+Xmin \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_particle_a7f6579727e24d98b2ff9a13c82c700bc}\index{Particle@{Particle}!pinum\_Ymax@{pinum\_Ymax}}
+\index{pinum\_Ymax@{pinum\_Ymax}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{pinum\_Ymax}{pinum\_Ymax}}
+{\footnotesize\ttfamily \label{interface_particle_a7f6579727e24d98b2ff9a13c82c700bc} 
+-\/ (int) pinum\+\_\+\+Ymax \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_particle_acd81d69466080cb12b0e884803cc08c7}\index{Particle@{Particle}!pinum\_Ymin@{pinum\_Ymin}}
+\index{pinum\_Ymin@{pinum\_Ymin}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{pinum\_Ymin}{pinum\_Ymin}}
+{\footnotesize\ttfamily \label{interface_particle_acd81d69466080cb12b0e884803cc08c7} 
+-\/ (int) pinum\+\_\+\+Ymin \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_particle_aabdd5fe9eed9ab665f96b70e11fea1d8}\index{Particle@{Particle}!pName@{pName}}
+\index{pName@{pName}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{pName}{pName}}
+{\footnotesize\ttfamily \label{interface_particle_aabdd5fe9eed9ab665f96b70e11fea1d8} 
+-\/ (NSString \texorpdfstring{$\ast$}{*}) p\+Name \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_particle_ae014aa9cd4e8679c2bb17fc0632d40e5}\index{Particle@{Particle}!q@{q}}
+\index{q@{q}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{q}{q}}
+{\footnotesize\ttfamily \label{interface_particle_ae014aa9cd4e8679c2bb17fc0632d40e5} 
+-\/ (float) q \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_particle_a3f542910c5eec9024aab7248ce8b5a19}\index{Particle@{Particle}!reduce:@{reduce:}}
+\index{reduce:@{reduce:}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{reduce:}{reduce:}}
+{\footnotesize\ttfamily \label{interface_particle_a3f542910c5eec9024aab7248ce8b5a19} 
+-\/ (void) reduce\+: \begin{DoxyParamCaption}\item[{(\mbox{\hyperlink{class_xml_logger}{Xml\+Logger}}\&)}]{logger}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_particle_ade5cfa775f3d69d5b5861abb0d33d418}\index{Particle@{Particle}!update:withEMField:withMom:withLogger:@{update:withEMField:withMom:withLogger:}}
+\index{update:withEMField:withMom:withLogger:@{update:withEMField:withMom:withLogger:}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{update:withEMField:withMom:withLogger:}{update:withEMField:withMom:withLogger:}}
+{\footnotesize\ttfamily \label{interface_particle_ade5cfa775f3d69d5b5861abb0d33d418} 
+-\/ (void) update\+: \begin{DoxyParamCaption}\item[{(double)}]{dt}{}\item[{with\+EMField\+:(\mbox{\hyperlink{interface_e_m_field}{EMField}}\texorpdfstring{$\ast$}{*})}]{fld}{}\item[{with\+Mom\+:(\mbox{\hyperlink{interface_moment}{Moment}}\texorpdfstring{$\ast$}{*})}]{mom}{}\item[{with\+Logger\+:(\mbox{\hyperlink{class_xml_logger}{Xml\+Logger}}\&)}]{logger}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_particle_aa4603339307dad2a2004cdddfc4b6f74}\index{Particle@{Particle}!w@{w}}
+\index{w@{w}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{w}{w}}
+{\footnotesize\ttfamily \label{interface_particle_aa4603339307dad2a2004cdddfc4b6f74} 
+-\/ (float) w \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+
+
+\label{doc-property-members}
+\Hypertarget{interface_particle_doc-property-members}
+\doxysubsection{Property Documentation}
+\Hypertarget{interface_particle_a22ffa4562e916a9472db690a9fba105b}\index{Particle@{Particle}!commandQueue@{commandQueue}}
+\index{commandQueue@{commandQueue}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{commandQueue}{commandQueue}}
+{\footnotesize\ttfamily \label{interface_particle_a22ffa4562e916a9472db690a9fba105b} 
+-\/ (id$<$MTLCommand\+Queue$>$) command\+Queue\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_particle_ad9f25fcc3ebbb42411699c4ecb32ff34}\index{Particle@{Particle}!device@{device}}
+\index{device@{device}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{device}{device}}
+{\footnotesize\ttfamily \label{interface_particle_ad9f25fcc3ebbb42411699c4ecb32ff34} 
+-\/ (id$<$MTLDevice$>$) device\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_particle_a0f5821b8580bbbfd6c3c7bb7e7ec6235}\index{Particle@{Particle}!integrateChargeDensityPipeline@{integrateChargeDensityPipeline}}
+\index{integrateChargeDensityPipeline@{integrateChargeDensityPipeline}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{integrateChargeDensityPipeline}{integrateChargeDensityPipeline}}
+{\footnotesize\ttfamily \label{interface_particle_a0f5821b8580bbbfd6c3c7bb7e7ec6235} 
+-\/ (id$<$MTLCompute\+Pipeline\+State$>$) integrate\+Charge\+Density\+Pipeline\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_particle_aac10a7cee42161f069f5c4e65bf58006}\index{Particle@{Particle}!integrationChunkSize@{integrationChunkSize}}
+\index{integrationChunkSize@{integrationChunkSize}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{integrationChunkSize}{integrationChunkSize}}
+{\footnotesize\ttfamily \label{interface_particle_aac10a7cee42161f069f5c4e65bf58006} 
+-\/ (uint) integration\+Chunk\+Size\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [assign]}}
+
+\Hypertarget{interface_particle_adb8a4a2b1ca01c79aeaa9e5b46a31e99}\index{Particle@{Particle}!integrationParamsBuffer@{integrationParamsBuffer}}
+\index{integrationParamsBuffer@{integrationParamsBuffer}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{integrationParamsBuffer}{integrationParamsBuffer}}
+{\footnotesize\ttfamily \label{interface_particle_adb8a4a2b1ca01c79aeaa9e5b46a31e99} 
+-\/ (id$<$MTLBuffer$>$) integration\+Params\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_particle_af9c729e4ed7935d11b8b852b557d0cc4}\index{Particle@{Particle}!paramsBuffer@{paramsBuffer}}
+\index{paramsBuffer@{paramsBuffer}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{paramsBuffer}{paramsBuffer}}
+{\footnotesize\ttfamily \label{interface_particle_af9c729e4ed7935d11b8b852b557d0cc4} 
+-\/ (id$<$ MTLBuffer $>$) params\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_particle_a74d0c5ebac0ae7a5dc3e1970e274a5cc}\index{Particle@{Particle}!particleBuffer@{particleBuffer}}
+\index{particleBuffer@{particleBuffer}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{particleBuffer}{particleBuffer}}
+{\footnotesize\ttfamily \label{interface_particle_a74d0c5ebac0ae7a5dc3e1970e274a5cc} 
+-\/ (id$<$ MTLBuffer $>$) particle\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_particle_a6e064274a82243e169e863da5a932485}\index{Particle@{Particle}!printBuffer@{printBuffer}}
+\index{printBuffer@{printBuffer}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{printBuffer}{printBuffer}}
+{\footnotesize\ttfamily \label{interface_particle_a6e064274a82243e169e863da5a932485} 
+-\/ (id$<$MTLBuffer$>$) print\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_particle_a018b7cc1e5339118af31a8d7926e7b37}\index{Particle@{Particle}!threadGroupSize@{threadGroupSize}}
+\index{threadGroupSize@{threadGroupSize}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{threadGroupSize}{threadGroupSize}}
+{\footnotesize\ttfamily \label{interface_particle_a018b7cc1e5339118af31a8d7926e7b37} 
+-\/ (uint) thread\+Group\+Size\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [assign]}}
+
+\Hypertarget{interface_particle_a12666eaf387613f6320b562ab47c1516}\index{Particle@{Particle}!updateParticlesPipeline@{updateParticlesPipeline}}
+\index{updateParticlesPipeline@{updateParticlesPipeline}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{updateParticlesPipeline}{updateParticlesPipeline}}
+{\footnotesize\ttfamily \label{interface_particle_a12666eaf387613f6320b562ab47c1516} 
+-\/ (id$<$MTLCompute\+Pipeline\+State$>$) update\+Particles\+Pipeline\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/\mbox{\hyperlink{_particle_8h}{Particle.\+h}}\item 
+src/\mbox{\hyperlink{_particle_8mm}{Particle.\+mm}}\end{DoxyCompactItemize}

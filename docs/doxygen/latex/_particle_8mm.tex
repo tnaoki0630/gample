@@ -1,0 +1,112 @@
+\doxysection{src/\+Particle.mm File Reference}
+\hypertarget{_particle_8mm}{}\label{_particle_8mm}\index{src/Particle.mm@{src/Particle.mm}}
+{\ttfamily import "{}Particle.\+h"{}}\newline
+{\ttfamily import "{}Init.\+h"{}}\newline
+{\ttfamily import "{}Constant.\+h"{}}\newline
+{\ttfamily import $<$random$>$}\newline
+{\ttfamily import $<$string$>$}\newline
+{\ttfamily import $<$iostream$>$}\newline
+Include dependency graph for Particle.\+mm\+:
+% FIG 0
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{_particle_8mm_a598a3330b3c21701223ee0ca14316eca}{PI}}~3.\+141592653589793
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{_particle_8mm_a1ec3dee30210ddb0f7c32b0eb845256e}{\+\_\+p\+Num\+Max}}
+\item 
+int \mbox{\hyperlink{_particle_8mm_a575874bde6d196f6790a9f68c249f0d3}{\+\_\+pinum\+\_\+\+Xmin}}
+\item 
+int \mbox{\hyperlink{_particle_8mm_a1ae38c22789fbc051d5fd460a31af5e5}{\+\_\+pinum\+\_\+\+Xmax}}
+\item 
+int \mbox{\hyperlink{_particle_8mm_a647179925b0dae7c06ff304aeb639231}{\+\_\+pinum\+\_\+\+Ymin}}
+\item 
+int \mbox{\hyperlink{_particle_8mm_aa789c0403f048ef4cbbbf3aceea3f6a8}{\+\_\+pinum\+\_\+\+Ymax}}
+\item 
+float \mbox{\hyperlink{_particle_8mm_af7274dc8ce3015467c85602cae1b1d88}{\+\_\+m}}
+\item 
+float \mbox{\hyperlink{_particle_8mm_a635c05238e68bcd23cfaac9e242fd1b5}{\+\_\+q}}
+\item 
+float \mbox{\hyperlink{_particle_8mm_a794582d8f0ed314ce430260dea66c017}{\+\_\+w}}
+\item 
+double \mbox{\hyperlink{_particle_8mm_a5c0b4dec89a5a72a5bec2cba3504f7c0}{\+\_\+last\+KE}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-define-members}
+\Hypertarget{_particle_8mm_doc-define-members}
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{_particle_8mm_a598a3330b3c21701223ee0ca14316eca}\index{Particle.mm@{Particle.mm}!PI@{PI}}
+\index{PI@{PI}!Particle.mm@{Particle.mm}}
+\doxysubsubsection{\texorpdfstring{PI}{PI}}
+{\footnotesize\ttfamily \label{_particle_8mm_a598a3330b3c21701223ee0ca14316eca} 
+\#define PI~3.\+141592653589793}
+
+
+
+\label{doc-var-members}
+\Hypertarget{_particle_8mm_doc-var-members}
+\doxysubsection{Variable Documentation}
+\Hypertarget{_particle_8mm_a5c0b4dec89a5a72a5bec2cba3504f7c0}\index{Particle.mm@{Particle.mm}!\_lastKE@{\_lastKE}}
+\index{\_lastKE@{\_lastKE}!Particle.mm@{Particle.mm}}
+\doxysubsubsection{\texorpdfstring{\_lastKE}{\_lastKE}}
+{\footnotesize\ttfamily \label{_particle_8mm_a5c0b4dec89a5a72a5bec2cba3504f7c0} 
+double \+\_\+last\+KE}
+
+\Hypertarget{_particle_8mm_af7274dc8ce3015467c85602cae1b1d88}\index{Particle.mm@{Particle.mm}!\_m@{\_m}}
+\index{\_m@{\_m}!Particle.mm@{Particle.mm}}
+\doxysubsubsection{\texorpdfstring{\_m}{\_m}}
+{\footnotesize\ttfamily \label{_particle_8mm_af7274dc8ce3015467c85602cae1b1d88} 
+float \+\_\+m}
+
+\Hypertarget{_particle_8mm_a1ae38c22789fbc051d5fd460a31af5e5}\index{Particle.mm@{Particle.mm}!\_pinum\_Xmax@{\_pinum\_Xmax}}
+\index{\_pinum\_Xmax@{\_pinum\_Xmax}!Particle.mm@{Particle.mm}}
+\doxysubsubsection{\texorpdfstring{\_pinum\_Xmax}{\_pinum\_Xmax}}
+{\footnotesize\ttfamily \label{_particle_8mm_a1ae38c22789fbc051d5fd460a31af5e5} 
+int \+\_\+pinum\+\_\+\+Xmax}
+
+\Hypertarget{_particle_8mm_a575874bde6d196f6790a9f68c249f0d3}\index{Particle.mm@{Particle.mm}!\_pinum\_Xmin@{\_pinum\_Xmin}}
+\index{\_pinum\_Xmin@{\_pinum\_Xmin}!Particle.mm@{Particle.mm}}
+\doxysubsubsection{\texorpdfstring{\_pinum\_Xmin}{\_pinum\_Xmin}}
+{\footnotesize\ttfamily \label{_particle_8mm_a575874bde6d196f6790a9f68c249f0d3} 
+int \+\_\+pinum\+\_\+\+Xmin}
+
+\Hypertarget{_particle_8mm_aa789c0403f048ef4cbbbf3aceea3f6a8}\index{Particle.mm@{Particle.mm}!\_pinum\_Ymax@{\_pinum\_Ymax}}
+\index{\_pinum\_Ymax@{\_pinum\_Ymax}!Particle.mm@{Particle.mm}}
+\doxysubsubsection{\texorpdfstring{\_pinum\_Ymax}{\_pinum\_Ymax}}
+{\footnotesize\ttfamily \label{_particle_8mm_aa789c0403f048ef4cbbbf3aceea3f6a8} 
+int \+\_\+pinum\+\_\+\+Ymax}
+
+\Hypertarget{_particle_8mm_a647179925b0dae7c06ff304aeb639231}\index{Particle.mm@{Particle.mm}!\_pinum\_Ymin@{\_pinum\_Ymin}}
+\index{\_pinum\_Ymin@{\_pinum\_Ymin}!Particle.mm@{Particle.mm}}
+\doxysubsubsection{\texorpdfstring{\_pinum\_Ymin}{\_pinum\_Ymin}}
+{\footnotesize\ttfamily \label{_particle_8mm_a647179925b0dae7c06ff304aeb639231} 
+int \+\_\+pinum\+\_\+\+Ymin}
+
+\Hypertarget{_particle_8mm_a1ec3dee30210ddb0f7c32b0eb845256e}\index{Particle.mm@{Particle.mm}!\_pNumMax@{\_pNumMax}}
+\index{\_pNumMax@{\_pNumMax}!Particle.mm@{Particle.mm}}
+\doxysubsubsection{\texorpdfstring{\_pNumMax}{\_pNumMax}}
+{\footnotesize\ttfamily \label{_particle_8mm_a1ec3dee30210ddb0f7c32b0eb845256e} 
+int \+\_\+p\+Num\+Max}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{\ \ \ \ NSString*\ \_pName}
+
+\end{DoxyCode}
+\Hypertarget{_particle_8mm_a635c05238e68bcd23cfaac9e242fd1b5}\index{Particle.mm@{Particle.mm}!\_q@{\_q}}
+\index{\_q@{\_q}!Particle.mm@{Particle.mm}}
+\doxysubsubsection{\texorpdfstring{\_q}{\_q}}
+{\footnotesize\ttfamily \label{_particle_8mm_a635c05238e68bcd23cfaac9e242fd1b5} 
+float \+\_\+q}
+
+\Hypertarget{_particle_8mm_a794582d8f0ed314ce430260dea66c017}\index{Particle.mm@{Particle.mm}!\_w@{\_w}}
+\index{\_w@{\_w}!Particle.mm@{Particle.mm}}
+\doxysubsubsection{\texorpdfstring{\_w}{\_w}}
+{\footnotesize\ttfamily \label{_particle_8mm_a794582d8f0ed314ce430260dea66c017} 
+float \+\_\+w}
+

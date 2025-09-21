@@ -1,0 +1,228 @@
+\doxysection{EMField Class Reference}
+\hypertarget{interface_e_m_field}{}\label{interface_e_m_field}\index{EMField@{EMField}}
+
+
+{\ttfamily \#include $<$EMField.\+h$>$}
+
+
+
+Inheritance diagram for EMField\+:
+% FIG 0
+
+
+Collaboration diagram for EMField\+:
+% FIG 1
+\doxysubsubsection*{Instance Methods}
+\begin{DoxyCompactItemize}
+\item 
+(instancetype) -\/ \mbox{\hyperlink{interface_e_m_field_a010a7a2049894cb4c1d96a51d084d1fe}{init\+With\+Device\+:with\+Param\+:with\+Logger\+:}}
+\item 
+(void) -\/ \mbox{\hyperlink{interface_e_m_field_a9525a21f3b664f5e85f717275d663296}{output\+CSRmtx\+:row\+:collumn\+:value\+:}}
+\item 
+(void) -\/ \mbox{\hyperlink{interface_e_m_field_a35d46dc77ec0df8b376e0680bc4d564d}{solve\+Poisson\+:with\+Logger\+:}}
+\item 
+(void) -\/ \mbox{\hyperlink{interface_e_m_field_a22809c80f513da7c9392d39ae07e7a70}{reset\+Charge\+Density}}
+\item 
+(void) -\/ \mbox{\hyperlink{interface_e_m_field_a8103e58e96a597a6553a9eb0b472034f}{check\+Charge\+Density}}
+\item 
+(bool) -\/ \mbox{\hyperlink{interface_e_m_field_aabb80f020b4c5b2af7b4f100222d6d83}{load1d\+Field\+:with\+File\+Path\+:}}
+\item 
+(bool) -\/ \mbox{\hyperlink{interface_e_m_field_a4b12691ed1d5e147f3615bac12664dc3}{load2d\+Field\+:with\+File\+Path\+:}}
+\item 
+(float \texorpdfstring{$\ast$}{*}) -\/ \mbox{\hyperlink{interface_e_m_field_a1ebbdae7d6d7f863305a0a4da9db7173}{phi}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_e_m_field_a7ba5ed7f5f9c616f4149f4cd0ac5f98e}{rho\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_e_m_field_a25e9a69e885650c89c80ff58b3404d00}{jx\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_e_m_field_a7e9db89909845490a2596abb6c9cb2a6}{jy\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_e_m_field_a28e1dd579825e9c4f291ba4386d2274e}{Ex\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_e_m_field_acde9d7b1ea835784fa57f0a6a1ba3bd5}{Ey\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_e_m_field_a9d8e91f33045fd21ca037c31b023d885}{Ez\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_e_m_field_a4e78e1a9dcab31c32e361a01e10cf364}{Bx\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_e_m_field_a1854ac5a54da6162f5bfb2b1380b4b4b}{By\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_e_m_field_a4f7eca0d0877eb665633c2bbb3f954bf}{Bz\+Buffer}}
+\item 
+(int) -\/ \mbox{\hyperlink{interface_e_m_field_a1a2e5eb11d8244c357d4cd15fcdace02}{ngx}}
+\item 
+(int) -\/ \mbox{\hyperlink{interface_e_m_field_a120c5b717a62ba724e83415cecb868c7}{ngy}}
+\item 
+(int) -\/ \mbox{\hyperlink{interface_e_m_field_a0a43a4b8695cddeb1f9d18edb616b233}{nx}}
+\item 
+(int) -\/ \mbox{\hyperlink{interface_e_m_field_a1ce59aac2bca20becca6cff76eaffe34}{ny}}
+\item 
+(int) -\/ \mbox{\hyperlink{interface_e_m_field_a120c5b717a62ba724e83415cecb868c7}{ngy}}
+\item 
+(int) -\/ \mbox{\hyperlink{interface_e_m_field_abc2b1ecc2ed13347b62d630d88a6d8e4}{ngb}}
+\item 
+(double) -\/ \mbox{\hyperlink{interface_e_m_field_af40a54c8c097eed5c8c4aae1f4c47920}{dx}}
+\item 
+(double) -\/ \mbox{\hyperlink{interface_e_m_field_a6e92a494cfad8ea3564632dd827e89e6}{dy}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{interface_e_m_field_doc-func-members}
+\doxysubsection{Method Documentation}
+\Hypertarget{interface_e_m_field_a4e78e1a9dcab31c32e361a01e10cf364}\index{EMField@{EMField}!BxBuffer@{BxBuffer}}
+\index{BxBuffer@{BxBuffer}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{BxBuffer}{BxBuffer}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a4e78e1a9dcab31c32e361a01e10cf364} 
+-\/ (id$<$ MTLBuffer $>$) Bx\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a1854ac5a54da6162f5bfb2b1380b4b4b}\index{EMField@{EMField}!ByBuffer@{ByBuffer}}
+\index{ByBuffer@{ByBuffer}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{ByBuffer}{ByBuffer}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a1854ac5a54da6162f5bfb2b1380b4b4b} 
+-\/ (id$<$ MTLBuffer $>$) By\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a4f7eca0d0877eb665633c2bbb3f954bf}\index{EMField@{EMField}!BzBuffer@{BzBuffer}}
+\index{BzBuffer@{BzBuffer}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{BzBuffer}{BzBuffer}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a4f7eca0d0877eb665633c2bbb3f954bf} 
+-\/ (id$<$ MTLBuffer $>$) Bz\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a8103e58e96a597a6553a9eb0b472034f}\index{EMField@{EMField}!checkChargeDensity@{checkChargeDensity}}
+\index{checkChargeDensity@{checkChargeDensity}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{checkChargeDensity}{checkChargeDensity}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a8103e58e96a597a6553a9eb0b472034f} 
+-\/ (void) check\+Charge\+Density \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_af40a54c8c097eed5c8c4aae1f4c47920}\index{EMField@{EMField}!dx@{dx}}
+\index{dx@{dx}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{dx}{dx}}
+{\footnotesize\ttfamily \label{interface_e_m_field_af40a54c8c097eed5c8c4aae1f4c47920} 
+-\/ (double) dx \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a6e92a494cfad8ea3564632dd827e89e6}\index{EMField@{EMField}!dy@{dy}}
+\index{dy@{dy}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{dy}{dy}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a6e92a494cfad8ea3564632dd827e89e6} 
+-\/ (double) dy \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a28e1dd579825e9c4f291ba4386d2274e}\index{EMField@{EMField}!ExBuffer@{ExBuffer}}
+\index{ExBuffer@{ExBuffer}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{ExBuffer}{ExBuffer}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a28e1dd579825e9c4f291ba4386d2274e} 
+-\/ (id$<$ MTLBuffer $>$) Ex\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_acde9d7b1ea835784fa57f0a6a1ba3bd5}\index{EMField@{EMField}!EyBuffer@{EyBuffer}}
+\index{EyBuffer@{EyBuffer}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{EyBuffer}{EyBuffer}}
+{\footnotesize\ttfamily \label{interface_e_m_field_acde9d7b1ea835784fa57f0a6a1ba3bd5} 
+-\/ (id$<$ MTLBuffer $>$) Ey\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a9d8e91f33045fd21ca037c31b023d885}\index{EMField@{EMField}!EzBuffer@{EzBuffer}}
+\index{EzBuffer@{EzBuffer}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{EzBuffer}{EzBuffer}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a9d8e91f33045fd21ca037c31b023d885} 
+-\/ (id$<$ MTLBuffer $>$) Ez\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a010a7a2049894cb4c1d96a51d084d1fe}\index{EMField@{EMField}!initWithDevice:withParam:withLogger:@{initWithDevice:withParam:withLogger:}}
+\index{initWithDevice:withParam:withLogger:@{initWithDevice:withParam:withLogger:}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{initWithDevice:withParam:withLogger:}{initWithDevice:withParam:withLogger:}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a010a7a2049894cb4c1d96a51d084d1fe} 
+-\/ (instancetype) init\+With\+Device\+: \begin{DoxyParamCaption}\item[{(id$<$MTLDevice$>$)}]{device}{}\item[{with\+Param\+:(\mbox{\hyperlink{interface_init}{Init}}\texorpdfstring{$\ast$}{*})}]{init\+Param}{}\item[{with\+Logger\+:(\mbox{\hyperlink{class_xml_logger}{Xml\+Logger}}\&)}]{logger}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a25e9a69e885650c89c80ff58b3404d00}\index{EMField@{EMField}!jxBuffer@{jxBuffer}}
+\index{jxBuffer@{jxBuffer}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{jxBuffer}{jxBuffer}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a25e9a69e885650c89c80ff58b3404d00} 
+-\/ (id$<$ MTLBuffer $>$) jx\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a7e9db89909845490a2596abb6c9cb2a6}\index{EMField@{EMField}!jyBuffer@{jyBuffer}}
+\index{jyBuffer@{jyBuffer}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{jyBuffer}{jyBuffer}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a7e9db89909845490a2596abb6c9cb2a6} 
+-\/ (id$<$ MTLBuffer $>$) jy\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_aabb80f020b4c5b2af7b4f100222d6d83}\index{EMField@{EMField}!load1dField:withFilePath:@{load1dField:withFilePath:}}
+\index{load1dField:withFilePath:@{load1dField:withFilePath:}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{load1dField:withFilePath:}{load1dField:withFilePath:}}
+{\footnotesize\ttfamily \label{interface_e_m_field_aabb80f020b4c5b2af7b4f100222d6d83} 
+-\/ (bool) load1d\+Field\+: \begin{DoxyParamCaption}\item[{(std\+::vector$<$float$>$\&)}]{field}{}\item[{with\+File\+Path\+:(NSString\texorpdfstring{$\ast$}{*})}]{file\+Path}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a4b12691ed1d5e147f3615bac12664dc3}\index{EMField@{EMField}!load2dField:withFilePath:@{load2dField:withFilePath:}}
+\index{load2dField:withFilePath:@{load2dField:withFilePath:}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{load2dField:withFilePath:}{load2dField:withFilePath:}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a4b12691ed1d5e147f3615bac12664dc3} 
+-\/ (bool) load2d\+Field\+: \begin{DoxyParamCaption}\item[{(std\+::vector$<$float$>$\&)}]{field}{}\item[{with\+File\+Path\+:(NSString\texorpdfstring{$\ast$}{*})}]{file\+Path}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_abc2b1ecc2ed13347b62d630d88a6d8e4}\index{EMField@{EMField}!ngb@{ngb}}
+\index{ngb@{ngb}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{ngb}{ngb}}
+{\footnotesize\ttfamily \label{interface_e_m_field_abc2b1ecc2ed13347b62d630d88a6d8e4} 
+-\/ (int) ngb \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a1a2e5eb11d8244c357d4cd15fcdace02}\index{EMField@{EMField}!ngx@{ngx}}
+\index{ngx@{ngx}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{ngx}{ngx}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a1a2e5eb11d8244c357d4cd15fcdace02} 
+-\/ (int) ngx \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a120c5b717a62ba724e83415cecb868c7}\index{EMField@{EMField}!ngy@{ngy}}
+\index{ngy@{ngy}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{ngy}{ngy}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a120c5b717a62ba724e83415cecb868c7} 
+-\/ (int) ngy \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a120c5b717a62ba724e83415cecb868c7}\index{EMField@{EMField}!ngy@{ngy}}
+\index{ngy@{ngy}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{ngy}{ngy}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a120c5b717a62ba724e83415cecb868c7} 
+-\/ (int) ngy \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a0a43a4b8695cddeb1f9d18edb616b233}\index{EMField@{EMField}!nx@{nx}}
+\index{nx@{nx}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{nx}{nx}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a0a43a4b8695cddeb1f9d18edb616b233} 
+-\/ (int) nx \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a1ce59aac2bca20becca6cff76eaffe34}\index{EMField@{EMField}!ny@{ny}}
+\index{ny@{ny}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{ny}{ny}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a1ce59aac2bca20becca6cff76eaffe34} 
+-\/ (int) ny \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a9525a21f3b664f5e85f717275d663296}\index{EMField@{EMField}!outputCSRmtx:row:collumn:value:@{outputCSRmtx:row:collumn:value:}}
+\index{outputCSRmtx:row:collumn:value:@{outputCSRmtx:row:collumn:value:}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{outputCSRmtx:row:collumn:value:}{outputCSRmtx:row:collumn:value:}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a9525a21f3b664f5e85f717275d663296} 
+-\/ (void) output\+CSRmtx\+: \begin{DoxyParamCaption}\item[{(int)}]{n}{}\item[{row\+:(std\+::vector$<$int$>$)}]{row\+\_\+ptr}{}\item[{collumn\+:(std\+::vector$<$int$>$)}]{col\+\_\+idx}{}\item[{value\+:(std\+::vector$<$float$>$)}]{val}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a1ebbdae7d6d7f863305a0a4da9db7173}\index{EMField@{EMField}!phi@{phi}}
+\index{phi@{phi}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{phi}{phi}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a1ebbdae7d6d7f863305a0a4da9db7173} 
+-\/ (float \texorpdfstring{$\ast$}{*}) phi \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a22809c80f513da7c9392d39ae07e7a70}\index{EMField@{EMField}!resetChargeDensity@{resetChargeDensity}}
+\index{resetChargeDensity@{resetChargeDensity}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{resetChargeDensity}{resetChargeDensity}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a22809c80f513da7c9392d39ae07e7a70} 
+-\/ (void) reset\+Charge\+Density \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a7ba5ed7f5f9c616f4149f4cd0ac5f98e}\index{EMField@{EMField}!rhoBuffer@{rhoBuffer}}
+\index{rhoBuffer@{rhoBuffer}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{rhoBuffer}{rhoBuffer}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a7ba5ed7f5f9c616f4149f4cd0ac5f98e} 
+-\/ (id$<$ MTLBuffer $>$) rho\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_e_m_field_a35d46dc77ec0df8b376e0680bc4d564d}\index{EMField@{EMField}!solvePoisson:withLogger:@{solvePoisson:withLogger:}}
+\index{solvePoisson:withLogger:@{solvePoisson:withLogger:}!EMField@{EMField}}
+\doxysubsubsection{\texorpdfstring{solvePoisson:withLogger:}{solvePoisson:withLogger:}}
+{\footnotesize\ttfamily \label{interface_e_m_field_a35d46dc77ec0df8b376e0680bc4d564d} 
+-\/ (void) solve\+Poisson\+: \begin{DoxyParamCaption}\item[{(double)}]{dt}{}\item[{with\+Logger\+:(\mbox{\hyperlink{class_xml_logger}{Xml\+Logger}}\&)}]{logger}{}\end{DoxyParamCaption}}
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/\mbox{\hyperlink{_e_m_field_8h}{EMField.\+h}}\item 
+src/\mbox{\hyperlink{_e_m_field_8mm}{EMField.\+mm}}\end{DoxyCompactItemize}

@@ -1,0 +1,23 @@
+\doxysection{File\+IO.\+h}
+\hypertarget{_file_i_o_8h_source}{}\label{_file_i_o_8h_source}\index{src/FileIO.h@{src/FileIO.h}}
+\mbox{\hyperlink{_file_i_o_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#import\ <Foundation/Foundation.h>}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_init_8h}{Init.h}}"{}}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_particle_8h}{Particle.h}}"{}}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_e_m_field_8h}{EMField.h}}"{}}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_moment_8h}{Moment.h}}"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_xml_logger_8h}{XmlLogger.h}}"{}}}
+\DoxyCodeLine{00007\ \textcolor{keyword}{@class}\ \mbox{\hyperlink{interface_e_m_field}{EMField}};}
+\DoxyCodeLine{00008\ \textcolor{keyword}{@class}\ \mbox{\hyperlink{interface_moment}{Moment}};}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{_file_i_o_8h_a271891c0ab0181049052e85fb9b65166}{outputPhaseSpace}}(\textcolor{keywordtype}{int}\ cycle,\ \mbox{\hyperlink{interface_particle}{Particle}}*\ ptcl,\ \mbox{\hyperlink{interface_init}{Init}}*\ init,\ \mbox{\hyperlink{class_xml_logger}{XmlLogger}}\&\ logger);}
+\DoxyCodeLine{00011\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{_file_i_o_8h_aa6b5700866f0684b812c6b0681d0603c}{outputField}}(\textcolor{keywordtype}{int}\ cycle,\ \mbox{\hyperlink{interface_e_m_field}{EMField}}*\ fld,\ \mbox{\hyperlink{interface_init}{Init}}*\ init,\ \mbox{\hyperlink{class_xml_logger}{XmlLogger}}\&\ logger);}
+\DoxyCodeLine{00012\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{_file_i_o_8h_a21e9aba89ca4f46ccce5e94da8e98d5b}{outputMoments}}(\textcolor{keywordtype}{int}\ cycle,\ \mbox{\hyperlink{interface_moment}{Moment}}*\ mom,\ NSString*\ pName,\ \mbox{\hyperlink{interface_init}{Init}}*\ init,\ \mbox{\hyperlink{class_xml_logger}{XmlLogger}}\&\ logger);}
+\DoxyCodeLine{00013\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ writeField(FILE*\ fp,\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}*\ name,\ \textcolor{keywordtype}{int}\ type\_id,\ \textcolor{keywordtype}{float}*\ array,\ \textcolor{keywordtype}{int}\ arrSize,\ \textcolor{keywordtype}{float}\ scale);}
+\DoxyCodeLine{00014\ BOOL\ \mbox{\hyperlink{_file_i_o_8h_a36b6384580abb46fc45ef3d8f5029ca4}{saveProgress}}(\textcolor{keywordtype}{int}\ cycle,\ NSMutableArray*\ ptclArr,\ \mbox{\hyperlink{interface_init}{Init}}*\ init);}
+\DoxyCodeLine{00015\ BOOL\ \mbox{\hyperlink{_file_i_o_8h_a5b048a4a0791129e63cee8eb2740ad69}{loadProgress}}(\textcolor{keywordtype}{int}\ cycle,\ NSMutableArray*\ ptclArr,\ \mbox{\hyperlink{interface_init}{Init}}*\ init);}
+\DoxyCodeLine{00016\ BOOL\ \mbox{\hyperlink{_file_i_o_8h_a566e4299e11336060f5a9cffe3966cd9}{saveBuffer}}(id<MTLBuffer>\ buffer,\ uint\ \ length,\ uint\ lengthMax,\ NSString*\ outPath);}
+\DoxyCodeLine{00017\ BOOL\ \mbox{\hyperlink{_file_i_o_8h_a2d5539955d5f88f55aa5d642542fa094}{loadBuffer}}(id<MTLBuffer>\ buffer,\ uint\&\ length,\ uint\ lengthMax,\ NSString*\ inPath);}
+
+\end{DoxyCode}

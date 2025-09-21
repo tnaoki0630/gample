@@ -1,0 +1,276 @@
+\doxysection{Moment Class Reference}
+\hypertarget{interface_moment}{}\label{interface_moment}\index{Moment@{Moment}}
+
+
+{\ttfamily \#include $<$Moment.\+h$>$}
+
+
+
+Inheritance diagram for Moment\+:
+% FIG 0
+
+
+Collaboration diagram for Moment\+:
+% FIG 1
+\doxysubsubsection*{Instance Methods}
+\begin{DoxyCompactItemize}
+\item 
+(instancetype) -\/ \mbox{\hyperlink{interface_moment_a17c8f47d8fff84a5295588a2486059d0}{init\+With\+Device\+:with\+Param\+:with\+Logger\+:}}
+\item 
+(void) -\/ \mbox{\hyperlink{interface_moment_a3f583bef629d6e65d8fdf4a31b2e2f09}{integrate\+Moments\+:with\+EMField\+:with\+Logger\+:}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_moment_ab5a392a9c5f0fc7abba4c817f878620d}{n\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_moment_a6eda10291ccda1d3c9824a8894c05c3d}{ux\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_moment_a3c5eb6e0aaf772bee5a346595775b4a0}{uy\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_moment_a69ba46fcc7561078792cefb8b68a1a99}{uz\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_moment_a2cd6bf79f8c12b306db2e59f310de6e4}{Pxx\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_moment_a948d2fd6f1820d24f51c46c2c721acfd}{Pxy\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_moment_a3400b204ad27d5e36ed138c2f69c4cc1}{Pxz\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_moment_ac4c13ae7df2f343a9350aa6c211b8d86}{Pyy\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_moment_a1580afed04f5b272422dfae622bbd88d}{Pyz\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_moment_a86f29e1d074f2cd7f106dfe05395ff25}{Pzz\+Buffer}}
+\item 
+(id$<$ MTLBuffer $>$) -\/ \mbox{\hyperlink{interface_moment_a5d31c1f86efe164b813de2fd52be06a6}{print\+Buffer}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Properties}
+\begin{DoxyCompactItemize}
+\item 
+id$<$ MTLDevice $>$ \mbox{\hyperlink{interface_moment_ac91ca854773429f8ed4d1069adc467d5}{device}}
+\item 
+id$<$ MTLCommand\+Queue $>$ \mbox{\hyperlink{interface_moment_a3b31a45f9857ec60bb8a0c4481ebc2f2}{command\+Queue}}
+\item 
+id$<$ MTLCompute\+Pipeline\+State $>$ \mbox{\hyperlink{interface_moment_ac216df35f3212c154632639d639f15f2}{integrate\+Moments\+Pipeline}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_moment_ac8ab04bea8f067e4cd21ee3b3e45fab9}{integration\+Params\+Buffer}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_moment_a5619a63cf6e16b7170cd43aaa21b31fc}{n\+Buffer}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_moment_a5834f2cb4048b49cc1feb098f7556426}{ux\+Buffer}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_moment_af4af4eea92727ce5e51fda55d07d9599}{uy\+Buffer}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_moment_abefb67a1514e056d1290167e27904aed}{uz\+Buffer}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_moment_a2930d1e8dd430e77827802d17184f5dd}{Pxx\+Buffer}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_moment_a11976b71e81ea85e84fc52c6f65d5e2a}{Pxy\+Buffer}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_moment_a0df704b22842a68a8fcc6fa81eb2d8d8}{Pxz\+Buffer}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_moment_af3bbfc49a355bece0dfebc3e265525ef}{Pyy\+Buffer}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_moment_a142d5a1446665e101a38d6a5c60ebda9}{Pyz\+Buffer}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_moment_a9cd1a7c9413be38f8087bc81a41f27de}{Pzz\+Buffer}}
+\item 
+id$<$ MTLBuffer $>$ \mbox{\hyperlink{interface_moment_aadac3f2ce5e635e5f07112b76a58fa67}{print\+Buffer}}
+\item 
+uint \mbox{\hyperlink{interface_moment_ac5f3917ad366c5d097722b037edc59a5}{thread\+Group\+Size}}
+\item 
+uint \mbox{\hyperlink{interface_moment_ac0eddd72faa78b80514b9aee50acfda3}{integration\+Chunk\+Size}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{interface_moment_doc-func-members}
+\doxysubsection{Method Documentation}
+\Hypertarget{interface_moment_a17c8f47d8fff84a5295588a2486059d0}\index{Moment@{Moment}!initWithDevice:withParam:withLogger:@{initWithDevice:withParam:withLogger:}}
+\index{initWithDevice:withParam:withLogger:@{initWithDevice:withParam:withLogger:}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{initWithDevice:withParam:withLogger:}{initWithDevice:withParam:withLogger:}}
+{\footnotesize\ttfamily \label{interface_moment_a17c8f47d8fff84a5295588a2486059d0} 
+-\/ (instancetype) init\+With\+Device\+: \begin{DoxyParamCaption}\item[{(id$<$MTLDevice$>$)}]{device}{}\item[{with\+Param\+:(\mbox{\hyperlink{interface_init}{Init}}\texorpdfstring{$\ast$}{*})}]{init\+Param}{}\item[{with\+Logger\+:(\mbox{\hyperlink{class_xml_logger}{Xml\+Logger}}\&)}]{logger}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_moment_a3f583bef629d6e65d8fdf4a31b2e2f09}\index{Moment@{Moment}!integrateMoments:withEMField:withLogger:@{integrateMoments:withEMField:withLogger:}}
+\index{integrateMoments:withEMField:withLogger:@{integrateMoments:withEMField:withLogger:}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{integrateMoments:withEMField:withLogger:}{integrateMoments:withEMField:withLogger:}}
+{\footnotesize\ttfamily \label{interface_moment_a3f583bef629d6e65d8fdf4a31b2e2f09} 
+-\/ (void) integrate\+Moments\+: \begin{DoxyParamCaption}\item[{(\mbox{\hyperlink{interface_particle}{Particle}}\texorpdfstring{$\ast$}{*})}]{ptcl}{}\item[{with\+EMField\+:(\mbox{\hyperlink{interface_e_m_field}{EMField}}\texorpdfstring{$\ast$}{*})}]{fld}{}\item[{with\+Logger\+:(\mbox{\hyperlink{class_xml_logger}{Xml\+Logger}}\&)}]{logger}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_moment_ab5a392a9c5f0fc7abba4c817f878620d}\index{Moment@{Moment}!nBuffer@{nBuffer}}
+\index{nBuffer@{nBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{nBuffer}{nBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_ab5a392a9c5f0fc7abba4c817f878620d} 
+-\/ (id$<$ MTLBuffer $>$) n\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_moment_a5d31c1f86efe164b813de2fd52be06a6}\index{Moment@{Moment}!printBuffer@{printBuffer}}
+\index{printBuffer@{printBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{printBuffer}{printBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_a5d31c1f86efe164b813de2fd52be06a6} 
+-\/ (id$<$ MTLBuffer $>$) print\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_moment_a2cd6bf79f8c12b306db2e59f310de6e4}\index{Moment@{Moment}!PxxBuffer@{PxxBuffer}}
+\index{PxxBuffer@{PxxBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{PxxBuffer}{PxxBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_a2cd6bf79f8c12b306db2e59f310de6e4} 
+-\/ (id$<$ MTLBuffer $>$) Pxx\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_moment_a948d2fd6f1820d24f51c46c2c721acfd}\index{Moment@{Moment}!PxyBuffer@{PxyBuffer}}
+\index{PxyBuffer@{PxyBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{PxyBuffer}{PxyBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_a948d2fd6f1820d24f51c46c2c721acfd} 
+-\/ (id$<$ MTLBuffer $>$) Pxy\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_moment_a3400b204ad27d5e36ed138c2f69c4cc1}\index{Moment@{Moment}!PxzBuffer@{PxzBuffer}}
+\index{PxzBuffer@{PxzBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{PxzBuffer}{PxzBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_a3400b204ad27d5e36ed138c2f69c4cc1} 
+-\/ (id$<$ MTLBuffer $>$) Pxz\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_moment_ac4c13ae7df2f343a9350aa6c211b8d86}\index{Moment@{Moment}!PyyBuffer@{PyyBuffer}}
+\index{PyyBuffer@{PyyBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{PyyBuffer}{PyyBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_ac4c13ae7df2f343a9350aa6c211b8d86} 
+-\/ (id$<$ MTLBuffer $>$) Pyy\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_moment_a1580afed04f5b272422dfae622bbd88d}\index{Moment@{Moment}!PyzBuffer@{PyzBuffer}}
+\index{PyzBuffer@{PyzBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{PyzBuffer}{PyzBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_a1580afed04f5b272422dfae622bbd88d} 
+-\/ (id$<$ MTLBuffer $>$) Pyz\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_moment_a86f29e1d074f2cd7f106dfe05395ff25}\index{Moment@{Moment}!PzzBuffer@{PzzBuffer}}
+\index{PzzBuffer@{PzzBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{PzzBuffer}{PzzBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_a86f29e1d074f2cd7f106dfe05395ff25} 
+-\/ (id$<$ MTLBuffer $>$) Pzz\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_moment_a6eda10291ccda1d3c9824a8894c05c3d}\index{Moment@{Moment}!uxBuffer@{uxBuffer}}
+\index{uxBuffer@{uxBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{uxBuffer}{uxBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_a6eda10291ccda1d3c9824a8894c05c3d} 
+-\/ (id$<$ MTLBuffer $>$) ux\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_moment_a3c5eb6e0aaf772bee5a346595775b4a0}\index{Moment@{Moment}!uyBuffer@{uyBuffer}}
+\index{uyBuffer@{uyBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{uyBuffer}{uyBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_a3c5eb6e0aaf772bee5a346595775b4a0} 
+-\/ (id$<$ MTLBuffer $>$) uy\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_moment_a69ba46fcc7561078792cefb8b68a1a99}\index{Moment@{Moment}!uzBuffer@{uzBuffer}}
+\index{uzBuffer@{uzBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{uzBuffer}{uzBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_a69ba46fcc7561078792cefb8b68a1a99} 
+-\/ (id$<$ MTLBuffer $>$) uz\+Buffer \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+
+
+\label{doc-property-members}
+\Hypertarget{interface_moment_doc-property-members}
+\doxysubsection{Property Documentation}
+\Hypertarget{interface_moment_a3b31a45f9857ec60bb8a0c4481ebc2f2}\index{Moment@{Moment}!commandQueue@{commandQueue}}
+\index{commandQueue@{commandQueue}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{commandQueue}{commandQueue}}
+{\footnotesize\ttfamily \label{interface_moment_a3b31a45f9857ec60bb8a0c4481ebc2f2} 
+-\/ (id$<$MTLCommand\+Queue$>$) command\+Queue\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_moment_ac91ca854773429f8ed4d1069adc467d5}\index{Moment@{Moment}!device@{device}}
+\index{device@{device}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{device}{device}}
+{\footnotesize\ttfamily \label{interface_moment_ac91ca854773429f8ed4d1069adc467d5} 
+-\/ (id$<$MTLDevice$>$) device\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_moment_ac216df35f3212c154632639d639f15f2}\index{Moment@{Moment}!integrateMomentsPipeline@{integrateMomentsPipeline}}
+\index{integrateMomentsPipeline@{integrateMomentsPipeline}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{integrateMomentsPipeline}{integrateMomentsPipeline}}
+{\footnotesize\ttfamily \label{interface_moment_ac216df35f3212c154632639d639f15f2} 
+-\/ (id$<$MTLCompute\+Pipeline\+State$>$) integrate\+Moments\+Pipeline\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_moment_ac0eddd72faa78b80514b9aee50acfda3}\index{Moment@{Moment}!integrationChunkSize@{integrationChunkSize}}
+\index{integrationChunkSize@{integrationChunkSize}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{integrationChunkSize}{integrationChunkSize}}
+{\footnotesize\ttfamily \label{interface_moment_ac0eddd72faa78b80514b9aee50acfda3} 
+-\/ (uint) integration\+Chunk\+Size\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [assign]}}
+
+\Hypertarget{interface_moment_ac8ab04bea8f067e4cd21ee3b3e45fab9}\index{Moment@{Moment}!integrationParamsBuffer@{integrationParamsBuffer}}
+\index{integrationParamsBuffer@{integrationParamsBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{integrationParamsBuffer}{integrationParamsBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_ac8ab04bea8f067e4cd21ee3b3e45fab9} 
+-\/ (id$<$MTLBuffer$>$) integration\+Params\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_moment_a5619a63cf6e16b7170cd43aaa21b31fc}\index{Moment@{Moment}!nBuffer@{nBuffer}}
+\index{nBuffer@{nBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{nBuffer}{nBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_a5619a63cf6e16b7170cd43aaa21b31fc} 
+-\/ (id$<$ MTLBuffer $>$) n\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_moment_aadac3f2ce5e635e5f07112b76a58fa67}\index{Moment@{Moment}!printBuffer@{printBuffer}}
+\index{printBuffer@{printBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{printBuffer}{printBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_aadac3f2ce5e635e5f07112b76a58fa67} 
+-\/ (id$<$ MTLBuffer $>$) print\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_moment_a2930d1e8dd430e77827802d17184f5dd}\index{Moment@{Moment}!PxxBuffer@{PxxBuffer}}
+\index{PxxBuffer@{PxxBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{PxxBuffer}{PxxBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_a2930d1e8dd430e77827802d17184f5dd} 
+-\/ (id$<$ MTLBuffer $>$) Pxx\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_moment_a11976b71e81ea85e84fc52c6f65d5e2a}\index{Moment@{Moment}!PxyBuffer@{PxyBuffer}}
+\index{PxyBuffer@{PxyBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{PxyBuffer}{PxyBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_a11976b71e81ea85e84fc52c6f65d5e2a} 
+-\/ (id$<$ MTLBuffer $>$) Pxy\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_moment_a0df704b22842a68a8fcc6fa81eb2d8d8}\index{Moment@{Moment}!PxzBuffer@{PxzBuffer}}
+\index{PxzBuffer@{PxzBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{PxzBuffer}{PxzBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_a0df704b22842a68a8fcc6fa81eb2d8d8} 
+-\/ (id$<$ MTLBuffer $>$) Pxz\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_moment_af3bbfc49a355bece0dfebc3e265525ef}\index{Moment@{Moment}!PyyBuffer@{PyyBuffer}}
+\index{PyyBuffer@{PyyBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{PyyBuffer}{PyyBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_af3bbfc49a355bece0dfebc3e265525ef} 
+-\/ (id$<$ MTLBuffer $>$) Pyy\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_moment_a142d5a1446665e101a38d6a5c60ebda9}\index{Moment@{Moment}!PyzBuffer@{PyzBuffer}}
+\index{PyzBuffer@{PyzBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{PyzBuffer}{PyzBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_a142d5a1446665e101a38d6a5c60ebda9} 
+-\/ (id$<$ MTLBuffer $>$) Pyz\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_moment_a9cd1a7c9413be38f8087bc81a41f27de}\index{Moment@{Moment}!PzzBuffer@{PzzBuffer}}
+\index{PzzBuffer@{PzzBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{PzzBuffer}{PzzBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_a9cd1a7c9413be38f8087bc81a41f27de} 
+-\/ (id$<$ MTLBuffer $>$) Pzz\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_moment_ac5f3917ad366c5d097722b037edc59a5}\index{Moment@{Moment}!threadGroupSize@{threadGroupSize}}
+\index{threadGroupSize@{threadGroupSize}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{threadGroupSize}{threadGroupSize}}
+{\footnotesize\ttfamily \label{interface_moment_ac5f3917ad366c5d097722b037edc59a5} 
+-\/ (uint) thread\+Group\+Size\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [assign]}}
+
+\Hypertarget{interface_moment_a5834f2cb4048b49cc1feb098f7556426}\index{Moment@{Moment}!uxBuffer@{uxBuffer}}
+\index{uxBuffer@{uxBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{uxBuffer}{uxBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_a5834f2cb4048b49cc1feb098f7556426} 
+-\/ (id$<$ MTLBuffer $>$) ux\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_moment_af4af4eea92727ce5e51fda55d07d9599}\index{Moment@{Moment}!uyBuffer@{uyBuffer}}
+\index{uyBuffer@{uyBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{uyBuffer}{uyBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_af4af4eea92727ce5e51fda55d07d9599} 
+-\/ (id$<$ MTLBuffer $>$) uy\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+\Hypertarget{interface_moment_abefb67a1514e056d1290167e27904aed}\index{Moment@{Moment}!uzBuffer@{uzBuffer}}
+\index{uzBuffer@{uzBuffer}!Moment@{Moment}}
+\doxysubsubsection{\texorpdfstring{uzBuffer}{uzBuffer}}
+{\footnotesize\ttfamily \label{interface_moment_abefb67a1514e056d1290167e27904aed} 
+-\/ (id$<$ MTLBuffer $>$) uz\+Buffer\hspace{0.3cm}{\ttfamily [read]}, {\ttfamily [write]}, {\ttfamily [nonatomic]}, {\ttfamily [strong]}}
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/\mbox{\hyperlink{_moment_8h}{Moment.\+h}}\item 
+src/\mbox{\hyperlink{_moment_8mm}{Moment.\+mm}}\end{DoxyCompactItemize}

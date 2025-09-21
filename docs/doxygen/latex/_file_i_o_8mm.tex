@@ -1,0 +1,70 @@
+\doxysection{src/\+File\+IO.mm File Reference}
+\hypertarget{_file_i_o_8mm}{}\label{_file_i_o_8mm}\index{src/FileIO.mm@{src/FileIO.mm}}
+{\ttfamily import "{}File\+IO.\+h"{}}\newline
+{\ttfamily import "{}Constant.\+h"{}}\newline
+Include dependency graph for File\+IO.\+mm\+:
+% FIG 0
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{_file_i_o_8mm_a271891c0ab0181049052e85fb9b65166}{output\+Phase\+Space}} (int cycle, \mbox{\hyperlink{interface_particle}{Particle}} \texorpdfstring{$\ast$}{*}ptcl, \mbox{\hyperlink{interface_init}{Init}} \texorpdfstring{$\ast$}{*}init, \mbox{\hyperlink{class_xml_logger}{Xml\+Logger}} \&logger)
+\item 
+void \mbox{\hyperlink{_file_i_o_8mm_aa6b5700866f0684b812c6b0681d0603c}{output\+Field}} (int cycle, \mbox{\hyperlink{interface_e_m_field}{EMField}} \texorpdfstring{$\ast$}{*}fld, \mbox{\hyperlink{interface_init}{Init}} \texorpdfstring{$\ast$}{*}init, \mbox{\hyperlink{class_xml_logger}{Xml\+Logger}} \&logger)
+\item 
+void \mbox{\hyperlink{_file_i_o_8mm_a21e9aba89ca4f46ccce5e94da8e98d5b}{output\+Moments}} (int cycle, \mbox{\hyperlink{interface_moment}{Moment}} \texorpdfstring{$\ast$}{*}mom, NSString \texorpdfstring{$\ast$}{*}p\+Name, \mbox{\hyperlink{interface_init}{Init}} \texorpdfstring{$\ast$}{*}init, \mbox{\hyperlink{class_xml_logger}{Xml\+Logger}} \&logger)
+\item 
+BOOL \mbox{\hyperlink{_file_i_o_8mm_a36b6384580abb46fc45ef3d8f5029ca4}{save\+Progress}} (int cycle, NSMutable\+Array \texorpdfstring{$\ast$}{*}ptcl\+Arr, \mbox{\hyperlink{interface_init}{Init}} \texorpdfstring{$\ast$}{*}init)
+\item 
+BOOL \mbox{\hyperlink{_file_i_o_8mm_a5b048a4a0791129e63cee8eb2740ad69}{load\+Progress}} (int cycle, NSMutable\+Array \texorpdfstring{$\ast$}{*}ptcl\+Arr, \mbox{\hyperlink{interface_init}{Init}} \texorpdfstring{$\ast$}{*}init)
+\item 
+BOOL \mbox{\hyperlink{_file_i_o_8mm_a566e4299e11336060f5a9cffe3966cd9}{save\+Buffer}} (id$<$ MTLBuffer $>$ buffer, uint length, uint length\+Max, NSString \texorpdfstring{$\ast$}{*}out\+Path)
+\item 
+BOOL \mbox{\hyperlink{_file_i_o_8mm_a2d5539955d5f88f55aa5d642542fa094}{load\+Buffer}} (id$<$ MTLBuffer $>$ buffer, uint \&length, uint length\+Max, NSString \texorpdfstring{$\ast$}{*}in\+Path)
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{_file_i_o_8mm_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{_file_i_o_8mm_a2d5539955d5f88f55aa5d642542fa094}\index{FileIO.mm@{FileIO.mm}!loadBuffer@{loadBuffer}}
+\index{loadBuffer@{loadBuffer}!FileIO.mm@{FileIO.mm}}
+\doxysubsubsection{\texorpdfstring{loadBuffer()}{loadBuffer()}}
+{\footnotesize\ttfamily \label{_file_i_o_8mm_a2d5539955d5f88f55aa5d642542fa094} 
+BOOL load\+Buffer (\begin{DoxyParamCaption}\item[{id$<$ MTLBuffer $>$}]{buffer}{, }\item[{uint \&}]{length}{, }\item[{uint}]{length\+Max}{, }\item[{NSString \texorpdfstring{$\ast$}{*}}]{in\+Path}{}\end{DoxyParamCaption})}
+
+\Hypertarget{_file_i_o_8mm_a5b048a4a0791129e63cee8eb2740ad69}\index{FileIO.mm@{FileIO.mm}!loadProgress@{loadProgress}}
+\index{loadProgress@{loadProgress}!FileIO.mm@{FileIO.mm}}
+\doxysubsubsection{\texorpdfstring{loadProgress()}{loadProgress()}}
+{\footnotesize\ttfamily \label{_file_i_o_8mm_a5b048a4a0791129e63cee8eb2740ad69} 
+BOOL load\+Progress (\begin{DoxyParamCaption}\item[{int}]{cycle}{, }\item[{NSMutable\+Array \texorpdfstring{$\ast$}{*}}]{ptcl\+Arr}{, }\item[{\mbox{\hyperlink{interface_init}{Init}} \texorpdfstring{$\ast$}{*}}]{init}{}\end{DoxyParamCaption})}
+
+\Hypertarget{_file_i_o_8mm_aa6b5700866f0684b812c6b0681d0603c}\index{FileIO.mm@{FileIO.mm}!outputField@{outputField}}
+\index{outputField@{outputField}!FileIO.mm@{FileIO.mm}}
+\doxysubsubsection{\texorpdfstring{outputField()}{outputField()}}
+{\footnotesize\ttfamily \label{_file_i_o_8mm_aa6b5700866f0684b812c6b0681d0603c} 
+void output\+Field (\begin{DoxyParamCaption}\item[{int}]{cycle}{, }\item[{\mbox{\hyperlink{interface_e_m_field}{EMField}} \texorpdfstring{$\ast$}{*}}]{fld}{, }\item[{\mbox{\hyperlink{interface_init}{Init}} \texorpdfstring{$\ast$}{*}}]{init}{, }\item[{\mbox{\hyperlink{class_xml_logger}{Xml\+Logger}} \&}]{logger}{}\end{DoxyParamCaption})}
+
+\Hypertarget{_file_i_o_8mm_a21e9aba89ca4f46ccce5e94da8e98d5b}\index{FileIO.mm@{FileIO.mm}!outputMoments@{outputMoments}}
+\index{outputMoments@{outputMoments}!FileIO.mm@{FileIO.mm}}
+\doxysubsubsection{\texorpdfstring{outputMoments()}{outputMoments()}}
+{\footnotesize\ttfamily \label{_file_i_o_8mm_a21e9aba89ca4f46ccce5e94da8e98d5b} 
+void output\+Moments (\begin{DoxyParamCaption}\item[{int}]{cycle}{, }\item[{\mbox{\hyperlink{interface_moment}{Moment}} \texorpdfstring{$\ast$}{*}}]{mom}{, }\item[{NSString \texorpdfstring{$\ast$}{*}}]{p\+Name}{, }\item[{\mbox{\hyperlink{interface_init}{Init}} \texorpdfstring{$\ast$}{*}}]{init}{, }\item[{\mbox{\hyperlink{class_xml_logger}{Xml\+Logger}} \&}]{logger}{}\end{DoxyParamCaption})}
+
+\Hypertarget{_file_i_o_8mm_a271891c0ab0181049052e85fb9b65166}\index{FileIO.mm@{FileIO.mm}!outputPhaseSpace@{outputPhaseSpace}}
+\index{outputPhaseSpace@{outputPhaseSpace}!FileIO.mm@{FileIO.mm}}
+\doxysubsubsection{\texorpdfstring{outputPhaseSpace()}{outputPhaseSpace()}}
+{\footnotesize\ttfamily \label{_file_i_o_8mm_a271891c0ab0181049052e85fb9b65166} 
+void output\+Phase\+Space (\begin{DoxyParamCaption}\item[{int}]{cycle}{, }\item[{\mbox{\hyperlink{interface_particle}{Particle}} \texorpdfstring{$\ast$}{*}}]{ptcl}{, }\item[{\mbox{\hyperlink{interface_init}{Init}} \texorpdfstring{$\ast$}{*}}]{init}{, }\item[{\mbox{\hyperlink{class_xml_logger}{Xml\+Logger}} \&}]{logger}{}\end{DoxyParamCaption})}
+
+\Hypertarget{_file_i_o_8mm_a566e4299e11336060f5a9cffe3966cd9}\index{FileIO.mm@{FileIO.mm}!saveBuffer@{saveBuffer}}
+\index{saveBuffer@{saveBuffer}!FileIO.mm@{FileIO.mm}}
+\doxysubsubsection{\texorpdfstring{saveBuffer()}{saveBuffer()}}
+{\footnotesize\ttfamily \label{_file_i_o_8mm_a566e4299e11336060f5a9cffe3966cd9} 
+BOOL save\+Buffer (\begin{DoxyParamCaption}\item[{id$<$ MTLBuffer $>$}]{buffer}{, }\item[{uint}]{length}{, }\item[{uint}]{length\+Max}{, }\item[{NSString \texorpdfstring{$\ast$}{*}}]{out\+Path}{}\end{DoxyParamCaption})}
+
+\Hypertarget{_file_i_o_8mm_a36b6384580abb46fc45ef3d8f5029ca4}\index{FileIO.mm@{FileIO.mm}!saveProgress@{saveProgress}}
+\index{saveProgress@{saveProgress}!FileIO.mm@{FileIO.mm}}
+\doxysubsubsection{\texorpdfstring{saveProgress()}{saveProgress()}}
+{\footnotesize\ttfamily \label{_file_i_o_8mm_a36b6384580abb46fc45ef3d8f5029ca4} 
+BOOL save\+Progress (\begin{DoxyParamCaption}\item[{int}]{cycle}{, }\item[{NSMutable\+Array \texorpdfstring{$\ast$}{*}}]{ptcl\+Arr}{, }\item[{\mbox{\hyperlink{interface_init}{Init}} \texorpdfstring{$\ast$}{*}}]{init}{}\end{DoxyParamCaption})}
+

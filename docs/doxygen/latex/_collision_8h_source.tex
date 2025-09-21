@@ -1,0 +1,65 @@
+\doxysection{Collision.\+h}
+\hypertarget{_collision_8h_source}{}\label{_collision_8h_source}\index{src/Collision.h@{src/Collision.h}}
+\mbox{\hyperlink{_collision_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#import\ <Metal/Metal.h>}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#import\ <simd/simd.h>}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#import\ <fstream>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#import\ <string>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_init_8h}{Init.h}}"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_particle_8h}{Particle.h}}"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_xml_logger_8h}{XmlLogger.h}}"{}}}
+\DoxyCodeLine{00008\ \textcolor{keyword}{@class}\ \mbox{\hyperlink{interface_particle}{Particle}};}
+\DoxyCodeLine{00009\ }
+\DoxyCodeLine{00010\ \textcolor{comment}{//\ -\/-\/-\/\ 64bit\ ミキサ関数（PCG\ 公式が推奨）}}
+\DoxyCodeLine{00011\ \textcolor{keyword}{static}\ \textcolor{keyword}{inline}\ uint64\_t\ splitmix64(uint64\_t\ \&seed)\ \{}
+\DoxyCodeLine{00012\ \ \ \ \ uint64\_t\ z\ =\ (seed\ +=\ 0x9E3779B97F4A7C15ULL);}
+\DoxyCodeLine{00013\ \ \ \ \ z\ =\ (z\ \string^\ (z\ >>\ 30))\ *\ 0xBF58476D1CE4E5B9ULL;}
+\DoxyCodeLine{00014\ \ \ \ \ z\ =\ (z\ \string^\ (z\ >>\ 27))\ *\ 0x94D049BB133111EBULL;}
+\DoxyCodeLine{00015\ \ \ \ \ \textcolor{keywordflow}{return}\ z\ \string^\ (z\ >>\ 31);}
+\DoxyCodeLine{00016\ \}}
+\DoxyCodeLine{00017\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_r_n_g_state}{RNGState}}\ \{\ }
+\DoxyCodeLine{00018\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \mbox{\hyperlink{struct_r_n_g_state_ae3ed26063313e0003caa3292a3c48736}{state}};}
+\DoxyCodeLine{00019\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ \mbox{\hyperlink{struct_r_n_g_state_aef203eee38278a939a0f7d495224b0df}{inc}};}
+\DoxyCodeLine{00020\ \};}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \textcolor{comment}{//\ 粒子生成用構造体}}
+\DoxyCodeLine{00023\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{structgeneration_params}{generationParams}}\ \{}
+\DoxyCodeLine{00024\ \ \ \ \ uint\ \mbox{\hyperlink{structgeneration_params_a2ca1889e1fba74455e02045f3670cca3}{addn}};}
+\DoxyCodeLine{00025\ \ \ \ \ uint\ \mbox{\hyperlink{structgeneration_params_a54575379bfe9ef42dff4048dd63a46b6}{ele\_pNum}};}
+\DoxyCodeLine{00026\ \ \ \ \ uint\ \mbox{\hyperlink{structgeneration_params_afc0284713c20c725edddbf235b89823e}{ion\_pNum}};}
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{structgeneration_params_a1fe433a2d198ae3b8ad123154665730e}{Xmin}};}
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{structgeneration_params_ad2acb09963628f6c3e253991da00a064}{Xmax}};}
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{structgeneration_params_ad09b93f3c3525a4210cffcd225204994}{Ymin}};}
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{structgeneration_params_a3cc0502d986037cfea4bd2508641486d}{Ymax}};}
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{structgeneration_params_a7b03ffd7a57246def3d6e98f51b0d8a3}{ele\_genU}}[3];}
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{structgeneration_params_a0b8966c6bb7becac85cc65ce3ce659a4}{ele\_vth}};}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{structgeneration_params_aad92807e6224b8b73adee74579464cec}{ion\_genU}}[3];}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{structgeneration_params_a16a93b637ea57d94e68f0f0ef54c5a2a}{ion\_vth}};}
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{structgeneration_params_a7867a81b4ae2b9309658f22215396e86}{dx}};}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{structgeneration_params_a38139ca943d2604d85f6baf51abf6108}{dy}};}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{structgeneration_params_a369104d233cc9a24d8c4eaf1a6a5fc74}{ngb}};}
+\DoxyCodeLine{00038\ \};}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{keyword}{@interface\ }\mbox{\hyperlink{interface_collision}{Collision}}\ :\ NSObject}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \textcolor{comment}{//\ metal関連}}
+\DoxyCodeLine{00043\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLDevice>\ \mbox{\hyperlink{interface_collision_ab59fba6c39907803a0ada720e216b937}{device}};}
+\DoxyCodeLine{00044\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLCommandQueue>\ \mbox{\hyperlink{interface_collision_a69350deb48338a7cafc46610b6629ea4}{commandQueue}};}
+\DoxyCodeLine{00045\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLComputePipelineState>\ \mbox{\hyperlink{interface_collision_a92d31628bb06e869b0345fbdae1801cc}{artificialIonizationPipeline}};}
+\DoxyCodeLine{00046\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLComputePipelineState>\ \mbox{\hyperlink{interface_collision_a994d3b3d2a14529fded189aa0ee3ae69}{hollowCathodePipeline}};}
+\DoxyCodeLine{00047\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_collision_a7ed9203e42d8cd9c98d596334babd572}{RNGStateBuffer}};}
+\DoxyCodeLine{00048\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_collision_a64a8bef1fb0cb1c0a4c57d5e2f9fc1f1}{paramsBuffer}};}
+\DoxyCodeLine{00049\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_collision_a801efc5bbdb1d0749d2de3c63a86062d}{paramsForHCBuffer}};}
+\DoxyCodeLine{00050\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_collision_aeaf57aa8f127507502f52046d69c7dd4}{printBuffer}};}
+\DoxyCodeLine{00051\ \textcolor{keyword}{@property}\ (nonatomic)\ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{interface_collision_aa80ca78154e3971a4df915e45cd3c38d}{pNumMax}};}
+\DoxyCodeLine{00052\ \textcolor{keyword}{@property}\ (nonatomic)\ uint\ \mbox{\hyperlink{interface_collision_a53623c21422c27f2fe0b201dd28962bd}{threadGroupSize}};}
+\DoxyCodeLine{00053\ \textcolor{keyword}{@property}\ (nonatomic)\ uint\ \mbox{\hyperlink{interface_collision_a42bc389be85c31d3e8051d2a7cc3b0a3}{integrationChunkSize}};}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \textcolor{comment}{//\ 関数}}
+\DoxyCodeLine{00056\ -\/\ (instancetype)initWithDevice:(\textcolor{keywordtype}{id}<MTLDevice>)device\ withParam:(\mbox{\hyperlink{interface_init}{Init}}*)initParam\ withParticles:(NSArray<\mbox{\hyperlink{interface_particle}{Particle}}*>*)ptclArr\ withLogger:(\mbox{\hyperlink{class_xml_logger}{XmlLogger}}\&)logger;}
+\DoxyCodeLine{00057\ -\/\ (bool)artificialIonization:(\textcolor{keywordtype}{double})dt\ withParticles:(NSArray<\mbox{\hyperlink{interface_particle}{Particle}}*>*)ptclArr\ withLogger:(\mbox{\hyperlink{class_xml_logger}{XmlLogger}}\&)logger;}
+\DoxyCodeLine{00058\ -\/\ (bool)hollowCathode:(\textcolor{keywordtype}{double})dt\ withParticles:(NSArray<\mbox{\hyperlink{interface_particle}{Particle}}*>*)ptclArr\ withLogger:(\mbox{\hyperlink{class_xml_logger}{XmlLogger}}\&)logger;}
+\DoxyCodeLine{00059\ \textcolor{keyword}{@end}}
+
+\end{DoxyCode}

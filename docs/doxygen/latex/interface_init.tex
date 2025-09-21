@@ -1,0 +1,197 @@
+\doxysection{Init Class Reference}
+\hypertarget{interface_init}{}\label{interface_init}\index{Init@{Init}}
+
+
+{\ttfamily \#include $<$Init.\+h$>$}
+
+
+
+Inheritance diagram for Init\+:
+% FIG 0
+
+
+Collaboration diagram for Init\+:
+% FIG 1
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_init_1_1_boundary_condition_for_field}{Boundary\+Condition\+For\+Field}}
+\item 
+struct \mbox{\hyperlink{struct_init_1_1_boundary_condition_for_particle}{Boundary\+Condition\+For\+Particle}}
+\item 
+struct \mbox{\hyperlink{struct_init_1_1_param_for_computing}{Param\+For\+Computing}}
+\item 
+struct \mbox{\hyperlink{struct_init_1_1_param_for_field}{Param\+For\+Field}}
+\item 
+struct \mbox{\hyperlink{struct_init_1_1_param_for_particle}{Param\+For\+Particle}}
+\item 
+struct \mbox{\hyperlink{struct_init_1_1_param_for_time_integration}{Param\+For\+Time\+Integration}}
+\item 
+struct \mbox{\hyperlink{struct_init_1_1_source_for_particle}{Source\+For\+Particle}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Instance Methods}
+\begin{DoxyCompactItemize}
+\item 
+(instancetype) -\/ \mbox{\hyperlink{interface_init_a4c07920cc2ab32efbdf067b67a96accf}{parse\+Input\+File\+:}}
+\item 
+(NSMutable\+Dictionary \texorpdfstring{$\ast$}{*}) -\/ \mbox{\hyperlink{interface_init_a88372d770925392f809079440485f8f5}{Flag\+For\+Equation\+Default}}
+\item 
+(NSMutable\+Dictionary \texorpdfstring{$\ast$}{*}) -\/ \mbox{\hyperlink{interface_init_a018134b895b11fa9c2737de496ea7140}{Param\+For\+Time\+Integration\+Default}}
+\item 
+(NSMutable\+Dictionary \texorpdfstring{$\ast$}{*}) -\/ \mbox{\hyperlink{interface_init_a4dd302ede65bd7f4864d8d436c25fc60}{Param\+For\+Particle\+Default}}
+\item 
+(NSMutable\+Dictionary \texorpdfstring{$\ast$}{*}) -\/ \mbox{\hyperlink{interface_init_a568347ddb05abc4ced67e290aa966181}{Boundary\+Codition\+Default}}
+\item 
+(NSMutable\+Dictionary \texorpdfstring{$\ast$}{*}) -\/ \mbox{\hyperlink{interface_init_a8e9357436ee291a9e4be9bf411ef4924}{Source\+For\+Particle\+Default}}
+\item 
+(NSMutable\+Dictionary \texorpdfstring{$\ast$}{*}) -\/ \mbox{\hyperlink{interface_init_a0c4d8a8306569f96e7ae04cb54c20dc3}{Param\+For\+Field\+Default}}
+\item 
+(struct Flag\+For\+Equation) -\/ \mbox{\hyperlink{interface_init_a6ff956e2c67724b0c4f8f0a892d83e5a}{flag\+For\+Equation}}
+\item 
+(struct \mbox{\hyperlink{struct_init_1_1_param_for_time_integration}{Param\+For\+Time\+Integration}}) -\/ \mbox{\hyperlink{interface_init_aa4c5162f7dc74d38f3cc11c594cf3fff}{param\+For\+Time\+Integration}}
+\item 
+(struct \mbox{\hyperlink{struct_init_1_1_param_for_computing}{Param\+For\+Computing}}) -\/ \mbox{\hyperlink{interface_init_aaf42e737559d85fcec9bf6c5a9a61545}{param\+For\+Computing}}
+\item 
+(std\+::vector$<$ struct \mbox{\hyperlink{struct_init_1_1_param_for_particle}{Param\+For\+Particle}} $>$) -\/ \mbox{\hyperlink{interface_init_af0eee4916254522a25806c7a2a252fa3}{param\+For\+Particle}}
+\item 
+(std\+::vector$<$ struct \mbox{\hyperlink{struct_init_1_1_boundary_condition_for_particle}{Boundary\+Condition\+For\+Particle}} $>$) -\/ \mbox{\hyperlink{interface_init_acd0be820fd8cd2e04e78b65027f3dc79}{particle\+Boundaries}}
+\item 
+(std\+::vector$<$ struct \mbox{\hyperlink{struct_init_1_1_source_for_particle}{Source\+For\+Particle}} $>$) -\/ \mbox{\hyperlink{interface_init_a6a3aa23069ffdacfe0e7ef6532c2fc1d}{particle\+Sources}}
+\item 
+(struct \mbox{\hyperlink{struct_init_1_1_param_for_field}{Param\+For\+Field}}) -\/ \mbox{\hyperlink{interface_init_a69b8c364ce03c0a41fa2d589cc4982ec}{param\+For\+Field}}
+\item 
+(std\+::vector$<$ struct \mbox{\hyperlink{struct_init_1_1_boundary_condition_for_field}{Boundary\+Condition\+For\+Field}} $>$) -\/ \mbox{\hyperlink{interface_init_ab140e57bb24594fdb2a4176973b51362}{field\+Boundaries}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{interface_init_a84c62b14d9a445647a3883b4d3aa35d4}{Particle}}
+\item 
+int \mbox{\hyperlink{interface_init_a391237d03b0ec98534e02215be18cab3}{EMField}}
+\item 
+int \mbox{\hyperlink{interface_init_ac1fdd4be88751abcd1450eb8e466a7dd}{MCCollision}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{interface_init_doc-func-members}
+\doxysubsection{Method Documentation}
+\Hypertarget{interface_init_a568347ddb05abc4ced67e290aa966181}\index{Init@{Init}!BoundaryCoditionDefault@{BoundaryCoditionDefault}}
+\index{BoundaryCoditionDefault@{BoundaryCoditionDefault}!Init@{Init}}
+\doxysubsubsection{\texorpdfstring{BoundaryCoditionDefault}{BoundaryCoditionDefault}}
+{\footnotesize\ttfamily \label{interface_init_a568347ddb05abc4ced67e290aa966181} 
+-\/ (NSMutable\+Dictionary \texorpdfstring{$\ast$}{*}) Boundary\+Codition\+Default \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_init_ab140e57bb24594fdb2a4176973b51362}\index{Init@{Init}!fieldBoundaries@{fieldBoundaries}}
+\index{fieldBoundaries@{fieldBoundaries}!Init@{Init}}
+\doxysubsubsection{\texorpdfstring{fieldBoundaries}{fieldBoundaries}}
+{\footnotesize\ttfamily \label{interface_init_ab140e57bb24594fdb2a4176973b51362} 
+-\/ (vector$<$ struct \mbox{\hyperlink{struct_init_1_1_boundary_condition_for_field}{Boundary\+Condition\+For\+Field}} $>$) Init\+: \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_init_a6ff956e2c67724b0c4f8f0a892d83e5a}\index{Init@{Init}!flagForEquation@{flagForEquation}}
+\index{flagForEquation@{flagForEquation}!Init@{Init}}
+\doxysubsubsection{\texorpdfstring{flagForEquation}{flagForEquation}}
+{\footnotesize\ttfamily \label{interface_init_a6ff956e2c67724b0c4f8f0a892d83e5a} 
+-\/ (struct Flag\+For\+Equation) flag\+For\+Equation \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_init_a88372d770925392f809079440485f8f5}\index{Init@{Init}!FlagForEquationDefault@{FlagForEquationDefault}}
+\index{FlagForEquationDefault@{FlagForEquationDefault}!Init@{Init}}
+\doxysubsubsection{\texorpdfstring{FlagForEquationDefault}{FlagForEquationDefault}}
+{\footnotesize\ttfamily \label{interface_init_a88372d770925392f809079440485f8f5} 
+-\/ (NSMutable\+Dictionary \texorpdfstring{$\ast$}{*}) Flag\+For\+Equation\+Default \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_init_aaf42e737559d85fcec9bf6c5a9a61545}\index{Init@{Init}!paramForComputing@{paramForComputing}}
+\index{paramForComputing@{paramForComputing}!Init@{Init}}
+\doxysubsubsection{\texorpdfstring{paramForComputing}{paramForComputing}}
+{\footnotesize\ttfamily \label{interface_init_aaf42e737559d85fcec9bf6c5a9a61545} 
+-\/ (struct \mbox{\hyperlink{struct_init_1_1_param_for_computing}{Param\+For\+Computing}}) param\+For\+Computing \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_init_a69b8c364ce03c0a41fa2d589cc4982ec}\index{Init@{Init}!paramForField@{paramForField}}
+\index{paramForField@{paramForField}!Init@{Init}}
+\doxysubsubsection{\texorpdfstring{paramForField}{paramForField}}
+{\footnotesize\ttfamily \label{interface_init_a69b8c364ce03c0a41fa2d589cc4982ec} 
+-\/ (struct \mbox{\hyperlink{struct_init_1_1_param_for_field}{Param\+For\+Field}}) param\+For\+Field \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_init_a0c4d8a8306569f96e7ae04cb54c20dc3}\index{Init@{Init}!ParamForFieldDefault@{ParamForFieldDefault}}
+\index{ParamForFieldDefault@{ParamForFieldDefault}!Init@{Init}}
+\doxysubsubsection{\texorpdfstring{ParamForFieldDefault}{ParamForFieldDefault}}
+{\footnotesize\ttfamily \label{interface_init_a0c4d8a8306569f96e7ae04cb54c20dc3} 
+-\/ (NSMutable\+Dictionary \texorpdfstring{$\ast$}{*}) Param\+For\+Field\+Default \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_init_af0eee4916254522a25806c7a2a252fa3}\index{Init@{Init}!paramForParticle@{paramForParticle}}
+\index{paramForParticle@{paramForParticle}!Init@{Init}}
+\doxysubsubsection{\texorpdfstring{paramForParticle}{paramForParticle}}
+{\footnotesize\ttfamily \label{interface_init_af0eee4916254522a25806c7a2a252fa3} 
+-\/ (vector$<$ struct \mbox{\hyperlink{struct_init_1_1_param_for_particle}{Param\+For\+Particle}} $>$) Init\+: \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_init_a4dd302ede65bd7f4864d8d436c25fc60}\index{Init@{Init}!ParamForParticleDefault@{ParamForParticleDefault}}
+\index{ParamForParticleDefault@{ParamForParticleDefault}!Init@{Init}}
+\doxysubsubsection{\texorpdfstring{ParamForParticleDefault}{ParamForParticleDefault}}
+{\footnotesize\ttfamily \label{interface_init_a4dd302ede65bd7f4864d8d436c25fc60} 
+-\/ (NSMutable\+Dictionary \texorpdfstring{$\ast$}{*}) Param\+For\+Particle\+Default \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_init_aa4c5162f7dc74d38f3cc11c594cf3fff}\index{Init@{Init}!paramForTimeIntegration@{paramForTimeIntegration}}
+\index{paramForTimeIntegration@{paramForTimeIntegration}!Init@{Init}}
+\doxysubsubsection{\texorpdfstring{paramForTimeIntegration}{paramForTimeIntegration}}
+{\footnotesize\ttfamily \label{interface_init_aa4c5162f7dc74d38f3cc11c594cf3fff} 
+-\/ (struct \mbox{\hyperlink{struct_init_1_1_param_for_time_integration}{Param\+For\+Time\+Integration}}) param\+For\+Time\+Integration \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_init_a018134b895b11fa9c2737de496ea7140}\index{Init@{Init}!ParamForTimeIntegrationDefault@{ParamForTimeIntegrationDefault}}
+\index{ParamForTimeIntegrationDefault@{ParamForTimeIntegrationDefault}!Init@{Init}}
+\doxysubsubsection{\texorpdfstring{ParamForTimeIntegrationDefault}{ParamForTimeIntegrationDefault}}
+{\footnotesize\ttfamily \label{interface_init_a018134b895b11fa9c2737de496ea7140} 
+-\/ (NSMutable\+Dictionary \texorpdfstring{$\ast$}{*}) Param\+For\+Time\+Integration\+Default \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_init_a4c07920cc2ab32efbdf067b67a96accf}\index{Init@{Init}!parseInputFile:@{parseInputFile:}}
+\index{parseInputFile:@{parseInputFile:}!Init@{Init}}
+\doxysubsubsection{\texorpdfstring{parseInputFile:}{parseInputFile:}}
+{\footnotesize\ttfamily \label{interface_init_a4c07920cc2ab32efbdf067b67a96accf} 
+-\/ (instancetype) parse\+Input\+File\+: \begin{DoxyParamCaption}\item[{(NSString\texorpdfstring{$\ast$}{*})}]{input\+File\+Path}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_init_acd0be820fd8cd2e04e78b65027f3dc79}\index{Init@{Init}!particleBoundaries@{particleBoundaries}}
+\index{particleBoundaries@{particleBoundaries}!Init@{Init}}
+\doxysubsubsection{\texorpdfstring{particleBoundaries}{particleBoundaries}}
+{\footnotesize\ttfamily \label{interface_init_acd0be820fd8cd2e04e78b65027f3dc79} 
+-\/ (vector$<$ struct \mbox{\hyperlink{struct_init_1_1_boundary_condition_for_particle}{Boundary\+Condition\+For\+Particle}} $>$) Init\+: \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_init_a6a3aa23069ffdacfe0e7ef6532c2fc1d}\index{Init@{Init}!particleSources@{particleSources}}
+\index{particleSources@{particleSources}!Init@{Init}}
+\doxysubsubsection{\texorpdfstring{particleSources}{particleSources}}
+{\footnotesize\ttfamily \label{interface_init_a6a3aa23069ffdacfe0e7ef6532c2fc1d} 
+-\/ (vector$<$ struct \mbox{\hyperlink{struct_init_1_1_source_for_particle}{Source\+For\+Particle}} $>$) Init\+: \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+\Hypertarget{interface_init_a8e9357436ee291a9e4be9bf411ef4924}\index{Init@{Init}!SourceForParticleDefault@{SourceForParticleDefault}}
+\index{SourceForParticleDefault@{SourceForParticleDefault}!Init@{Init}}
+\doxysubsubsection{\texorpdfstring{SourceForParticleDefault}{SourceForParticleDefault}}
+{\footnotesize\ttfamily \label{interface_init_a8e9357436ee291a9e4be9bf411ef4924} 
+-\/ (NSMutable\+Dictionary \texorpdfstring{$\ast$}{*}) Source\+For\+Particle\+Default \begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}}
+
+
+
+\label{doc-variable-members}
+\Hypertarget{interface_init_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{interface_init_a391237d03b0ec98534e02215be18cab3}\index{Init@{Init}!EMField@{EMField}}
+\index{EMField@{EMField}!Init@{Init}}
+\doxysubsubsection{\texorpdfstring{EMField}{EMField}}
+{\footnotesize\ttfamily \label{interface_init_a391237d03b0ec98534e02215be18cab3} 
+-\/ (int) \mbox{\hyperlink{interface_e_m_field}{EMField}}\hspace{0.3cm}{\ttfamily [protected]}}
+
+\Hypertarget{interface_init_ac1fdd4be88751abcd1450eb8e466a7dd}\index{Init@{Init}!MCCollision@{MCCollision}}
+\index{MCCollision@{MCCollision}!Init@{Init}}
+\doxysubsubsection{\texorpdfstring{MCCollision}{MCCollision}}
+{\footnotesize\ttfamily \label{interface_init_ac1fdd4be88751abcd1450eb8e466a7dd} 
+-\/ (int) MCCollision\hspace{0.3cm}{\ttfamily [protected]}}
+
+\Hypertarget{interface_init_a84c62b14d9a445647a3883b4d3aa35d4}\index{Init@{Init}!Particle@{Particle}}
+\index{Particle@{Particle}!Init@{Init}}
+\doxysubsubsection{\texorpdfstring{Particle}{Particle}}
+{\footnotesize\ttfamily \label{interface_init_a84c62b14d9a445647a3883b4d3aa35d4} 
+-\/ (int) \mbox{\hyperlink{interface_particle}{Particle}}\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/\mbox{\hyperlink{_init_8h}{Init.\+h}}\item 
+src/\mbox{\hyperlink{_init_8mm}{Init.\+mm}}\end{DoxyCompactItemize}

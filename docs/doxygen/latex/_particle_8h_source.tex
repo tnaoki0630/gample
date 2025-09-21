@@ -1,0 +1,82 @@
+\doxysection{Particle.\+h}
+\hypertarget{_particle_8h_source}{}\label{_particle_8h_source}\index{src/Particle.h@{src/Particle.h}}
+\mbox{\hyperlink{_particle_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#import\ <Metal/Metal.h>}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#import\ <simd/simd.h>}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#import\ <fstream>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#import\ <string>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_init_8h}{Init.h}}"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_e_m_field_8h}{EMField.h}}"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_moment_8h}{Moment.h}}"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_xml_logger_8h}{XmlLogger.h}}"{}}}
+\DoxyCodeLine{00009\ \textcolor{comment}{//\ コンパイルうまくいかないので前方宣言}}
+\DoxyCodeLine{00010\ \textcolor{keyword}{@class}\ \mbox{\hyperlink{interface_e_m_field}{EMField}};}
+\DoxyCodeLine{00011\ \textcolor{keyword}{@class}\ \mbox{\hyperlink{interface_moment}{Moment}};}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{comment}{//\ 粒子データ構造}}
+\DoxyCodeLine{00014\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_particle_state}{ParticleState}}\ \{}
+\DoxyCodeLine{00015\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_particle_state_acbdec366c7de5012230374f6e91e9622}{x}};}
+\DoxyCodeLine{00016\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_particle_state_a13c40933638fd9d9c42f064e4344a7cd}{y}};}
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_particle_state_a95c4f8a9bbb52d1fd0eed6b7ac9f9bc7}{vx}};}
+\DoxyCodeLine{00018\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_particle_state_a680e79d6724e9f8c46fc2a1898c13996}{vy}};}
+\DoxyCodeLine{00019\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_particle_state_a89743993c037a4de38ecac69aebc0b03}{vz}};}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_particle_state_a05c6ffdb2885cba96738a98f10bb2738}{piflag}};}
+\DoxyCodeLine{00021\ \};}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{comment}{//\ 電場データ構造体}}
+\DoxyCodeLine{00024\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_e_m_field_data}{EMFieldData}}\ \{}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}*\ \mbox{\hyperlink{struct_e_m_field_data_a6f190a3e190a142a5ed29048e85de546}{Ex}};}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}*\ \mbox{\hyperlink{struct_e_m_field_data_abef723dd8f54a1f853d0887d9070742d}{Ey}};}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}*\ \mbox{\hyperlink{struct_e_m_field_data_a3a34ec6a155dfebaf09220148a7c1d29}{Ez}};}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_e_m_field_data_a06b67eb0c910f95a02db58403cb5f3c6}{ngx}};}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_e_m_field_data_a44b5e3e34b9b21f6b16e9fa9bda878c6}{ngy}};}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_e_m_field_data_ac02b4505b7f6b0de796cebf0b2086ef0}{dx}};}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_e_m_field_data_aa041c31f7a4cf5b70cb524fd93fc9037}{dy}};}
+\DoxyCodeLine{00032\ \};}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{comment}{//\ シミュレーションパラメータ構造体}}
+\DoxyCodeLine{00035\ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_simulation_params}{SimulationParams}}\ \{}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_simulation_params_aa51ef25626433f032879f624b29687ca}{pNum}};}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_simulation_params_a865acd0cc987929e8fe210739ffbc595}{constE}};}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_simulation_params_a7ebae7fc8274fb817471cf0ba9abc38b}{constB}};}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_simulation_params_afb867395babba0aeb8136e525482a2dc}{constX}};}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_simulation_params_a73dc659f42892e45b65bea1c460f2581}{constY}};}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_simulation_params_a4a6b8f39c7e643c32c3c1a78f7760355}{ngx}};}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_simulation_params_af2c56d7846dfcc133cffc8dbe07928e9}{ngy}};}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{struct_simulation_params_a14c354184ace3840aeb6c3f648a4e7f2}{ngb}};}
+\DoxyCodeLine{00044\ \};}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00049\ \textcolor{keyword}{@interface\ }\mbox{\hyperlink{interface_particle}{Particle}}\ :\ NSObject}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \textcolor{comment}{//\ metal関連}}
+\DoxyCodeLine{00052\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLDevice>\ \mbox{\hyperlink{interface_particle_ad9f25fcc3ebbb42411699c4ecb32ff34}{device}};}
+\DoxyCodeLine{00053\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLCommandQueue>\ \mbox{\hyperlink{interface_particle_a22ffa4562e916a9472db690a9fba105b}{commandQueue}};}
+\DoxyCodeLine{00054\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLComputePipelineState>\ \mbox{\hyperlink{interface_particle_a12666eaf387613f6320b562ab47c1516}{updateParticlesPipeline}};}
+\DoxyCodeLine{00055\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLComputePipelineState>\ \mbox{\hyperlink{interface_particle_a0f5821b8580bbbfd6c3c7bb7e7ec6235}{integrateChargeDensityPipeline}};}
+\DoxyCodeLine{00056\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_particle_a74d0c5ebac0ae7a5dc3e1970e274a5cc}{particleBuffer}};}
+\DoxyCodeLine{00057\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_particle_af9c729e4ed7935d11b8b852b557d0cc4}{paramsBuffer}};}
+\DoxyCodeLine{00058\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_particle_adb8a4a2b1ca01c79aeaa9e5b46a31e99}{integrationParamsBuffer}};}
+\DoxyCodeLine{00059\ \textcolor{keyword}{@property}\ (nonatomic,\ strong)\ id<MTLBuffer>\ \mbox{\hyperlink{interface_particle_a6e064274a82243e169e863da5a932485}{printBuffer}};}
+\DoxyCodeLine{00060\ \textcolor{keyword}{@property}\ (nonatomic)\ uint\ \mbox{\hyperlink{interface_particle_a018b7cc1e5339118af31a8d7926e7b37}{threadGroupSize}};}
+\DoxyCodeLine{00061\ \textcolor{keyword}{@property}\ (nonatomic)\ uint\ \mbox{\hyperlink{interface_particle_aac10a7cee42161f069f5c4e65bf58006}{integrationChunkSize}};}
+\DoxyCodeLine{00062\ \textcolor{comment}{//\ 関数}}
+\DoxyCodeLine{00063\ -\/\ (instancetype)initWithDevice:(\textcolor{keywordtype}{id}<MTLDevice>)device\ withParam:(\mbox{\hyperlink{interface_init}{Init}}*)initParam\ specimen:(\textcolor{keywordtype}{int})s\ withLogger:(\mbox{\hyperlink{class_xml_logger}{XmlLogger}}\&)logger;}
+\DoxyCodeLine{00064\ -\/\ (void)update:(\textcolor{keywordtype}{double})dt\ withEMField:(\mbox{\hyperlink{interface_e_m_field}{EMField}}*)fld\ withMom:(\mbox{\hyperlink{interface_moment}{Moment}}*)mom\ withLogger:(\mbox{\hyperlink{class_xml_logger}{XmlLogger}}\&)logger;}
+\DoxyCodeLine{00065\ -\/\ (void)reduce:(\mbox{\hyperlink{class_xml_logger}{XmlLogger}}\&)logger;}
+\DoxyCodeLine{00066\ -\/\ (void)integrateChargeDensity:(\mbox{\hyperlink{interface_e_m_field}{EMField}}*)fld\ withMoment:(\mbox{\hyperlink{interface_moment}{Moment}}*)mom\ withLogger:(\mbox{\hyperlink{class_xml_logger}{XmlLogger}}\&)logger;}
+\DoxyCodeLine{00067\ -\/\ (int)injection:(\textcolor{keywordtype}{double})dt\ withParam:(\mbox{\hyperlink{interface_init}{Init}}*)initParam\ withCurrent:(\textcolor{keywordtype}{int}\&)current\ withLogger:(\mbox{\hyperlink{class_xml_logger}{XmlLogger}}\&)logger;}
+\DoxyCodeLine{00068\ \textcolor{comment}{//\ アクセサ}}
+\DoxyCodeLine{00069\ -\/\ (NSString*)\mbox{\hyperlink{interface_particle_aabdd5fe9eed9ab665f96b70e11fea1d8}{pName}};}
+\DoxyCodeLine{00070\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_particle_af9c729e4ed7935d11b8b852b557d0cc4}{paramsBuffer}};}
+\DoxyCodeLine{00071\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_particle_a74d0c5ebac0ae7a5dc3e1970e274a5cc}{particleBuffer}};}
+\DoxyCodeLine{00072\ -\/\ (float)\mbox{\hyperlink{interface_particle_af4d6340e4560b49650a92da62188748a}{m}};}
+\DoxyCodeLine{00073\ -\/\ (float)\mbox{\hyperlink{interface_particle_ae014aa9cd4e8679c2bb17fc0632d40e5}{q}};}
+\DoxyCodeLine{00074\ -\/\ (float)\mbox{\hyperlink{interface_particle_aa4603339307dad2a2004cdddfc4b6f74}{w}};}
+\DoxyCodeLine{00075\ -\/\ (int)\mbox{\hyperlink{interface_particle_a935ed835ff3b369016f11599bede1a67}{pinum\_Xmin}};}
+\DoxyCodeLine{00076\ -\/\ (int)\mbox{\hyperlink{interface_particle_abc83282aa305679b3e047a45500aca63}{pinum\_Xmax}};}
+\DoxyCodeLine{00077\ -\/\ (int)\mbox{\hyperlink{interface_particle_acd81d69466080cb12b0e884803cc08c7}{pinum\_Ymin}};}
+\DoxyCodeLine{00078\ -\/\ (int)\mbox{\hyperlink{interface_particle_a7f6579727e24d98b2ff9a13c82c700bc}{pinum\_Ymax}};}
+\DoxyCodeLine{00079\ \textcolor{keyword}{@end}}
+
+\end{DoxyCode}

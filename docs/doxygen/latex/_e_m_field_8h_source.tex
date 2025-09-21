@@ -1,0 +1,43 @@
+\doxysection{EMField.\+h}
+\hypertarget{_e_m_field_8h_source}{}\label{_e_m_field_8h_source}\index{src/EMField.h@{src/EMField.h}}
+\mbox{\hyperlink{_e_m_field_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#import\ <Foundation/Foundation.h>}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#import\ <Metal/Metal.h>}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_init_8h}{Init.h}}"{}}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_particle_8h}{Particle.h}}"{}}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#import\ "{}\mbox{\hyperlink{_xml_logger_8h}{XmlLogger.h}}"{}}}
+\DoxyCodeLine{00006\ \textcolor{keyword}{@class}\ \mbox{\hyperlink{interface_particle}{Particle}};}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00011\ \textcolor{keyword}{@interface\ }\mbox{\hyperlink{interface_e_m_field}{EMField}}\ :\ NSObject}
+\DoxyCodeLine{00012\ \textcolor{comment}{//\ 関数}}
+\DoxyCodeLine{00013\ -\/\ (instancetype)initWithDevice:(\textcolor{keywordtype}{id}<MTLDevice>)device\ withParam:(\mbox{\hyperlink{interface_init}{Init}}*)initParam\ withLogger:(\mbox{\hyperlink{class_xml_logger}{XmlLogger}}\&)logger;}
+\DoxyCodeLine{00014\ -\/\ (void)outputCSRmtx:(\textcolor{keywordtype}{int})n\ row:(std::vector<\textcolor{keywordtype}{int}>)row\_ptr\ collumn:(std::vector<\textcolor{keywordtype}{int}>)col\_idx\ value:(std::vector<\textcolor{keywordtype}{float}>)val;}
+\DoxyCodeLine{00015\ -\/\ (void)solvePoisson:(\textcolor{keywordtype}{double})dt\ withLogger:(\mbox{\hyperlink{class_xml_logger}{XmlLogger}}\&)logger;}
+\DoxyCodeLine{00016\ -\/\ (void)\mbox{\hyperlink{interface_e_m_field_a22809c80f513da7c9392d39ae07e7a70}{resetChargeDensity}};}
+\DoxyCodeLine{00017\ -\/\ (void)\mbox{\hyperlink{interface_e_m_field_a8103e58e96a597a6553a9eb0b472034f}{checkChargeDensity}};}
+\DoxyCodeLine{00018\ -\/\ (bool)load1dField:(std::vector<\textcolor{keywordtype}{float}>\&)field\ withFilePath:(NSString*)filePath;}
+\DoxyCodeLine{00019\ -\/\ (bool)load2dField:(std::vector<\textcolor{keywordtype}{float}>\&)field\ withFilePath:(NSString*)filePath;}
+\DoxyCodeLine{00020\ \textcolor{comment}{//\ アクセサ}}
+\DoxyCodeLine{00021\ -\/\ (float*)\mbox{\hyperlink{interface_e_m_field_a1ebbdae7d6d7f863305a0a4da9db7173}{phi}};}
+\DoxyCodeLine{00022\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_e_m_field_a7ba5ed7f5f9c616f4149f4cd0ac5f98e}{rhoBuffer}};}
+\DoxyCodeLine{00023\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_e_m_field_a25e9a69e885650c89c80ff58b3404d00}{jxBuffer}};}
+\DoxyCodeLine{00024\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_e_m_field_a7e9db89909845490a2596abb6c9cb2a6}{jyBuffer}};}
+\DoxyCodeLine{00025\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_e_m_field_a28e1dd579825e9c4f291ba4386d2274e}{ExBuffer}};}
+\DoxyCodeLine{00026\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_e_m_field_acde9d7b1ea835784fa57f0a6a1ba3bd5}{EyBuffer}};}
+\DoxyCodeLine{00027\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_e_m_field_a9d8e91f33045fd21ca037c31b023d885}{EzBuffer}};}
+\DoxyCodeLine{00028\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_e_m_field_a4e78e1a9dcab31c32e361a01e10cf364}{BxBuffer}};}
+\DoxyCodeLine{00029\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_e_m_field_a1854ac5a54da6162f5bfb2b1380b4b4b}{ByBuffer}};}
+\DoxyCodeLine{00030\ -\/\ (id<MTLBuffer>)\mbox{\hyperlink{interface_e_m_field_a4f7eca0d0877eb665633c2bbb3f954bf}{BzBuffer}};}
+\DoxyCodeLine{00031\ -\/\ (int)\mbox{\hyperlink{interface_e_m_field_a1a2e5eb11d8244c357d4cd15fcdace02}{ngx}};}
+\DoxyCodeLine{00032\ -\/\ (int)\mbox{\hyperlink{interface_e_m_field_a120c5b717a62ba724e83415cecb868c7}{ngy}};}
+\DoxyCodeLine{00033\ -\/\ (int)\mbox{\hyperlink{interface_e_m_field_a0a43a4b8695cddeb1f9d18edb616b233}{nx}};}
+\DoxyCodeLine{00034\ -\/\ (int)\mbox{\hyperlink{interface_e_m_field_a1ce59aac2bca20becca6cff76eaffe34}{ny}};}
+\DoxyCodeLine{00035\ -\/\ (int)\mbox{\hyperlink{interface_e_m_field_a120c5b717a62ba724e83415cecb868c7}{ngy}};}
+\DoxyCodeLine{00036\ -\/\ (int)\mbox{\hyperlink{interface_e_m_field_abc2b1ecc2ed13347b62d630d88a6d8e4}{ngb}};}
+\DoxyCodeLine{00037\ -\/\ (double)\mbox{\hyperlink{interface_e_m_field_af40a54c8c097eed5c8c4aae1f4c47920}{dx}};}
+\DoxyCodeLine{00038\ -\/\ (double)\mbox{\hyperlink{interface_e_m_field_a6e92a494cfad8ea3564632dd827e89e6}{dy}};}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{keyword}{@end}}
+
+\end{DoxyCode}
