@@ -28,8 +28,8 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
 # -- Breathe 設定 (C++ 用) ------------------------------------
-breathe_projects = {
-    "gample": "../doxygen/xml"   # 後述の Doxygen 出力先
-}
-breathe_default_project = "gample"
+# breathe_projects = {
+#     "gample": "../doxygen/xml"   # 後述の Doxygen 出力先
+# }
+# breathe_default_project = "gample"
 html_extra_path = ["../doxygen_html"]  # 出力にそのまま同梱
