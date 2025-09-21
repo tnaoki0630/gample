@@ -3,6 +3,7 @@ import re
 import glob
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import sys
 
 # バイナリファイルのレコード形式（time:int, x, y, vx, vy, vz:double）
 record_dtype = np.dtype([
@@ -14,8 +15,12 @@ record_dtype = np.dtype([
     ("vz", np.float32)
 ])
 
+args = sys.argv
+## projectname
+pname = args[1]
+
 # ファイル名のパターンに合わせて全粒子のファイルを取得
-files_unsorted = glob.glob("bin/single_PhaseSpace_electron_*.bin")
+files_unsorted = glob.glob(f"bin/{pname}_PhaseSpace_electron_*.bin")
 files = sorted(files_unsorted, key=lambda s: int(re.search(r'\d+', s).group()))
 print(files)
 # files = sorted(glob.glob("bin/large_PhaseSpace_ion_Xe1_*.bin"))
@@ -43,8 +48,8 @@ scat = ax.scatter(frame_positions[0, :, 0], frame_positions[0, :, 1], s=5)
 ax.set_xlabel("x")
 ax.set_ylabel("y")
 ax.set_title(f"Time step: {times[0]}")
-ax.set_xlim(0, 0.2)
-ax.set_ylim(0, 0.2)
+ax.set_xlim(0, 0.1)
+ax.set_ylim(0, 0.1)
 
 # ax.axvline(2.4, color='gray', linestyle=':', linewidth=0.5) ## cathodeline
 ax.set_aspect('equal', adjustable='box')
@@ -67,4 +72,4 @@ def update(frame):
 ani = animation.FuncAnimation(fig, update, frames=num_frames, interval=100, blit=True)
 
 # 動画として保存
-ani.save("particle_trajectories.mp4", writer="ffmpeg", fps=60)
+ani.save(f"fig/{pname}_ptraj.mp4", writer="ffmpeg", fps=60)
