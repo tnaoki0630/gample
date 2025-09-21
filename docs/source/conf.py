@@ -28,8 +28,5 @@ language = 'Object-C++'
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
-# conf.py からの絶対パスに解決（相対パスズレ対策）
-breathe_projects = {
-    "gample": str((Path(__file__).parents[1] / "doxygen" / "xml").resolve())
-}
+breathe_projects = "gample"
 breathe_default_project = "gample"
