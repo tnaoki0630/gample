@@ -36,20 +36,23 @@ OUT.mkdir(exist_ok=True)
 
 def build_defaults_page(app):
     text = SRC.read_text(encoding="utf-8")
-    blocks = re.findall(
-        r'-\s*\(NSMutableDictionary\*\)\s*(\w+)\s*\{.*?@(\{.*?\})\s*\}\s*mutableCopy\]',
-        text, flags=re.S)
+    pattern = (r'-\s*\(NSMutableDictionary\*\)\s*(\w+)\s*\{.*?'
+               r'return\s*\[\s*@\{\s*(.*?)\s*\}\s*mutableCopy\s*\];')
+    blocks = re.findall(pattern, text, flags=re.S)
+
+    value_pat = r'(?:@\[[^\]]*\]|@\([^)]*\)|@"[^"]*"|@[-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?|\w+)'
     lines = ["defaults", "==============", ""]
     for name, body in blocks:
-        # キー:値 を素朴に抽出（@"K": @V / @"K": @"str" / @"K": @[...])
-        items = re.findall(r'@\"([^\"]+)\"\s*:\s*([^,}]+)', body)
-        lines += [f"{name}", "-"*len(name), ""]
-        lines += [".. list-table::", "   :header-rows: 1", "", "   * - Key", "     - Default",]
+        items = re.findall(r'@"([^"]+)"\s*:\s*(' + value_pat + r')', body)
+        lines += [name, "-"*len(name), "",
+                  ".. list-table::", "   :header-rows: 1", "",
+                  "   * - Key", "     - Default"]
         for k, v in items:
             lines += [f"   * - ``{k}``", f"     - ``{v.strip()}``"]
         lines += [""]
+
     (OUT / "defaults.rst").write_text("\n".join(lines), encoding="utf-8")
-    print(f"blocks: {blocks}")
+    print(f"blocks_found={len(blocks)}")
 
 def setup(app):
     app.connect("builder-inited", build_defaults_page)
