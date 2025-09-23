@@ -8,6 +8,6 @@ This is documentation of GPU-accelerated kinetic plasma simulation software GAMP
    :caption: Contents:
 
    getting_started
-   PIC_MCC_overview
+   method_overview
    solver_input
    bibliography
