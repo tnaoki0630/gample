@@ -49,6 +49,7 @@ def build_defaults_page(app):
             lines += [f"   * - ``{k}``", f"     - ``{v.strip()}``"]
         lines += [""]
     (OUT / "defaults.rst").write_text("\n".join(lines), encoding="utf-8")
+    print(f"blocks: {blocks}")
 
 def setup(app):
     app.connect("builder-inited", build_defaults_page)
@@ -62,3 +63,4 @@ from glob import glob
 bibtex_bibfiles = sorted(glob("bibliography/*.bib"))
 bibtex_default_style = "unsrt"          # 例: 並びは出現順
 bibtex_reference_style = "author_year"  # 例: (著者, 年)
+print(f"bibtex: {bibtex_bibfiles}")
