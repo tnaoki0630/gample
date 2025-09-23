@@ -39,7 +39,7 @@ def build_defaults_page(app):
     blocks = re.findall(
         r'-\s*\(NSMutableDictionary\*\)\s*(\w+)\s*\{.*?@(\{.*?\})\s*\}\s*mutableCopy\]',
         text, flags=re.S)
-    lines = ["デフォルト値一覧", "==============", ""]
+    lines = ["defaults", "==============", ""]
     for name, body in blocks:
         # キー:値 を素朴に抽出（@"K": @V / @"K": @"str" / @"K": @[...])
         items = re.findall(r'@\"([^\"]+)\"\s*:\s*([^,}]+)', body)

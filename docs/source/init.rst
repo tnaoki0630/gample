@@ -1,5 +1,5 @@
 getting started
-=============
+===============
 
 installation
 -------------

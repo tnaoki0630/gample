@@ -1,5 +1,5 @@
 PIC-MCC overview
-=============
+================
 
 kinetic plasma
 -------------
