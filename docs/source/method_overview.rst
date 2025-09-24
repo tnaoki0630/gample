@@ -11,7 +11,7 @@ Particle-in-cell method
 
    flowchart TD
      A["入力 $$x_0$$"] --> B{"更新 $$x_{k+1}=g(x_k)$$"}
-     B -->|$$\lVert r_k\rVert <\varepsilon$$| C["収束 $$x^*$$"]
+     B -->|$$ r_k <\varepsilon$$| C["収束 $$x^*$$"]
      B -->|else| B
 
 Monte_Carlo_Collision
