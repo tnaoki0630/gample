@@ -8,9 +8,8 @@ kinetic plasma
 Particle-in-cell method
 -----------------------
 .. mermaid::
-
-   flowchart TD
-     A["入力 $$x_0$$"] --> B{"更新 $$x_{k+1}=g(x_k)$$"}
+    flowchart TD
+        A["入力 $$x_0$$"] --> B{"更新 $$x_{k+1}=g(x_k)$$"}
 
 Monte_Carlo_Collision
 ---------------------
