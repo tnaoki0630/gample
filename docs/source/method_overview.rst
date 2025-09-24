@@ -16,9 +16,6 @@ Particle-in-cell method
         updateFld --> updatePtcl["粒子位置更新 $$ \mathbf v_{s,k} += \frac{q_{s,k}}{m_{s,k}}(\mathbf E(\mathbf x_{s,k}) + \mathbf v_{s,k}\times\mathbf B(\mathbf x_{s,k})) $$"]
         updatePtcl --> outputMoment["output $$ n_s, \mathbf u_s, \mathbf P_s $$"]
         updatePtcl --> deposit["電荷密度更新 $$\rho(\mathbf x) = \sum_s\sum_k q_{s,k}w_{s,k}\delta(\mathbf x - \mathbf x_p) $$"]
-        deposit --> cycleEnd{"steady?"}
-        cycleEnd --> |no| loopStart
-        cycleEnd --> |yes| ["End"]
 
 Monte_Carlo_Collision
 ---------------------
