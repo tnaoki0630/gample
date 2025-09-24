@@ -15,7 +15,7 @@ release = '0.1.0'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon', "sphinx.ext.viewcode"]
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon', "sphinx.ext.viewcode", "myst_parser"]
 
 templates_path = ['_templates']
 exclude_patterns = []
@@ -58,7 +58,7 @@ def setup(app):
     app.connect("builder-inited", build_defaults_page)
 
 # -- Auto generation of bibliography --------
-extensions += ["sphinxcontrib.bibtex", "myst_parser"]
+extensions += ["sphinxcontrib.bibtex"]
 # 単一ファイルなら:
 # bibtex_bibfiles = ["bibliography/refs.bib"]
 # 複数/ワイルドカードで読み込みたい場合:
@@ -67,3 +67,14 @@ bibtex_bibfiles = sorted(glob("bibliography/*.bib"))
 bibtex_default_style = "unsrt"          # 例: 並びは出現順
 bibtex_reference_style = "author_year"  # 例: (著者, 年)
 print(f"bibtex: {bibtex_bibfiles}")
+
+# -- mermaid w/ TeX setting ----------------
+extensions += ['sphinxcontrib.mermaid']
+# Mermaid 10.9+ を指定（数式サポートのため）
+mermaid_version = "11.12.0"
+# # 必要なら KaTeX に強制（各環境で表示差を避ける）
+# mermaid_init_js = "mermaid.initialize({startOnLoad:true, forceLegacyMathML:true});"
+# # KaTeX の CSS を供給（forceLegacyMathML 使用時）
+# html_css_files = [
+#   "https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css",
+# ]
