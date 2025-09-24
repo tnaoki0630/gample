@@ -10,7 +10,7 @@ Particle-in-cell method
 .. mermaid::
 
     flowchart TD
-        init["初期値 $$ \mathbf x_{s,k}, \mathbf v_{s,k} $$"] --> loopStart{"Steady?"}
+        init["初期値 $$\ \mathbf x_{s,k}, \mathbf v_{s,k} $$"] --> loopStart{"Steady?"}
         loopStart --> |no| updateFld["電場更新 $$\ \nabla^2 \phi(\mathbf x) = -\frac{\rho(\mathbf x)}{\varepsilon_0} $$"]
         updateFld --> outputFld["output $$\ \rho, \mathbf E, \mathbf B $$"]
         updateFld --> updatePtcl["粒子位置更新 $$\ \mathbf v_{s,k} += \frac{q_{s,k}}{m_{s,k}}(\mathbf E(\mathbf x_{s,k}) + \mathbf v_{s,k}\times\mathbf B(\mathbf x_{s,k})) $$"]
