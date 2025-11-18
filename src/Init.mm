@@ -137,9 +137,10 @@
         _field.FilePathBy   = mergedFldD[@"FilePathOfBy"];
         _field.FilePathBz   = mergedFldD[@"FilePathOfBz"];
         _field.weightOrder  = [mergedFldD[@"WeightingOrder"] integerValue];
-        _field.BorisOrder  = [mergedFldD[@"BorisOrder"] integerValue];
         _field.ngb          = _field.weightOrder/2; // 1st->0, 5th->2
         _field.diff_ngb     = [mergedFldD[@"PtclPosOffset"] integerValue]; // ngb_new - ngb_old
+        _field.BorisOrder  = [mergedFldD[@"BorisOrder"] integerValue];
+        _field.checkCurDens  = [mergedFldD[@"FlagForCurDens"] integerValue];
 
         // BoundaryConditionForField
         NSArray* fbcArr = root[@"BoundaryConditionForField"];
@@ -387,6 +388,7 @@
         @"FilePathOfBz":        @"undefined",
         @"WeightingOrder":      @5,
         @"BorisOrder":          @2,
+        @"FlagForCurDens":      @0,
         @"PtclPosOffset":       @0,
     } mutableCopy];
 }

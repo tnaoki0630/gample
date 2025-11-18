@@ -362,7 +362,7 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
         // NSLog(@"[AI] addn = %d, addn_x = %d, addn_y = %d, delta_x = %e, delta_y = %e",prm->addn,addn_x,addn_y,delta_x,delta_y);
         // NSLog(@"[AI] delX_gen = %e, delY_gen = %e",prm->Xmax-prm->Xmin, prm->Ymax-prm->Ymin);
 
-        // 生成条件のカーネルをセット（それぞれ1条件のみ対応）
+        // 生成条件のカーネルをセット（元バージョンではそれぞれ1条件まで対応，2条件以上は pipeline を配列で管理する必要があるため後回し．）
         _existAI = false;
         _existHC = false;
         for (int i = 0; i < sources.size(); i++){
@@ -475,6 +475,7 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
         SimulationParams* ionParams;
         std::uniform_real_distribution<> unif_dist(0.0, 1.0);
         for (Particle* ptcl in ptclArr) {
+            // 電子バッファを格納
             if([ptcl.pName isEqualToString:@"electron"]){
                 eleBuffer = ptcl.particleBuffer;
                 eleParams = (SimulationParams*)[[ptcl paramsBuffer] contents];
@@ -485,6 +486,7 @@ kernel void artificialIonization(device ParticleState *ptcl_ele          [[ buff
                     prm->addn = (int)addn_d;
                 }
                 prm->ele_pNum = eleParams->pNum;
+            // イオンバッファを格納
             }else if([ptcl.pName isEqualToString:_srcName]){
                 ionBuffer = ptcl.particleBuffer;
                 ionParams = (SimulationParams*)[[ptcl paramsBuffer] contents];

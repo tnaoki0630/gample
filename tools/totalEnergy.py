@@ -28,6 +28,9 @@ def parseXML(xml_file, section_name, tag_name):
             if sec.get('Name') == section_name:
                 section = sec
                 break
+            # else:
+            #     print(section_name,sec.get('Name'))
+                
 
         if section is None:
             # No section found for this cycle
@@ -38,6 +41,8 @@ def parseXML(xml_file, section_name, tag_name):
         elem = section.find(tag_name)
         val = float(elem.text) if elem is not None and elem.text else None
         values.append(val)
+
+        # if(tag_name == "totalEEincrement"):wEEincrement"),elem.text)
 
     return cycle_ids, values
 
@@ -82,23 +87,46 @@ if __name__ == '__main__':
     logfiles = [pname]
     cycle_arr = []
     totEE_arr = []
+    totEEinc_arr = []
     totJH_arr = []
     totKE_ele_arr = []
     totKE_ion_arr = []
+    totKEinc_ele_arr = []
+    totKEinc_ion_arr = []
     for file in logfiles:
         cycles, totEE = parseXML(file, 'solvePoisson', "totalElectricEnergy")
+        cycles, totEEinc = parseXML(file, 'solvePoisson', "totalEEincrement")
         cycles, totJH = parseXML(file, 'solvePoisson', "jouleHeating")
         cycles, totKE_ele = parseXML(file, 'flowout_electron', "totalKineticEnergy")
+        cycles, totKEinc_ele = parseXML(file, 'flowout_electron', "totalKEincrement")
         cycles, totKE_ion = parseXML(file, 'flowout_ion_Xe1', "totalKineticEnergy")
-        cycle_arr.extend(cycles)
-        totEE_arr.extend(totEE)
-        totJH_arr.extend(totJH)
-        totKE_ele_arr.extend(totKE_ele)
-        totKE_ion_arr.extend(totKE_ion)
+        cycles, totKEinc_ion = parseXML(file, 'flowout_ion_Xe1', "totalKEincrement")
+        # cycle_arr.extend(cycles)
+        # totEE_arr.extend(totEE)
+        # totEEinc_arr.extend(totEEinc)
+        # totJH_arr.extend(totJH)
+        # totKE_ele_arr.extend(totKE_ele)
+        # totKEinc_ele_arr.extend(totKEinc_ele)
+        # totKE_ion_arr.extend(totKE_ion)
+        # totKEinc_ion_arr.extend(totKEinc_ion)
     # plot array
-    values = [totEE, totJH, totKE_ele, totKE_ion]
-    labels = ["totEE", "totJH", "totKE_ele", "totKE_ion"]
-    weight = 1.250000e+03
-    # scales = [1 for _ in range(9)]
-    scales = [1,1,weight,weight]
-    plot_values(cycle_arr, values, labels, scales, "energy [J]", dt=5e-6)
+    values = [totEE, totKE_ele, totKE_ion]
+    labels = ["totEE", "totKE_ele", "totKE_ion"]
+    scales = [1e-9 for _ in range(len(values))]
+    # weight = 1.250000e+03
+    # scales = [1,1,weight,weight]
+    plot_values(cycles, values, labels, scales, "energy [GeV]", dt=5e-6)
+    
+    # increment
+    values = [totEEinc, totKEinc_ele, totKEinc_ion, totJH]
+    labels = ["totEEinc", "totKEinc_ele", "totKEinc_ion", "totJH"]
+    scales = [1e-6 for _ in range(len(values))]
+    # weight = 1.250000e+03
+    # scales = [1,1,weight,weight]
+    plot_values(cycles, values, labels, scales, "energy increment [MeV]", dt=5e-6)
+    
+    ## check
+    # KE_old = 0
+    # for KE, KEinc in zip(totKE_ele,totKEinc_ele):
+    #     print(KE,float(KE)-KE_old,KEinc)
+    #     KE_old = float(KE)

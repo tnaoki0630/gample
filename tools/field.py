@@ -403,12 +403,12 @@ if __name__ == '__main__':
     args = sys.argv
 
     # カラーバー調整辞書(get で取り出した場合、無指定の変数は None を渡す)
-    dict_cmin = {}
-    dict_cmax = {}
+    # dict_cmin = {}
+    # dict_cmax = {}
     # dict_cmin = {"electron_n":5e9-1e3}
     # dict_cmax = {"electron_n":5e9+1e3}
-    # dict_cmin = {"rho":-20, "phi":-100, "Ex":-1e5, "Ey":-1e5, "electron_uy":-1e9}
-    # dict_cmax = {"rho":20,  "phi":700,  "Ex":1e5,  "Ey":1e5,  "electron_uy":1e9, "electron_T":60, "DebyeRes":0.2}
+    dict_cmin = {"rho":-20, "phi":-100, "Ex":-1e5, "Ey":-1e5, "electron_uy":-1e9, "electron_T":0, "DebyeRes":0}
+    dict_cmax = {"rho":20,  "phi":300,  "Ex":1e5,  "Ey":1e5,  "electron_uy":1e9, "electron_T":60, "DebyeRes":0.5}
     # dict_cmin = {"rho":-1}
     # dict_cmax = {"rho":1}
 
@@ -448,7 +448,7 @@ if __name__ == '__main__':
     
     # # electron
     mesh, fields = getField("bin/"+pname+f"_Moments_electron_{cycle:08}.bin")
-    Pe = np.zeros((ny+1,nx+1))
+    trPe = np.zeros((ny+1,nx+1))
     for name, type_id, arr in fields:
         ## 圧力テンソルはスキップ
         if('electron_P' not in name):
@@ -461,15 +461,15 @@ if __name__ == '__main__':
             plotField1dy(arr, name, f"fig/{name}_1d_min.png" , type_id , xpos_1dyplot)
         ## 温度計算
         if(name == "electron_n"): ne = arr # 1/cm3
-        if(name == "electron_Pxx"): Pe += arr
-        if(name == "electron_Pyy"): Pe += arr
-        if(name == "electron_Pzz"): Pe += arr
+        if(name == "electron_Pxx"): trPe += arr
+        if(name == "electron_Pyy"): trPe += arr
+        if(name == "electron_Pzz"): trPe += arr
     # temperature
     name = "electron_T"
     kb = 1.380649e-23 # [J/K]
     KtoeV = 1.0/11604
     type_id = 0
-    arr = np.where(ne > 0, Pe/(3*kb*ne*1e6)*KtoeV, 0) ## ne > 0 の要素だけ計算
+    arr = np.where(ne > 0, trPe/(3*kb*ne*1e6)*KtoeV, 0) ## ne > 0 の要素だけ計算
     print(f"{name}: min={arr.min()}, max={arr.max()}")
     plotField2d(arr, name, f"fig/{name}.png" , type_id, True,dict_cmin.get(name),dict_cmax.get(name))
     plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , ypos_1dxplot)
@@ -477,9 +477,9 @@ if __name__ == '__main__':
     dx = 0.005e-2 # [m]
     name = "DebyeRes"
     type_id = 0
-    arr = np.zeros_like(Pe)
-    np.sqrt(eps0*Pe/(3*(ne*1e6)**2*ec**2)/dx, out=arr, where=(Pe > 0)&(ne > 0)) ## where を満たす要素だけ sqrt する
-    print(f"{name}: min={Pe.min()}, max={Pe.max()}")
+    arr = np.zeros_like(trPe)
+    np.sqrt(eps0*trPe/(3*(ne*1e6)**2*ec**2)/dx, out=arr, where=(trPe > 0)&(ne > 0)) ## where を満たす要素だけ sqrt する
+    print(f"trPe: min={trPe.min()}, max={trPe.max()}")
     print(f"{name}: min={arr.min()}, max={arr.max()}")
     plotField2d(arr, name, f"fig/{name}.png" , type_id, True,dict_cmin.get(name),dict_cmax.get(name))
     plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , ypos_1dxplot)

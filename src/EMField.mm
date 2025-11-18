@@ -49,6 +49,7 @@ typedef amgcl::make_solver<
     float _dy;                  // y方向グリッド幅
     
     int _weightOrder;            // weighting のオーダー
+
 }
 @end
 
@@ -98,6 +99,9 @@ typedef amgcl::make_solver<
         _dx = fieldParam.dx;
         _dy = fieldParam.dy;
         _weightOrder = fieldParam.weightOrder;
+
+        // 統計量
+        _lastEE = 0.0;
 
         // 配列サイズの計算(rho,Ex,Ey)
         _nx = _ngx + 2*_ngb;
@@ -421,11 +425,6 @@ typedef amgcl::make_solver<
         }
     }
     
-    // 時系列ファイル初期化
-    std::ofstream ofs([[NSString stringWithFormat:@"timeseries_EMField_point_%d.csv", 1] UTF8String]);
-    ofs << "i,j,phi,Ex,Ey\n";
-    ofs.close();
-
     return self;
 }
 
@@ -517,27 +516,6 @@ typedef amgcl::make_solver<
 }
 
 - (void)solvePoisson:(double)dt withLogger:(XmlLogger&)logger{
-    // エネルギー保存計算（particle update と同タイミングの情報を取得したいので，solveの前に計算）
-    float* jx = (float*)_jxBuffer.contents;
-    float* jy = (float*)_jyBuffer.contents;
-    float* Ex = (float*)_ExBuffer.contents;
-    float* Ey = (float*)_EyBuffer.contents;
-    // total
-    double energy = 0.0;
-    double joule = 0.0;
-    // x-dir
-    for (int i = 0; i < (_nx+2)*(_ny+1); i++){
-        energy += (double)Ex[i]*Ex[i];
-        joule += (double)Ex[i]*jx[i];
-    }
-    // y-dir
-    for (int i = 0; i < (_nx+1)*(_ny+2); i++){
-        energy += (double)Ey[i]*Ey[i];
-        joule += (double)Ey[i]*jy[i];
-    }
-    energy *= (double)_dx*_dy/2;  // erg/m
-    joule *= (double)dt*_dx*_dy; // erg/m
-
     // 電荷密度の取得
     float* rho = (float*)_rhoBuffer.contents;
 
@@ -870,20 +848,11 @@ typedef amgcl::make_solver<
             }
         }
     }
-
-    // 収束状況
-    std::map<std::string, std::string> data ={
-        {"iteration", std::to_string(iters)},
-        {"error", fmtSci(error, 6)},
-        {"meanCathode", fmtSci(mean*sVtoV, 6)},
-        {"totalElectricEnergy", fmtSci(energy*ergtoev, 6)},
-        {"totalEEincrement", fmtSci(energy*ergtoev, 6)},
-        {"jouleHeating", fmtSci(joule*ergtoev, 6)},
-    };
-    logger.logSection("solvePoisson", data);
     // NSLog(@"mean = %e",mean*sVtoV);
 
     // 勾配計算
+    float* Ex = (float*)_ExBuffer.contents;
+    float* Ey = (float*)_EyBuffer.contents;
     for (int i = 0; i <= _nx+1; ++i) {
         for (int j = 0; j <= _ny; ++j) {
             Ex[i + j*(_nx+2)] = -(_phi[i+1 + (j+1)*(_nx+3)] - _phi[i   + (j+1)*(_nx+3)])/_dx;
@@ -897,13 +866,46 @@ typedef amgcl::make_solver<
         }
     }
 
+    // エネルギー保存計算
+    float* jx = (float*)_jxBuffer.contents;
+    float* jy = (float*)_jyBuffer.contents;
+    // total
+    double energy = 0.0;
+    double joule = 0.0;
+    // x-dir
+    for (int i = 0; i < (_nx+2)*(_ny+1); i++){
+        energy += (double)Ex[i]*Ex[i];
+        joule += (double)Ex[i]*jx[i];
+    }
+    // y-dir
+    for (int i = 0; i < (_nx+1)*(_ny+2); i++){
+        energy += (double)Ey[i]*Ey[i];
+        joule += (double)Ey[i]*jy[i];
+    }
+    energy *= (double)_dx*_dy/2;  // erg/m
+    joule *= (double)dt*_dx*_dy; // erg/m
+    // store current
+    double diff = energy - _lastEE;
+    _lastEE = energy;
+
+    // 収束状況
+    std::map<std::string, std::string> data ={
+        {"iteration", std::to_string(iters)},
+        {"error", fmtSci(error, 6)},
+        {"meanCathode", fmtSci(mean*sVtoV, 6)},
+        {"totalElectricEnergy", fmtSci(energy*ergtoev, 6)},
+        {"totalEEincrement", fmtSci(diff*ergtoev, 6)},
+        {"jouleHeating", fmtSci(joule*ergtoev, 6)},
+    };
+    logger.logSection("solvePoisson", data);
+
     // csv出力
-    int filn = 1;
-    int point_i = _ngx/4;
-    int point_j = _ngy/2;
-    std::ofstream ofs([[NSString stringWithFormat:@"timeseries_EMField_point_%d.csv", filn] UTF8String], std::ios::app);
-    ofs << point_i << "," << point_j << "," << _phi[(point_i+_ngb+1)+(point_j+_ngb+1)*(_nx+3)] << "," << Ex[(point_i+_ngb+1)+(point_j+_ngb)*(_nx+2)] << "," << Ey[(point_i+_ngb)+(point_j+_ngb+1)*(_nx+1)] << "\n";
-    ofs.close();
+    int p_i = _ngx/4 + _ngb;
+    int p_j = _ngy/2 + _ngb;
+    std::string output = fmtSci(_phi[(p_i+2)+(p_j+2)*(_nx+3)],6)
+                 + "," + fmtSci(  Ex[(p_i+1)+(p_j  )*(_nx+2)],6)
+                 + "," + fmtSci(  Ey[(p_i  )+(p_j+1)*(_nx+1)],6);
+    logger.csvOutput(output);
 }
 
 - (void)resetChargeDensity{

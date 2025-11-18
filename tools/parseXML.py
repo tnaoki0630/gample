@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
 import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
+import sys
 
 def parseXML(xml_file, section_name, tag_name):
     """
@@ -60,16 +61,18 @@ def plot_values(cycles, arr_values, labels, scales, title="", dt=1.0, xmin=None,
     plt.show()
 
 if __name__ == '__main__':
+    # get arg
+    filename = sys.argv[1]
     # get array
     cycle_arr = []
     Ne_arr = []
     Ni_arr = []
     Gammae_arr = []
     Gammai_arr = []
-    logfiles = ['fine_20250730223753_log.xml']
-    logfiles.append('fine_20250801025821_log.xml')
-    logfiles.append('fine_20250802040148_log.xml')
-    logfiles.append('log_cp.xml')
+    logfiles = [filename]
+    # logfiles.append('fine_20250801025821_log.xml')
+    # logfiles.append('fine_20250802040148_log.xml')
+    # logfiles.append('log_cp.xml')
     for file in logfiles:
         cycles, Ne = parseXML(file, 'flowout_electron', 'particleNumber')
         cycles, Ni = parseXML(file, 'flowout_ion_Xe1', 'particleNumber')

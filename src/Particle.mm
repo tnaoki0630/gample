@@ -59,6 +59,7 @@ constant int BC_Ymin        [[function_constant(2)]];
 constant int BC_Ymax        [[function_constant(3)]];
 constant int weightOrder   [[function_constant(4)]];
 constant int BorisOrder    [[function_constant(5)]];
+constant int currentDens    [[function_constant(6)]];
 
 // 粒子更新カーネル
 kernel void updateParticles(
@@ -355,15 +356,20 @@ kernel void integrateChargeDensity(
     int ii,jj;
     for (int i = 0; i < weightOrder+1; i++) {
         for (int j = 0; j < weightOrder+1; j++) {
+            // charge density
             ii = i2+(i-prm.ngb);
             jj = j1+(j-prm.ngb);
             atomic_fetch_add_explicit(&(rho[ii+jj*(nx+1)]), sf[i][1][0]*sf[j][0][1]*prm.scale, memory_order_relaxed);
-            ii = i1+(i-prm.ngb+1);
-            jj = j1+(j-prm.ngb);
-            atomic_fetch_add_explicit(&(jx[ii+jj*(nx+2)]), sf[i][0][0]*sf[j][0][1]*prm.scale*p.vx, memory_order_relaxed);
-            ii = i2+(i-prm.ngb);
-            jj = j2+(j-prm.ngb+1);
-            atomic_fetch_add_explicit(&(jy[ii+jj*(nx+1)]), sf[i][1][0]*sf[j][1][1]*prm.scale*p.vy, memory_order_relaxed);
+            
+            // current density for Joule-heating
+            if (currentDens == 1){
+                ii = i1+(i-prm.ngb+1);
+                jj = j1+(j-prm.ngb);
+                atomic_fetch_add_explicit(&(jx[ii+jj*(nx+2)]), sf[i][0][0]*sf[j][0][1]*prm.scale*p.vx, memory_order_relaxed);
+                ii = i2+(i-prm.ngb);
+                jj = j2+(j-prm.ngb+1);
+                atomic_fetch_add_explicit(&(jy[ii+jj*(nx+1)]), sf[i][1][0]*sf[j][1][1]*prm.scale*p.vy, memory_order_relaxed);
+            }
         }
     }
 
@@ -416,7 +422,7 @@ kernel void integrateChargeDensity(
         _w = particleParam[s].w;
         
         // 統計量
-        _energy_last = 0.0;
+        _lastKE = 0.0;
 
         // 並列計算パラメータ
         _integrationChunkSize = compParam.integrationChunkSize;
@@ -512,6 +518,9 @@ kernel void integrateChargeDensity(
         // Boris order
         int bo = fieldParam.BorisOrder;
         [fc setConstantValue:&bo type:MTLDataTypeInt atIndex:5];
+        // enable current density accumlation(1: enable, other: disable)
+        int curdens = fieldParam.checkCurDens;
+        [fc setConstantValue:&curdens type:MTLDataTypeInt atIndex:6];
 
         // 引数付きでカーネルを作成
         id<MTLFunction> updateParticlesFunction = [library newFunctionWithName:@"updateParticles" constantValues:fc error:&error];
@@ -592,9 +601,9 @@ kernel void integrateChargeDensity(
     }
 
     // デバッグ出力ファイル初期化
-    std::ofstream ofs([[NSString stringWithFormat:@"debug_%@.csv", _pName] UTF8String]);
-    ofs << "idx,x,y,vx,vy,print\n";
-    ofs.close();
+    // std::ofstream ofs([[NSString stringWithFormat:@"debug_%@.csv", _pName] UTF8String]);
+    // ofs << "idx,x,y,vx,vy,print\n";
+    // ofs.close();
 
     return self;
 }
@@ -839,8 +848,8 @@ kernel void integrateChargeDensity(
     }
 
     // デバッグ出力
-    ParticleState* p = (ParticleState*)[_particleBuffer contents];
-    float* prt = (float*)printBuffer.contents;
+    // ParticleState* p = (ParticleState*)[_particleBuffer contents];
+    // float* prt = (float*)printBuffer.contents;
     // float min_x = 1e20, max_x = -1e20;
     // float min_y = 1e20, max_y = -1e20;
     // float min_v = 1e20, max_v = -1e20;
@@ -864,13 +873,13 @@ kernel void integrateChargeDensity(
     //         if (max_v < v){ max_v = v; }
     //     }
     // }
-    // csv出力
-    std::ofstream ofs([[NSString stringWithFormat:@"debug_%@.csv", _pName] UTF8String], std::ios::app);
-    for (int idx = 0; idx < 1; ++idx) {
-        ofs << idx << "," << p[idx].x << "," << p[idx].y << "," << p[idx].vx << "," << p[idx].vy << "," << prt[idx] << "\n";
-        // NSLog(@"debug print(%@): p.x = %e, p.y = %e",_pName,p[idx].x,p[idx].y);
-    }
-    ofs.close();
+    // // csv出力
+    // std::ofstream ofs([[NSString stringWithFormat:@"debug_%@.csv", _pName] UTF8String], std::ios::app);
+    // for (int idx = 0; idx < 1; ++idx) {
+    //     ofs << idx << "," << p[idx].x << "," << p[idx].y << "," << p[idx].vx << "," << p[idx].vy << "," << prt[idx] << "\n";
+    //     // NSLog(@"debug print(%@): p.x = %e, p.y = %e",_pName,p[idx].x,p[idx].y);
+    // }
+    // ofs.close();
     // NSLog(@"debug print(%@): pNum = %d, min = %e, max = %e", _pName, prm->pNum, min, max);
     // NSLog(@"update(%@): pNum = %d, min_x = %e, max_x = %e, min_y = %e, max_y = %e, min_v = %e, max_v = %e", _pName, prm->pNum, min_x, max_x, min_y, max_y, min_v, max_v);
 
@@ -963,9 +972,15 @@ kernel void integrateChargeDensity(
                || int(p[k1].y) > prm->ngb+prm->ngy ){
             NSLog(@"spilled particle is detected: pName = %@, idx = %d, p.x = %e, p.y = %e", _pName, k1, p[k1].x, p[k1].y);
         }else{
-            energy += (double)0.5*_m*(p[k1].vx*p[k1].vx+p[k1].vy*p[k1].vy+p[k1].vz*p[k1].vz)*_w;
+            double vv = p[k1].vx*p[k1].vx+p[k1].vy*p[k1].vy+p[k1].vz*p[k1].vz;
+            if (vv > c*c){ NSLog(@"detected over light speed: pName = %@, idx = %d", _pName, k1); }
+            energy += (double)(0.5 * _m * vv * _w);
         }
     }
+    // store current KE
+    double diffKE = energy - _lastKE;
+    _lastKE = energy;
+
     // output log
     std::map<std::string, std::string>data ={
         {"particleNumber", std::to_string(prm->pNum)},
@@ -975,12 +990,10 @@ kernel void integrateChargeDensity(
         {"Ymin", std::to_string(_pinum_Ymin)},
         {"Ymax", std::to_string(_pinum_Ymax)},
         {"totalKineticEnergy", fmtSci(energy*ergtoev, 6)},
-        {"totalKEincrement", fmtSci((energy-_lastKE)*ergtoev, 6)},
+        {"totalKEincrement", fmtSci(diffKE*ergtoev, 6)},
     };
     NSString* secName = [NSString stringWithFormat:@"flowout_%@", _pName];
     logger.logSection([secName UTF8String], data);
-    // store current KE
-    _lastKE = energy;
 }
 
 - (void)integrateChargeDensity:(EMField*)fld withMoment:(Moment*)mom withLogger:(XmlLogger&)logger{

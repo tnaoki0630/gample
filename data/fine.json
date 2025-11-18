@@ -5,13 +5,13 @@
     "MCCollision":  0
   },
   "ParamForTimeIntegration": {
-    "Start":            800000,
-    "End":              1600000,
+    "Start":            0,
+    "End":              400000,
     "TimeStep":         5e-12,
-    "LogOutput":        1000,
+    "LogOutput":        20,
     "ParticleOutput":   0,
-    "FieldOutput":      10000,
-    "ProgressOutput":   50000,
+    "FieldOutput":      2000,
+    "ProgressOutput":   400000,
     "ProjectName":      "fine",
     "RestartName":      "fine"
   },
@@ -20,7 +20,7 @@
     "ThreadGroupSize":        32,
     "IntegrationChunkSize":   128,
     "MaxiterForPoisson":      100,
-    "ToleranceForPoisson":    1e-6
+    "ToleranceForPoisson":    1e-8
   },
   "ParamForField": {
     "NumberOfGridX":        1000,
@@ -39,7 +39,7 @@
     {
       "ParticleName":       "electron",
       "pNumSetMethod":      "PtclNumPerCell",
-      "pNumValue":          40,
+      "pNumValue":          50,
       "Charge":             -4.803204197e-10,
       "Mass":               9.10938188e-28,
       "WeightSetMethod":    "InitialNumDens",
@@ -50,7 +50,7 @@
     {
       "ParticleName":       "ion_Xe1",
       "pNumSetMethod":      "PtclNumPerCell",
-      "pNumValue":          40,
+      "pNumValue":          50,
       "Charge":             4.803204197e-10,
       "Mass":               2.1801714e-23,
       "WeightSetMethod":    "InitialNumDens",

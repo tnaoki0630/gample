@@ -14,6 +14,7 @@ def compute_fft_from_phi(phi: np.ndarray, dt: float) -> Dict[str, np.ndarray]:
     freq = np.fft.rfftfreq(N, d=dt)
     amp = np.abs(Phi)
     phase = np.angle(Phi)
+    print(phi)
     return {"t": t, "phi": phi, "freq": freq, "amp": amp, "phase": phase}
 
 # ========= プロット関数 =========
@@ -62,11 +63,11 @@ def plot_spectrum(
     plt.close()
 
 # ========= I/O ユーティリティ =========
-def load_phi_from_csv(csv_path: str, phi_col: str = "phi") -> np.ndarray:
+def load_phi_from_csv(csv_path: str, phi_col: str = "phi") -> Dict[str, np.ndarray]:
     df = pd.read_csv(csv_path)
     if phi_col not in df.columns:
         raise ValueError(f"CSVに '{phi_col}' 列がありません。列名: {df.columns.tolist()}")
-    return df[phi_col].to_numpy()
+    return {"time": df["time"].to_numpy(), "phi": df[phi_col].to_numpy()}
 
 def save_outputs(data: Dict[str, np.ndarray],
                  ts_csv: str = "time_series_used.csv",
@@ -85,20 +86,21 @@ def main():
     filo_ts = pname+"_used_"+valName+".csv"
     filo_sp = pname+"_spectrum_"+valName+".csv"
     bool_fft = (args[3].lower() == "true") if len(args) >= 4 else True # fft 実行フラグ（デフォルトTrue, True 以外の場合はFalse）
-    dt = 5e-13  # [s]
 
     # 描画範囲（必要なければ None）
     t_xlim = None           # 例: (0, 100)
     t_ylim = None           # 例: (-1, 1)
-    f_xlim = (0,1e10)       # 例: (0, 50)
+    f_xlim = (0,2e8)           # 例: (0, 50)
     f_ylim = None           # 例: (0, None)
 
     # 読み込み
-    phi = load_phi_from_csv(pname+".csv", phi_col=valName)
+    data_raw = load_phi_from_csv(pname+".csv", phi_col=valName)
 
     if bool_fft:
         # fft 計算
-        data = compute_fft_from_phi(phi, dt)
+        dt = data_raw["time"][1] - data_raw["time"][0]
+        print(f"dt = {dt}")
+        data = compute_fft_from_phi(data_raw["phi"],dt)
 
         # 結果保存
         save_outputs(data, filo_ts, filo_sp)
@@ -119,7 +121,7 @@ def main():
     plot_spectrum(data["freq"], data["amp"], savepath=f"fig/{pname}_spectrum_{valName}.png", xlim=f_xlim, ylim=f_ylim)
 
     # 情報表示
-    print(f"N = {phi.size}")
+    print(f"N = {data["phi"].size}")
     print(f"dt = {dt}")
     print(f"time range: {data['t'][0]} .. {data['t'][-1]}")
     print(f"freq range : {data['freq'][1]} .. {data['freq'][-1]}")

@@ -6,8 +6,8 @@
   },
   "ParamForTimeIntegration": {
     "Start":            0,
-    "End":              4000,
-    "TimeStep":         5e-14,
+    "End":              400,
+    "TimeStep":         5e-12,
     "LogOutput":        1,
     "ParticleOutput":   0,
     "FieldOutput":      1,
@@ -45,7 +45,7 @@
       "GenerateType":       "uniform-Gaussian",
       "InitialPosX":        [0.1, 0.1],
       "InitialPosY":        [0.1, 0.1],
-      "InitialVel":         [1e5, 0.0, 0.0],
+      "InitialVel":         [1e9, 0.0, 0.0],
       "InitialTemp":        0
     },
     {
@@ -57,8 +57,8 @@
       "WeightSetMethod":    "InitialNumDens",
       "WeightValue":        5e10,
       "GenerateType":       "uniform-Gaussian",
-      "InitialPosX":        [0.05, 0.05],
-      "InitialPosY":        [0.05, 0.05],
+      "InitialPosX":        [0.25, 0.25],
+      "InitialPosY":        [0.25, 0.25],
       "InitialTemp":        0
     }
   ],

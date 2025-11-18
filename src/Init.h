@@ -87,6 +87,8 @@ struct ParamForField {
     NSString* FilePathBz;
     int weightOrder;
     int BorisOrder;
+    int checkCurDens;
+    std::vector<int> outputPoint;
     int diff_ngb;
 };
 

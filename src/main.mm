@@ -25,17 +25,10 @@ std::map<std::string, std::string> parseArgs(int argc, const char* argv[]) {
     return options;
 }
 
-/** \defgroup solvers
-  * - 境界条件: Dirichlet/periodic
-  * - 依存: AMGCL
-  * \see Particle, EMField
-  */
-
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
         // flags
         const bool debug = false;
-        // const bool neglectIonMotion = true;
         const bool neglectIonMotion = false;
 
         // 所要時間計測
@@ -87,8 +80,9 @@ int main(int argc, const char * argv[]) {
 
         // logger の作成
         struct ParamForTimeIntegration timeParam = init.paramForTimeIntegration;
-        NSLog(@"timeParam.TimeStep = %f",timeParam.TimeStep);
-        XmlLogger logger([[NSString stringWithFormat:@"%@_%s_log.xml", timeParam.ProjectName, timestamp.c_str()] UTF8String]);
+        std::string logName = [[NSString stringWithFormat:@"%@_%s", timeParam.ProjectName, timestamp.c_str()] UTF8String];
+        std::string csvHeader = "cycle,time,phi1,Ex1,Ey1"; // i = ngx/4, j = ngy/2 で記録．観測点座標の記録と複数観測点に対応したい
+        XmlLogger logger(logName,csvHeader);
         
         // パース結果の出力(debugprint.mm)
         printInitContents(init, logger);
@@ -137,11 +131,6 @@ int main(int argc, const char * argv[]) {
                 NSLog(@"[Fatal] restart failed.");
                 return 1;
             };
-            // 電荷密度計算
-            for (Particle* ptcl in ptclArr) {
-                std::string pName = [ptcl.pName UTF8String];
-                [ptcl integrateChargeDensity:fld withMoment:mom withLogger:logger];
-            }
         }
 
         // 初期場計算
@@ -178,6 +167,15 @@ int main(int argc, const char * argv[]) {
                 std::map<std::string,std::string> dataElapsedTime;
                 std::map<std::string,std::string> dataMemUsage;
 
+                // 電荷密度の初期化
+                [fld resetChargeDensity];
+                // 電荷密度の更新
+                if (debug){ NSLog(@"integCDens"); }
+                for (Particle* ptcl in ptclArr) {
+                    std::string pName = [ptcl.pName UTF8String];
+                    MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld withMoment:mom withLogger:logger], dataElapsedTime);
+                }
+
                 // 電場の更新
                 if (EqFlags.EMField == 1){
                     // 静電場計算
@@ -187,16 +185,6 @@ int main(int argc, const char * argv[]) {
                     if (timeParam.FieldOutput != 0 && cycle%timeParam.FieldOutput == 0){
                         outputField(cycle, fld, init, logger);
                     }
-                }
-
-
-                // 電荷密度の初期化
-                [fld resetChargeDensity];
-                // 電荷密度の更新
-                if (debug){ NSLog(@"integCDens"); }
-                for (Particle* ptcl in ptclArr) {
-                    std::string pName = [ptcl.pName UTF8String];
-                    MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld withMoment:mom withLogger:logger], dataElapsedTime);
                 }
 
                 // 粒子更新
