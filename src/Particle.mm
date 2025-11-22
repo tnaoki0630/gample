@@ -409,6 +409,7 @@ kernel void integrateChargeDensity(
     if (self) {
 
         // パラメータ取得
+        struct FlagForEquation EqFlags = initParam.flagForEquation;
         struct ParamForField fieldParam = initParam.paramForField;
         struct ParamForComputing compParam = initParam.paramForComputing;
         std::vector<struct ParamForParticle> particleParam = initParam.paramForParticle;
@@ -520,6 +521,7 @@ kernel void integrateChargeDensity(
         [fc setConstantValue:&bo type:MTLDataTypeInt atIndex:5];
         // enable current density accumlation(1: enable, other: disable)
         int curdens = fieldParam.checkCurDens;
+        if (EqFlags.EMField > 1){ curdens = 1; } // enable for electro-magnetic model
         [fc setConstantValue:&curdens type:MTLDataTypeInt atIndex:6];
 
         // 引数付きでカーネルを作成
@@ -1007,7 +1009,7 @@ kernel void integrateChargeDensity(
     intgPrm->pNum = prm->pNum;
     
     // const bool woMetal = true; // validation of atomic calculation
-    const bool woMetal = false; // validation of atomic calculation
+    const bool woMetal = false;
 
     if(!woMetal){
         // コマンドバッファとエンコーダの作成

@@ -13,6 +13,7 @@
 - (instancetype)initWithDevice:(id<MTLDevice>)device withParam:(Init*)initParam withLogger:(XmlLogger&)logger;
 - (void)outputCSRmtx:(int)n row:(std::vector<int>)row_ptr collumn:(std::vector<int>)col_idx value:(std::vector<float>)val;
 - (void)solvePoisson:(double)dt withLogger:(XmlLogger&)logger;
+- (void)solveVectorPotential:(double)dt withLogger:(XmlLogger&)logger;
 - (void)resetChargeDensity;
 - (void)checkChargeDensity;
 - (bool)load1dField:(std::vector<float>&)field withFilePath:(NSString*)filePath;
@@ -28,6 +29,7 @@
 - (id<MTLBuffer>)BxBuffer;
 - (id<MTLBuffer>)ByBuffer;
 - (id<MTLBuffer>)BzBuffer;
+- (id<MTLBuffer>)delBzBuffer;
 - (int)ngx;
 - (int)ngy;
 - (int)nx;

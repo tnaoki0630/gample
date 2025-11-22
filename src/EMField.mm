@@ -25,6 +25,14 @@ typedef amgcl::make_solver<
     >,
     amgcl::solver::cg<Backend>
 >  Solver;
+typedef amgcl::make_solver<
+    amgcl::amg<
+        Backend,
+        amgcl::coarsening::smoothed_aggregation,
+        amgcl::relaxation::spai0
+    >,
+    amgcl::solver::cg<Backend>
+>  Solver_BiCGSTAB;
 
 @interface EMField () {
     id<MTLDevice> _device;
@@ -39,6 +47,7 @@ typedef amgcl::make_solver<
     id<MTLBuffer> _BxBuffer;     // 磁場 x成分
     id<MTLBuffer> _ByBuffer;     // 磁場 y成分
     id<MTLBuffer> _BzBuffer;     // 磁場 z成分
+    id<MTLBuffer> _delBzBuffer;     // 変動磁場 z成分
     
     int _ngx;                    // x方向グリッド数
     int _ngy;                    // y方向グリッド数
@@ -75,9 +84,12 @@ typedef amgcl::make_solver<
     double _Cd;
     double _Cx;
     double _Cy;
+    int _nkx_vec; // for solving vector potential
+    int _nky_vec; // for solving vector potential
     std::vector<double> _phi_sol;
     std::vector<double> _rhs_BC;
     std::unique_ptr<Solver> _solver;    // smart pointer
+    std::unique_ptr<Solver_BiCGSTAB> _solver_Neumann;    // smart pointer
     double _cathodePos;
     double _lastEE;
 }
@@ -119,6 +131,7 @@ typedef amgcl::make_solver<
         _BxBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+1)*(_ny+2) options:MTLResourceStorageModeShared];
         _ByBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+2)*(_ny+1) options:MTLResourceStorageModeShared];
         _BzBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+2)*(_ny+2) options:MTLResourceStorageModeShared];
+        _delBzBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+2)*(_ny+2) options:MTLResourceStorageModeShared];
         
         // malloc
         _phi = (double*)malloc(sizeof(double) * (_nx+3)*(_ny+3) );
@@ -174,6 +187,10 @@ typedef amgcl::make_solver<
                     Bz[i+j*(_nx+2)] = Bz_input[i]*TtoG;
                 }
             }
+        }
+        float* delBz = (float*)_delBzBuffer.contents;
+        for (int i = 0; i < (_nx+2)*(_ny+2); i++) {
+            delBz[i] = 0.0;
         }
 
         // construct Poisson solver
@@ -423,6 +440,156 @@ typedef amgcl::make_solver<
             //     new Solver( std::tie(arrSize, ptr, col, val), prm )
             // );
         }
+
+        // solver for Darwin model
+        struct FlagForEquation EqFlags = initParam.flagForEquation;
+        if(EqFlags.EMField == 2){   
+            // CSR 行列初期化
+            ptr = std::vector<int>();
+            col = std::vector<int>();
+            val = std::vector<double>();
+
+            // 解くべき行列サイズ(periodic 以外は Neumann)
+            _nkx_vec = _ngx;
+            if ([_BC_Xmin isEqualToString:@"periodic"]){
+                _nkx_vec--;
+            }
+            _nky_vec = _ngy;
+            if ([_BC_Ymin isEqualToString:@"periodic"]){
+                _nky_vec--;
+            }
+            arrSize = (_nkx_vec+1)*(_nky_vec+1);
+
+            // construct CSR matrix
+            ptr.push_back(0);
+            for (int j = 0; j <= _nky_vec; ++j) {
+                for (int i = 0; i <= _nkx_vec; ++i) {
+
+                    int k = i + j*(_nkx_vec+1);
+                    int row_entries = 0;
+
+                    // 原点を0に固定
+                    if (k==0){
+                        col.push_back(k);
+                        val.push_back(1.0);
+                        row_entries++;
+                        ptr.push_back(ptr.back() + row_entries);
+                        continue;
+                    }
+                    // Neumann(前進/後進 差分)
+                    if (i == 0 && ![_BC_Xmin isEqualToString:@"periodic"]){
+                        col.push_back(k);
+                        val.push_back(-1.0/_dx);
+                        row_entries++;
+                        col.push_back(k+1);
+                        val.push_back(1.0/_dx);
+                        row_entries++;
+                        // 右辺ベクトルは逐次更新
+                        // _rhs_BC.push_back(_dphidx_Xmin[j]);
+                        // ptr を更新してループを抜ける
+                        ptr.push_back(ptr.back() + row_entries);
+                        continue;
+                    }else if(i == _nkx_vec && ![_BC_Xmax isEqualToString:@"periodic"]){
+                        col.push_back(k);
+                        val.push_back(1.0/_dx);
+                        row_entries++;
+                        col.push_back(k-1);
+                        val.push_back(-1.0/_dx);
+                        row_entries++;
+                        // ptr を更新してループを抜ける
+                        ptr.push_back(ptr.back() + row_entries);
+                        continue;
+                    }else if (j == 0 && ![_BC_Ymin isEqualToString:@"periodic"]){
+                        col.push_back(k);
+                        val.push_back(-1.0/_dy);
+                        row_entries++;
+                        col.push_back(k+(_nkx_vec+1));
+                        val.push_back(1.0/_dy);
+                        row_entries++;
+                        // ptr を更新してループを抜ける
+                        ptr.push_back(ptr.back() + row_entries);
+                        continue;
+                    }else if(j == _nky_vec && ![_BC_Ymax isEqualToString:@"periodic"]){
+                        col.push_back(k);
+                        val.push_back(1.0/_dx);
+                        row_entries++;
+                        col.push_back(k-(_nkx_vec+1));
+                        val.push_back(-1.0/_dx);
+                        row_entries++;
+                        // ptr を更新してループを抜ける
+                        ptr.push_back(ptr.back() + row_entries);
+                        continue;
+                    }
+
+                    // diagonal
+                    col.push_back(k);
+                    val.push_back(_Cd);
+                    row_entries++;
+                    // 右辺ベクトルは逐次更新
+                    // _rhs_BC.push_back(0.0);
+
+                    // imin側
+                    if (i == 0){
+                        // periodic
+                        col.push_back(k+_nkx_vec);
+                        val.push_back(_Cx);
+                        row_entries++;
+                    }else{
+                        col.push_back(k-1);
+                        val.push_back(_Cx);
+                        row_entries++;
+                    }
+
+                    // imax側
+                    if (i == _nkx_vec){
+                        // periodic
+                        col.push_back(k-_nkx_vec);
+                        val.push_back(_Cx);
+                        row_entries++;
+                    }else{
+                        col.push_back(k+1);
+                        val.push_back(_Cx);
+                        row_entries++;
+                    }
+
+                    // jmin側
+                    if (j == 0){
+                        // periodic
+                        col.push_back(k+_nky_vec*(_nkx_vec+1));
+                        val.push_back(_Cy);
+                        row_entries++;
+                    }else{
+                        col.push_back(k-(_nkx_vec+1));
+                        val.push_back(_Cy);
+                        row_entries++;
+                    }
+
+                    // jmax側
+                    if (j == _nky_vec){
+                        // periodic
+                        col.push_back(k-_nky_vec*(_nkx_vec+1));
+                        val.push_back(_Cy);
+                        row_entries++;
+                    }else{
+                        col.push_back(k+(_nkx_vec+1));
+                        val.push_back(_Cy);
+                        row_entries++;
+                    }
+
+                    // CSR ポインタ更新
+                    ptr.push_back(ptr.back() + row_entries);
+                }
+            }
+            // --- amgcl の設定 ---
+            Solver::params prm;
+            prm.solver.maxiter = compParam.maxiter;
+            prm.solver.tol = compParam.tolerance;
+            // _solver を生成してインスタンス変数として確保
+            _solver_Neumann = std::unique_ptr<Solver>(
+                new Solver_BiCGSTAB( std::tie(arrSize, ptr, col, val), prm )
+            );   
+        }
+
     }
     
     return self;
@@ -908,6 +1075,170 @@ typedef amgcl::make_solver<
     logger.csvOutput(output);
 }
 
+- (void)solveVectorPotential:(double)dt withLogger:(XmlLogger&)logger{
+    // 電流密度の取得
+    float* jx = (float*)_jxBuffer.contents;
+    float* jy = (float*)_jyBuffer.contents;
+
+    // j の Helmholtz分解
+    // rhs
+    int arrSize = (_nkx_vec+1)*(_nky_vec+1);
+    NSLog(@"_nkx = %d, _nky = %d, arrSize = %d",_nkx_vec,_nky_vec,arrSize);
+    std::vector<double> rhs;
+    double sum = 0;
+    for (int j = 0; j <= _nky_vec; j++){
+        for (int i = 0; i <= _nkx_vec; i++){
+            double rhs_new;
+            // fix 0
+            if(i == 0 && j == 0){
+                rhs_new = 0.0;
+                rhs.push_back(rhs_new);
+                continue;
+            }
+            if(![_BC_Xmin isEqualToString:@"periodic"]){
+                // neumann
+                if(i == 0){
+                    rhs_new = -jx[(i+_ngb)+(j+_ngb)*(_nx+2)];
+                }else if(i == _nkx_vec){
+                    rhs_new = jx[(i+_ngb)+(j+_ngb)*(_nx+2)];
+                }
+            }
+            if(![_BC_Ymin isEqualToString:@"periodic"]){
+                // neumann
+                if(j == 0){
+                    rhs_new = -jy[(i+_ngb)+(j+_ngb)*(_nx+1)];
+                }else if(j == _nky_vec){
+                    rhs_new = jy[(i+_ngb)+(j+_ngb)*(_nx+1)];
+                }
+            }
+            double djxdx, djydy;
+            djxdx = (jx[(i+_ngb+1)+(j+_ngb)*(_nx+2)] - jx[(i+_ngb)+(j+_ngb)*(_nx+2)])/_dx;
+            djydy = (jy[(i+_ngb)+(j+_ngb+1)*(_nx+1)] - jy[(i+_ngb)+(j+_ngb)*(_nx+1)])/_dy;
+            rhs_new += static_cast<double>(djxdx+djydy);
+            rhs.push_back(rhs_new);
+            // NSLog(@"rhs_new = %e",rhs_new);
+        }
+    }
+
+    // // shift to 0 mean
+    // sum /= arrSize;
+    // for (int k = 0; k < arrSize; k++){
+    //     rhs[k] -= sum;
+    // }
+    // NSLog(@"rhs_sum = %e",sum);
+    // solve
+    int iters;
+    double error;
+    std::vector<double> sol;
+    sol.assign(arrSize, 0.0);
+    std::tie(iters, error) = (*_solver_Neumann)(rhs, sol);
+    
+    // solve vector potential(Ax)
+    // rhs
+    rhs = std::vector<double>();
+    sum = 0;
+    for (int j = 0; j <= _nky_vec; j++){
+        for (int i = 0; i <= _nkx_vec; i++){
+            double rhs_new, jlx;
+            int k = i + j*(_nkx_vec+1);
+            // fix 0
+            if(i == 0 && j == 0){
+                rhs_new = 0.0;
+            }
+            if (i < _nkx_vec){
+                jlx = (sol[i+1+j*(_nkx_vec+1)] - sol[i+j*(_nkx_vec+1)])/_dx;
+                rhs_new = -4*PI/c*(jx[(i+_ngb+1)+(j+_ngb)*(_nx+2)] - jlx);
+            }else{
+                rhs_new = 0.0;
+            }
+            rhs.push_back(rhs_new);
+            NSLog(@"(Ax) rhs_new = %e, jly = %e, sol = %e",rhs_new,jlx*4*PI/c, sol[k]);
+        }
+    }
+    // shift to 0 mean
+    // sum /= arrSize;
+    // for (int k = 0; k < arrSize; k++){
+    //     rhs[k] -= sum;
+    // }
+    // solve
+    int iters_vecx;
+    double error_vecx;
+    std::vector<double> sol_x;
+    sol_x.assign(arrSize, 0.0);
+    std::tie(iters_vecx, error_vecx) = (*_solver_Neumann)(rhs, sol_x);
+    
+    // solve vector potential(Ay)
+    // rhs
+    rhs = std::vector<double>();
+    for (int j = 0; j <= _nky_vec; j++){
+        for (int i = 0; i <= _nkx_vec; i++){
+            double rhs_new, jly;
+            int k = i + j*(_nkx_vec+1);
+            // fix 0
+            if(i == 0 && j == 0){
+                rhs_new = 0.0;
+            }
+            if (j < _nky_vec){
+                jly = (sol[i+(j+1)*(_nkx_vec+1)] - sol[i+j*(_nkx_vec+1)])/_dy;
+                rhs_new = -4*PI/c*(jy[(i+_ngb+1)+(j+_ngb)*(_nx+1)] - jly);
+            }else{
+                rhs_new = 0.0;
+            }
+            rhs.push_back(rhs_new);
+            NSLog(@"(Ay) rhs_new = %e, jly = %e, sol = %e",rhs_new,jly*4*PI/c, sol[k]);
+        }
+    }
+    // solve
+    int iters_vecy;
+    double error_vecy;
+    std::vector<double> sol_y;
+    sol_y.assign(arrSize, 0.0);
+    std::tie(iters_vecy, error_vecy) = (*_solver_Neumann)(rhs, sol_y);
+    
+    // index
+    bool isLeft, isRight, isBottom, isTop;
+    int idx_in_i, idx_in_j;
+    double dphidx, dphidy;
+
+    // Ax, Ay から領域内の Bz を計算
+    float* delBz = (float*)_delBzBuffer.contents;
+    for (int j = 0; j < _nky_vec; j++){
+        for (int i = 0; i < _nkx_vec; i++){
+            double dyAx = (sol_x[i+(j+1)*(_nkx_vec+1)] - sol_x[i+j*(_nkx_vec+1)])/_dy;
+            double dxAy = (sol_y[i+1+j*(_nkx_vec+1)] - sol_y[i+j*(_nkx_vec+1)])/_dx;
+            delBz[i+_ngb+1+(j+_ngb+1)*(_nx+2)] = dxAy - dyAx;
+        }
+    }
+
+    // time-series csv
+    std::ofstream ofs;
+    ofs.open("sol.csv");
+    if (!ofs) throw std::runtime_error("Cannot open csv file: sol.csv");
+    ofs << "i,j,sol_decompose,sol_Ax,sol_Ay" << "\n";
+
+    // output sol
+    for (int j = 0; j < _nky_vec; j++){
+        for (int i = 0; i < _nkx_vec; i++){
+            int k = i+j*(_nkx_vec);
+            ofs << i << "," << j << ","
+            << fmtSci(sol[k],6) << ","
+            << fmtSci(sol_x[k],6) << ","
+            << fmtSci(sol_y[k],6) << "," << "\n";
+        }
+    }
+
+    // 収束状況
+    std::map<std::string, std::string> data ={
+        {"decompose_iteration", std::to_string(iters)},
+        {"decompose_error", fmtSci(error, 6)},
+        {"solveAx_iteration", std::to_string(iters_vecx)},
+        {"solveAx_error", fmtSci(error_vecx, 6)},
+        {"solveAy_iteration", std::to_string(iters_vecy)},
+        {"solveAy_error", fmtSci(error_vecy, 6)},
+    };
+    logger.logSection("solveVectorPotential", data);
+}
+
 - (void)resetChargeDensity{
     // 電荷密度の取得
     float* rho = (float*)_rhoBuffer.contents;
@@ -964,6 +1295,7 @@ typedef amgcl::make_solver<
 - (id<MTLBuffer>)BxBuffer { return _BxBuffer; }
 - (id<MTLBuffer>)ByBuffer { return _ByBuffer; }
 - (id<MTLBuffer>)BzBuffer { return _BzBuffer; }
+- (id<MTLBuffer>)delBzBuffer { return _delBzBuffer; }
 
 // グリッド情報へのアクセサ
 - (int)ngx { return _ngx; }

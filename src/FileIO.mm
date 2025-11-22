@@ -40,6 +40,7 @@ void outputPhaseSpace(int cycle, Particle* ptcl, Init* init, XmlLogger& logger){
 
 void outputField(int cycle, EMField* fld, Init* init, XmlLogger& logger){
     struct ParamForTimeIntegration timeParam = init.paramForTimeIntegration;
+    struct FlagForEquation EqFlags = init.flagForEquation;
 
     NSString *fileName = [NSString stringWithFormat:@"bin/%@_EMField_%08d.bin", timeParam.ProjectName, cycle];
     const char *filePath = [fileName UTF8String];
@@ -50,6 +51,9 @@ void outputField(int cycle, EMField* fld, Init* init, XmlLogger& logger){
     float* Ex  = (float *)[fld.ExBuffer  contents]; 
     float* Ey  = (float *)[fld.EyBuffer  contents]; 
     float* Bz  = (float *)[fld.BzBuffer  contents]; 
+    float* jx  = (float *)[fld.jxBuffer  contents]; 
+    float* jy  = (float *)[fld.jyBuffer  contents]; 
+    float* delBz  = (float *)[fld.delBzBuffer  contents]; 
 
     // グリッド情報取得
     int ngx = fld.ngx;
@@ -113,6 +117,11 @@ void outputField(int cycle, EMField* fld, Init* init, XmlLogger& logger){
     writeField(fp, "Ex", 1, Ex, (nx+2)*(ny+1), GtoV);
     writeField(fp, "Ey", 2, Ey, (nx+1)*(ny+2), GtoV);
     writeField(fp, "Bz", 3, Bz, (nx+2)*(ny+2), GtoT);
+    if(EqFlags.EMField == 2){
+        writeField(fp, "jx", 1, jx, (nx+2)*(ny+1), sJtoJ);
+        writeField(fp, "jy", 2, jy, (nx+1)*(ny+2), sJtoJ);
+        writeField(fp, "delBz", 3, delBz, (nx+2)*(ny+2), GtoT);
+    }
     
     fclose(fp);
     NSLog(@"Field data successfully written to %s", filePath);

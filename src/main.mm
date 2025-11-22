@@ -176,15 +176,18 @@ int main(int argc, const char * argv[]) {
                     MEASURE("integCDens_"+pName, [ptcl integrateChargeDensity:fld withMoment:mom withLogger:logger], dataElapsedTime);
                 }
 
-                // 電場の更新
-                if (EqFlags.EMField == 1){
-                    // 静電場計算
+                // field update
+                if (EqFlags.EMField == 1 || EqFlags.EMField == 2){
+                    // electro-static
                     if (debug){ NSLog(@"poisson"); }
                     MEASURE("solvePoisson", [fld solvePoisson:dt withLogger:logger], dataElapsedTime);
-                    // 場の出力
-                    if (timeParam.FieldOutput != 0 && cycle%timeParam.FieldOutput == 0){
-                        outputField(cycle, fld, init, logger);
-                    }
+                }
+                if (EqFlags.EMField == 2){
+                    MEASURE("solveVectorPotential", [fld solveVectorPotential:dt withLogger:logger], dataElapsedTime);   
+                }
+                // output
+                if (timeParam.FieldOutput != 0 && cycle%timeParam.FieldOutput == 0){
+                    outputField(cycle, fld, init, logger);
                 }
 
                 // 粒子更新
