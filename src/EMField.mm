@@ -31,7 +31,7 @@ typedef amgcl::make_solver<
         amgcl::coarsening::smoothed_aggregation,
         amgcl::relaxation::spai0
     >,
-    amgcl::solver::cg<Backend>
+    amgcl::solver::bicgstab<Backend>
 >  Solver_BiCGSTAB;
 
 @interface EMField () {
@@ -468,109 +468,111 @@ typedef amgcl::make_solver<
                     int k = i + j*(_nkx_vec+1);
                     int row_entries = 0;
 
-                    // 原点を0に固定
-                    if (k==0){
-                        col.push_back(k);
-                        val.push_back(1.0);
-                        row_entries++;
-                        ptr.push_back(ptr.back() + row_entries);
-                        continue;
-                    }
-                    // Neumann(前進/後進 差分)
-                    if (i == 0 && ![_BC_Xmin isEqualToString:@"periodic"]){
-                        col.push_back(k);
-                        val.push_back(-1.0/_dx);
-                        row_entries++;
-                        col.push_back(k+1);
-                        val.push_back(1.0/_dx);
-                        row_entries++;
-                        // 右辺ベクトルは逐次更新
-                        // _rhs_BC.push_back(_dphidx_Xmin[j]);
-                        // ptr を更新してループを抜ける
-                        ptr.push_back(ptr.back() + row_entries);
-                        continue;
-                    }else if(i == _nkx_vec && ![_BC_Xmax isEqualToString:@"periodic"]){
-                        col.push_back(k);
-                        val.push_back(1.0/_dx);
-                        row_entries++;
-                        col.push_back(k-1);
-                        val.push_back(-1.0/_dx);
-                        row_entries++;
-                        // ptr を更新してループを抜ける
-                        ptr.push_back(ptr.back() + row_entries);
-                        continue;
-                    }else if (j == 0 && ![_BC_Ymin isEqualToString:@"periodic"]){
-                        col.push_back(k);
-                        val.push_back(-1.0/_dy);
-                        row_entries++;
-                        col.push_back(k+(_nkx_vec+1));
-                        val.push_back(1.0/_dy);
-                        row_entries++;
-                        // ptr を更新してループを抜ける
-                        ptr.push_back(ptr.back() + row_entries);
-                        continue;
-                    }else if(j == _nky_vec && ![_BC_Ymax isEqualToString:@"periodic"]){
-                        col.push_back(k);
-                        val.push_back(1.0/_dx);
-                        row_entries++;
-                        col.push_back(k-(_nkx_vec+1));
-                        val.push_back(-1.0/_dx);
-                        row_entries++;
-                        // ptr を更新してループを抜ける
-                        ptr.push_back(ptr.back() + row_entries);
-                        continue;
-                    }
+                    // // 原点を0に固定
+                    // if (k==0){
+                    //     col.push_back(k);
+                    //     val.push_back(1.0);
+                    //     row_entries++;
+                    //     ptr.push_back(ptr.back() + row_entries);
+                    //     continue;
+                    // }
 
                     // diagonal
                     col.push_back(k);
                     val.push_back(_Cd);
                     row_entries++;
-                    // 右辺ベクトルは逐次更新
-                    // _rhs_BC.push_back(0.0);
 
-                    // imin側
+                    // imin,imax側
                     if (i == 0){
-                        // periodic
-                        col.push_back(k+_nkx_vec);
-                        val.push_back(_Cx);
-                        row_entries++;
+                        if([_BC_Xmin isEqualToString:@"periodic"]){
+                            // periodic
+                            // imin
+                            col.push_back(k+_nkx_vec);
+                            val.push_back(_Cx);
+                            row_entries++;
+                            // imax
+                            col.push_back(k+1);
+                            val.push_back(_Cx);
+                            row_entries++;
+                        }else{
+                            // Neumann
+                            // imax
+                            col.push_back(k+1);
+                            val.push_back(2*_Cx);
+                            row_entries++;
+                        }
+                    }else if(i == _nkx_vec){
+                        if([_BC_Xmin isEqualToString:@"periodic"]){
+                            // periodic
+                            // imin
+                            col.push_back(k-1);
+                            val.push_back(_Cx);
+                            row_entries++;
+                            // imax
+                            col.push_back(k-_nkx_vec);
+                            val.push_back(_Cx);
+                            row_entries++;
+                        }else{
+                            // Neumann
+                            // imax
+                            col.push_back(k-1);
+                            val.push_back(2*_Cx);
+                            row_entries++;
+                        }
                     }else{
+                        // imin
                         col.push_back(k-1);
                         val.push_back(_Cx);
                         row_entries++;
-                    }
-
-                    // imax側
-                    if (i == _nkx_vec){
-                        // periodic
-                        col.push_back(k-_nkx_vec);
-                        val.push_back(_Cx);
-                        row_entries++;
-                    }else{
+                        // imax
                         col.push_back(k+1);
                         val.push_back(_Cx);
                         row_entries++;
                     }
 
-                    // jmin側
+                    // jmin,jmax側
                     if (j == 0){
-                        // periodic
-                        col.push_back(k+_nky_vec*(_nkx_vec+1));
-                        val.push_back(_Cy);
-                        row_entries++;
+                        if([_BC_Ymin isEqualToString:@"periodic"]){
+                            // periodic
+                            // jmin
+                            col.push_back(k+_nky_vec*(_nkx_vec+1));
+                            val.push_back(_Cy);
+                            row_entries++;
+                            // jmax
+                            col.push_back(k+(_nkx_vec+1));
+                            val.push_back(_Cy);
+                            row_entries++;
+                        }else{
+                            // Neumann
+                            // jmax
+                            col.push_back(k+(_nkx_vec+1));
+                            val.push_back(2*_Cy);
+                            row_entries++;
+                        }
+                    }else if(j == _nky_vec){
+                        if([_BC_Ymin isEqualToString:@"periodic"]){
+                            // periodic
+                            // jmin
+                            col.push_back(k-(_nkx_vec+1));
+                            val.push_back(_Cy);
+                            row_entries++;
+                            // jmax
+                            col.push_back(k-_nky_vec*(_nkx_vec+1));
+                            val.push_back(_Cy);
+                            row_entries++;
+                        }else{
+                            // Neumann
+                            // jmin
+                            col.push_back(k-(_nkx_vec+1));
+                            val.push_back(2*_Cy);
+                            row_entries++;
+                        }
                     }else{
+                        // jmin
                         col.push_back(k-(_nkx_vec+1));
                         val.push_back(_Cy);
                         row_entries++;
-                    }
-
-                    // jmax側
-                    if (j == _nky_vec){
-                        // periodic
-                        col.push_back(k-_nky_vec*(_nkx_vec+1));
-                        val.push_back(_Cy);
-                        row_entries++;
-                    }else{
+                        // jmax
                         col.push_back(k+(_nkx_vec+1));
                         val.push_back(_Cy);
                         row_entries++;
@@ -580,13 +582,31 @@ typedef amgcl::make_solver<
                     ptr.push_back(ptr.back() + row_entries);
                 }
             }
+            // Dirichlet がない場合は固定点を設定
+            // int fixpoint = 50;
+            // const int row_begin = ptr[fixpoint];
+            // const int row_end   = ptr[fixpoint+1];
+            // for(int ia = row_begin; ia < row_end; ia++){
+            //     if (col[ia] == fixpoint) {
+            //         // 対角成分
+            //         val[ia] = 1.0;
+            //     } else {
+            //         // それ以外の列は 0
+            //         val[ia] = 0.0;
+            //     }
+            // }
             // --- amgcl の設定 ---
-            Solver::params prm;
-            prm.solver.maxiter = compParam.maxiter;
-            prm.solver.tol = compParam.tolerance;
+            Solver_BiCGSTAB::params prm_bicgstab;
+            prm_bicgstab.solver.maxiter = compParam.maxiter;
+            prm_bicgstab.solver.tol = compParam.tolerance;
+            prm_bicgstab.precond.direct_coarse = false;   // 粗いレベルでも反復で解く
+            prm_bicgstab.precond.coarsening.nullspace.cols = 1;
+            prm_bicgstab.precond.coarsening.nullspace.B.resize(arrSize);
+            std::fill(prm_bicgstab.precond.coarsening.nullspace.B.begin(),
+                    prm_bicgstab.precond.coarsening.nullspace.B.end(), 1.0);
             // _solver を生成してインスタンス変数として確保
-            _solver_Neumann = std::unique_ptr<Solver>(
-                new Solver_BiCGSTAB( std::tie(arrSize, ptr, col, val), prm )
+            _solver_Neumann = std::unique_ptr<Solver_BiCGSTAB>(
+                new Solver_BiCGSTAB( std::tie(arrSize, ptr, col, val), prm_bicgstab )
             );   
         }
 
@@ -1080,6 +1100,9 @@ typedef amgcl::make_solver<
     float* jx = (float*)_jxBuffer.contents;
     float* jy = (float*)_jyBuffer.contents;
 
+    // 固定点
+    int fixpoint = 50;
+
     // j の Helmholtz分解
     // rhs
     int arrSize = (_nkx_vec+1)*(_nky_vec+1);
@@ -1088,44 +1111,46 @@ typedef amgcl::make_solver<
     double sum = 0;
     for (int j = 0; j <= _nky_vec; j++){
         for (int i = 0; i <= _nkx_vec; i++){
-            double rhs_new;
+            double rhs_new = 0.0;
+            int k = i + j*(_nkx_vec+1);
             // fix 0
-            if(i == 0 && j == 0){
-                rhs_new = 0.0;
-                rhs.push_back(rhs_new);
-                continue;
-            }
+            // if(k == fixpoint){
+            //     rhs_new = 0.0;
+            //     rhs.push_back(rhs_new);
+            //     continue;
+            // }
             if(![_BC_Xmin isEqualToString:@"periodic"]){
                 // neumann
                 if(i == 0){
-                    rhs_new = -jx[(i+_ngb)+(j+_ngb)*(_nx+2)];
+                    rhs_new += -2*jx[(i+_ngb)+(j+_ngb)*(_nx+2)]/_dx;
                 }else if(i == _nkx_vec){
-                    rhs_new = jx[(i+_ngb)+(j+_ngb)*(_nx+2)];
+                    rhs_new += 2*jx[(i+_ngb)+(j+_ngb)*(_nx+2)]/_dx;
                 }
             }
             if(![_BC_Ymin isEqualToString:@"periodic"]){
                 // neumann
                 if(j == 0){
-                    rhs_new = -jy[(i+_ngb)+(j+_ngb)*(_nx+1)];
+                    rhs_new += -2*jy[(i+_ngb)+(j+_ngb)*(_nx+1)]/_dy;
                 }else if(j == _nky_vec){
-                    rhs_new = jy[(i+_ngb)+(j+_ngb)*(_nx+1)];
+                    rhs_new += 2*jy[(i+_ngb)+(j+_ngb)*(_nx+1)]/_dy;
                 }
             }
             double djxdx, djydy;
             djxdx = (jx[(i+_ngb+1)+(j+_ngb)*(_nx+2)] - jx[(i+_ngb)+(j+_ngb)*(_nx+2)])/_dx;
             djydy = (jy[(i+_ngb)+(j+_ngb+1)*(_nx+1)] - jy[(i+_ngb)+(j+_ngb)*(_nx+1)])/_dy;
             rhs_new += static_cast<double>(djxdx+djydy);
+            sum += rhs_new;
             rhs.push_back(rhs_new);
-            // NSLog(@"rhs_new = %e",rhs_new);
+            NSLog(@"rhs_new[%d,%d] = %e, rhs.size = %zu",i,j,rhs_new,rhs.size());
         }
     }
 
-    // // shift to 0 mean
-    // sum /= arrSize;
-    // for (int k = 0; k < arrSize; k++){
-    //     rhs[k] -= sum;
-    // }
-    // NSLog(@"rhs_sum = %e",sum);
+    // shift to 0 mean
+    sum /= arrSize;
+    for (int k = 0; k < arrSize; k++){
+        rhs[k] -= sum;
+    }
+    NSLog(@"rhs_ave = %e",sum);
     // solve
     int iters;
     double error;
@@ -1135,65 +1160,79 @@ typedef amgcl::make_solver<
     
     // solve vector potential(Ax)
     // rhs
-    rhs = std::vector<double>();
-    sum = 0;
+    std::vector<double> rhs_x;
+    sum = 0.0;
     for (int j = 0; j <= _nky_vec; j++){
         for (int i = 0; i <= _nkx_vec; i++){
-            double rhs_new, jlx;
+            double rhs_new = 0.0;
+            double jlx;
             int k = i + j*(_nkx_vec+1);
             // fix 0
-            if(i == 0 && j == 0){
-                rhs_new = 0.0;
-            }
+            // if(k == fixpoint){
+            //     rhs_new = 0.0;
+            //     rhs_x.push_back(rhs_new);
+            //     continue;
+            // }
             if (i < _nkx_vec){
                 jlx = (sol[i+1+j*(_nkx_vec+1)] - sol[i+j*(_nkx_vec+1)])/_dx;
                 rhs_new = -4*PI/c*(jx[(i+_ngb+1)+(j+_ngb)*(_nx+2)] - jlx);
             }else{
                 rhs_new = 0.0;
             }
-            rhs.push_back(rhs_new);
-            NSLog(@"(Ax) rhs_new = %e, jly = %e, sol = %e",rhs_new,jlx*4*PI/c, sol[k]);
+            rhs_x.push_back(rhs_new);
+            NSLog(@"(Ax) rhs_new = %e, jlx = %e, sol = %e",rhs_new,jlx*4*PI/c, sol[k]);
+            sum += rhs_new;
         }
     }
     // shift to 0 mean
-    // sum /= arrSize;
-    // for (int k = 0; k < arrSize; k++){
-    //     rhs[k] -= sum;
-    // }
+    sum /= arrSize;
+    for (int k = 0; k < arrSize; k++){
+        rhs_x[k] -= sum;
+    }
     // solve
     int iters_vecx;
     double error_vecx;
     std::vector<double> sol_x;
     sol_x.assign(arrSize, 0.0);
-    std::tie(iters_vecx, error_vecx) = (*_solver_Neumann)(rhs, sol_x);
+    std::tie(iters_vecx, error_vecx) = (*_solver_Neumann)(rhs_x, sol_x);
     
     // solve vector potential(Ay)
     // rhs
-    rhs = std::vector<double>();
+    std::vector<double> rhs_y;
+    sum = 0.0;
     for (int j = 0; j <= _nky_vec; j++){
         for (int i = 0; i <= _nkx_vec; i++){
-            double rhs_new, jly;
+            double rhs_new = 0.0;
+            double jly;
             int k = i + j*(_nkx_vec+1);
             // fix 0
-            if(i == 0 && j == 0){
-                rhs_new = 0.0;
-            }
+            // if(k == fixpoint){
+            //     rhs_new = 0.0;
+            //     rhs_y.push_back(rhs_new);
+            //     continue;
+            // }
             if (j < _nky_vec){
                 jly = (sol[i+(j+1)*(_nkx_vec+1)] - sol[i+j*(_nkx_vec+1)])/_dy;
-                rhs_new = -4*PI/c*(jy[(i+_ngb+1)+(j+_ngb)*(_nx+1)] - jly);
+                rhs_new += -4*PI/c*(jy[(i+_ngb)+(j+_ngb+1)*(_nx+1)] - jly);
             }else{
-                rhs_new = 0.0;
+                rhs_new += 0.0;
             }
-            rhs.push_back(rhs_new);
+            rhs_y.push_back(rhs_new);
             NSLog(@"(Ay) rhs_new = %e, jly = %e, sol = %e",rhs_new,jly*4*PI/c, sol[k]);
+            sum += rhs_new;
         }
+    }
+    // shift to 0 mean
+    sum /= arrSize;
+    for (int k = 0; k < arrSize; k++){
+        rhs_y[k] -= sum;
     }
     // solve
     int iters_vecy;
     double error_vecy;
     std::vector<double> sol_y;
     sol_y.assign(arrSize, 0.0);
-    std::tie(iters_vecy, error_vecy) = (*_solver_Neumann)(rhs, sol_y);
+    std::tie(iters_vecy, error_vecy) = (*_solver_Neumann)(rhs_y, sol_y);
     
     // index
     bool isLeft, isRight, isBottom, isTop;
@@ -1214,16 +1253,19 @@ typedef amgcl::make_solver<
     std::ofstream ofs;
     ofs.open("sol.csv");
     if (!ofs) throw std::runtime_error("Cannot open csv file: sol.csv");
-    ofs << "i,j,sol_decompose,sol_Ax,sol_Ay" << "\n";
+    ofs << "i,j,rhs_decompose,sol_decompose,rhs_Ax,sol_Ax,rhs_Ay,sol_Ay" << "\n";
 
     // output sol
-    for (int j = 0; j < _nky_vec; j++){
-        for (int i = 0; i < _nkx_vec; i++){
-            int k = i+j*(_nkx_vec);
+    for (int j = 0; j <= _nky_vec; j++){
+        for (int i = 0; i <= _nkx_vec; i++){
+            int k = i+j*(_nkx_vec+1);
             ofs << i << "," << j << ","
+            << fmtSci(rhs[k],6) << ","
             << fmtSci(sol[k],6) << ","
+            << fmtSci(rhs_x[k],6) << ","
             << fmtSci(sol_x[k],6) << ","
-            << fmtSci(sol_y[k],6) << "," << "\n";
+            << fmtSci(rhs_y[k],6) << ","
+            << fmtSci(sol_y[k],6) << "\n";
         }
     }
 

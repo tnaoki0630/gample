@@ -6,7 +6,7 @@
   },
   "ParamForTimeIntegration": {
     "Start":            0,
-    "End":              5,
+    "End":              10,
     "TimeStep":         5e-12,
     "LogOutput":        1,
     "ParticleOutput":   0,
@@ -18,7 +18,7 @@
     "MaximumParticleNumber":  20000,
     "ThreadGroupSize":        32,
     "IntegrationChunkSize":   128,
-    "MaxiterForPoisson":      100,
+    "MaxiterForPoisson":      200,
     "ToleranceForPoisson":    1e-10
   },
   "ParamForField": {
