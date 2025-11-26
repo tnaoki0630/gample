@@ -1,16 +1,16 @@
 {
   "FlagForEquation": {
     "Particle":     2,
-    "EMField":      1,
+    "EMField":      2,
     "MCCollision":  0
   },
   "ParamForTimeIntegration": {
     "Start":            0,
     "End":              200000,
     "TimeStep":         5e-12,
-    "LogOutput":        100,
+    "LogOutput":        10,
     "ParticleOutput":   0,
-    "FieldOutput":      20000,
+    "FieldOutput":      2000,
     "ProgressOutput":   200000,
     "ProjectName":      "org_darwin",
     "RestartName":      "org_darwin"

@@ -53,6 +53,8 @@ void outputField(int cycle, EMField* fld, Init* init, XmlLogger& logger){
     float* Bz  = (float *)[fld.BzBuffer  contents]; 
     float* jx  = (float *)[fld.jxBuffer  contents]; 
     float* jy  = (float *)[fld.jyBuffer  contents]; 
+    float* delEx  = (float *)[fld.delExBuffer  contents]; 
+    float* delEy  = (float *)[fld.delEyBuffer  contents]; 
     float* delBz  = (float *)[fld.delBzBuffer  contents]; 
 
     // グリッド情報取得
@@ -120,6 +122,8 @@ void outputField(int cycle, EMField* fld, Init* init, XmlLogger& logger){
     if(EqFlags.EMField == 2){
         writeField(fp, "jx", 1, jx, (nx+2)*(ny+1), sJtoJ);
         writeField(fp, "jy", 2, jy, (nx+1)*(ny+2), sJtoJ);
+        writeField(fp, "delEx", 1, delEx, (nx+2)*(ny+1), GtoV);
+        writeField(fp, "delEy", 2, delEy, (nx+1)*(ny+2), GtoV);
         writeField(fp, "delBz", 3, delBz, (nx+2)*(ny+2), GtoT);
     }
     

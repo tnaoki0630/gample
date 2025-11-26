@@ -29,7 +29,12 @@
 - (id<MTLBuffer>)BxBuffer;
 - (id<MTLBuffer>)ByBuffer;
 - (id<MTLBuffer>)BzBuffer;
+- (id<MTLBuffer>)delExBuffer;
+- (id<MTLBuffer>)delEyBuffer;
 - (id<MTLBuffer>)delBzBuffer;
+- (id<MTLBuffer>)totalExBuffer;
+- (id<MTLBuffer>)totalEyBuffer;
+- (id<MTLBuffer>)totalBzBuffer;
 - (int)ngx;
 - (int)ngy;
 - (int)nx;

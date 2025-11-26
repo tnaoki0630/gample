@@ -7,6 +7,7 @@
 #include <amgcl/backend/builtin.hpp>
 #include <amgcl/solver/bicgstab.hpp>
 #include <amgcl/solver/cg.hpp>
+#include <amgcl/solver/fgmres.hpp>
 #include <amgcl/amg.hpp>
 #include <amgcl/coarsening/smoothed_aggregation.hpp>
 #include <amgcl/relaxation/spai0.hpp>
@@ -31,7 +32,7 @@ typedef amgcl::make_solver<
         amgcl::coarsening::smoothed_aggregation,
         amgcl::relaxation::spai0
     >,
-    amgcl::solver::bicgstab<Backend>
+    amgcl::solver::fgmres<Backend>
 >  Solver_BiCGSTAB;
 
 @interface EMField () {
@@ -47,7 +48,14 @@ typedef amgcl::make_solver<
     id<MTLBuffer> _BxBuffer;     // 磁場 x成分
     id<MTLBuffer> _ByBuffer;     // 磁場 y成分
     id<MTLBuffer> _BzBuffer;     // 磁場 z成分
+    id<MTLBuffer> _delExBuffer;     // 変動電場 x成分
+    id<MTLBuffer> _delEyBuffer;     // 変動電場 y成分
     id<MTLBuffer> _delBzBuffer;     // 変動磁場 z成分
+    id<MTLBuffer> _totalExBuffer;     // 合計 x成分
+    id<MTLBuffer> _totalEyBuffer;     // 合計 y成分
+    id<MTLBuffer> _totalBzBuffer;     // 合計 z成分
+    double* _lastAx;
+    double* _lastAy;
     
     int _ngx;                    // x方向グリッド数
     int _ngy;                    // y方向グリッド数
@@ -89,7 +97,7 @@ typedef amgcl::make_solver<
     std::vector<double> _phi_sol;
     std::vector<double> _rhs_BC;
     std::unique_ptr<Solver> _solver;    // smart pointer
-    std::unique_ptr<Solver_BiCGSTAB> _solver_Neumann;    // smart pointer
+    std::unique_ptr<Solver_BiCGSTAB> _solver_darwin;    // smart pointer
     double _cathodePos;
     double _lastEE;
 }
@@ -131,7 +139,6 @@ typedef amgcl::make_solver<
         _BxBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+1)*(_ny+2) options:MTLResourceStorageModeShared];
         _ByBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+2)*(_ny+1) options:MTLResourceStorageModeShared];
         _BzBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+2)*(_ny+2) options:MTLResourceStorageModeShared];
-        _delBzBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+2)*(_ny+2) options:MTLResourceStorageModeShared];
         
         // malloc
         _phi = (double*)malloc(sizeof(double) * (_nx+3)*(_ny+3) );
@@ -187,10 +194,6 @@ typedef amgcl::make_solver<
                     Bz[i+j*(_nx+2)] = Bz_input[i]*TtoG;
                 }
             }
-        }
-        float* delBz = (float*)_delBzBuffer.contents;
-        for (int i = 0; i < (_nx+2)*(_ny+2); i++) {
-            delBz[i] = 0.0;
         }
 
         // construct Poisson solver
@@ -444,6 +447,34 @@ typedef amgcl::make_solver<
         // solver for Darwin model
         struct FlagForEquation EqFlags = initParam.flagForEquation;
         if(EqFlags.EMField == 2){   
+            // additional buffer
+            _delExBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+2)*(_ny+1) options:MTLResourceStorageModeShared];
+            _delEyBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+1)*(_ny+2) options:MTLResourceStorageModeShared];
+            _delBzBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+2)*(_ny+2) options:MTLResourceStorageModeShared];
+            _totalExBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+2)*(_ny+1) options:MTLResourceStorageModeShared];
+            _totalEyBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+1)*(_ny+2) options:MTLResourceStorageModeShared];
+            _totalBzBuffer  = [device newBufferWithLength:sizeof(float)*(_nx+2)*(_ny+2) options:MTLResourceStorageModeShared];
+
+            // darwin model
+            float* delEx = (float*)_delEyBuffer.contents;
+            float* delEy = (float*)_delEyBuffer.contents;
+            float* delBz = (float*)_delBzBuffer.contents;
+            float* totalEx = (float*)_totalEyBuffer.contents;
+            float* totalEy = (float*)_totalEyBuffer.contents;
+            float* totalBz = (float*)_totalBzBuffer.contents;
+            for (int i = 0; i < (_nx+2)*(_ny+1); i++) {
+                delEx[i] = 0.0;
+                totalEx[i] = 0.0;
+            }
+            for (int i = 0; i < (_nx+1)*(_ny+2); i++) {
+                delEy[i] = 0.0;
+                totalEy[i] = 0.0;
+            }
+            for (int i = 0; i < (_nx+2)*(_ny+2); i++) {
+                delBz[i] = 0.0;
+                totalBz[i] = 0.0;
+            }
+
             // CSR 行列初期化
             ptr = std::vector<int>();
             col = std::vector<int>();
@@ -459,6 +490,14 @@ typedef amgcl::make_solver<
                 _nky_vec--;
             }
             arrSize = (_nkx_vec+1)*(_nky_vec+1);
+
+            // last solution
+            _lastAx = (double*)malloc(sizeof(double) * arrSize);
+            _lastAy = (double*)malloc(sizeof(double) * arrSize);
+            for(int k = 0; k < arrSize; k++){
+                _lastAx[k] = 0.0;
+                _lastAy[k] = 0.0;
+            }
 
             // construct CSR matrix
             ptr.push_back(0);
@@ -582,6 +621,7 @@ typedef amgcl::make_solver<
                     ptr.push_back(ptr.back() + row_entries);
                 }
             }
+
             // Dirichlet がない場合は固定点を設定
             // int fixpoint = 50;
             // const int row_begin = ptr[fixpoint];
@@ -596,17 +636,17 @@ typedef amgcl::make_solver<
             //     }
             // }
             // --- amgcl の設定 ---
-            Solver_BiCGSTAB::params prm_bicgstab;
-            prm_bicgstab.solver.maxiter = compParam.maxiter;
-            prm_bicgstab.solver.tol = compParam.tolerance;
-            prm_bicgstab.precond.direct_coarse = false;   // 粗いレベルでも反復で解く
-            prm_bicgstab.precond.coarsening.nullspace.cols = 1;
-            prm_bicgstab.precond.coarsening.nullspace.B.resize(arrSize);
-            std::fill(prm_bicgstab.precond.coarsening.nullspace.B.begin(),
-                    prm_bicgstab.precond.coarsening.nullspace.B.end(), 1.0);
+            Solver_BiCGSTAB::params prm_darwin;
+            prm_darwin.solver.maxiter = compParam.maxiter;
+            prm_darwin.solver.tol = compParam.tolerance;
+            prm_darwin.precond.direct_coarse = false;   // 粗いレベルでも反復で解く
+            prm_darwin.precond.coarsening.nullspace.cols = 1;
+            prm_darwin.precond.coarsening.nullspace.B.resize(arrSize);
+            std::fill(prm_darwin.precond.coarsening.nullspace.B.begin(),
+                    prm_darwin.precond.coarsening.nullspace.B.end(), 1.0);
             // _solver を生成してインスタンス変数として確保
-            _solver_Neumann = std::unique_ptr<Solver_BiCGSTAB>(
-                new Solver_BiCGSTAB( std::tie(arrSize, ptr, col, val), prm_bicgstab )
+            _solver_darwin = std::unique_ptr<Solver_BiCGSTAB>(
+                new Solver_BiCGSTAB( std::tie(arrSize, ptr, col, val), prm_darwin )
             );   
         }
 
@@ -1106,7 +1146,7 @@ typedef amgcl::make_solver<
     // j の Helmholtz分解
     // rhs
     int arrSize = (_nkx_vec+1)*(_nky_vec+1);
-    NSLog(@"_nkx = %d, _nky = %d, arrSize = %d",_nkx_vec,_nky_vec,arrSize);
+    // NSLog(@"_nkx = %d, _nky = %d, arrSize = %d",_nkx_vec,_nky_vec,arrSize);
     std::vector<double> rhs;
     double sum = 0;
     for (int j = 0; j <= _nky_vec; j++){
@@ -1141,7 +1181,7 @@ typedef amgcl::make_solver<
             rhs_new += static_cast<double>(djxdx+djydy);
             sum += rhs_new;
             rhs.push_back(rhs_new);
-            NSLog(@"rhs_new[%d,%d] = %e, rhs.size = %zu",i,j,rhs_new,rhs.size());
+            // NSLog(@"rhs_new[%d,%d] = %e, rhs.size = %zu",i,j,rhs_new,rhs.size());
         }
     }
 
@@ -1150,13 +1190,13 @@ typedef amgcl::make_solver<
     for (int k = 0; k < arrSize; k++){
         rhs[k] -= sum;
     }
-    NSLog(@"rhs_ave = %e",sum);
+    // NSLog(@"rhs_ave = %e",sum);
     // solve
     int iters;
     double error;
     std::vector<double> sol;
     sol.assign(arrSize, 0.0);
-    std::tie(iters, error) = (*_solver_Neumann)(rhs, sol);
+    std::tie(iters, error) = (*_solver_darwin)(rhs, sol);
     
     // solve vector potential(Ax)
     // rhs
@@ -1180,7 +1220,7 @@ typedef amgcl::make_solver<
                 rhs_new = 0.0;
             }
             rhs_x.push_back(rhs_new);
-            NSLog(@"(Ax) rhs_new = %e, jlx = %e, sol = %e",rhs_new,jlx*4*PI/c, sol[k]);
+            // NSLog(@"(Ax) rhs_new = %e, jlx = %e, sol = %e",rhs_new,jlx*4*PI/c, sol[k]);
             sum += rhs_new;
         }
     }
@@ -1194,7 +1234,7 @@ typedef amgcl::make_solver<
     double error_vecx;
     std::vector<double> sol_x;
     sol_x.assign(arrSize, 0.0);
-    std::tie(iters_vecx, error_vecx) = (*_solver_Neumann)(rhs_x, sol_x);
+    std::tie(iters_vecx, error_vecx) = (*_solver_darwin)(rhs_x, sol_x);
     
     // solve vector potential(Ay)
     // rhs
@@ -1218,7 +1258,7 @@ typedef amgcl::make_solver<
                 rhs_new += 0.0;
             }
             rhs_y.push_back(rhs_new);
-            NSLog(@"(Ay) rhs_new = %e, jly = %e, sol = %e",rhs_new,jly*4*PI/c, sol[k]);
+            // NSLog(@"(Ay) rhs_new = %e, jly = %e, sol = %e",rhs_new,jly*4*PI/c, sol[k]);
             sum += rhs_new;
         }
     }
@@ -1232,7 +1272,7 @@ typedef amgcl::make_solver<
     double error_vecy;
     std::vector<double> sol_y;
     sol_y.assign(arrSize, 0.0);
-    std::tie(iters_vecy, error_vecy) = (*_solver_Neumann)(rhs_y, sol_y);
+    std::tie(iters_vecy, error_vecy) = (*_solver_darwin)(rhs_y, sol_y);
     
     // index
     bool isLeft, isRight, isBottom, isTop;
@@ -1240,34 +1280,73 @@ typedef amgcl::make_solver<
     double dphidx, dphidy;
 
     // Ax, Ay から領域内の Bz を計算
+    float* delEx = (float*)_delExBuffer.contents;
+    float* delEy = (float*)_delEyBuffer.contents;
     float* delBz = (float*)_delBzBuffer.contents;
     for (int j = 0; j < _nky_vec; j++){
         for (int i = 0; i < _nkx_vec; i++){
-            double dyAx = (sol_x[i+(j+1)*(_nkx_vec+1)] - sol_x[i+j*(_nkx_vec+1)])/_dy;
-            double dxAy = (sol_y[i+1+j*(_nkx_vec+1)] - sol_y[i+j*(_nkx_vec+1)])/_dx;
-            delBz[i+_ngb+1+(j+_ngb+1)*(_nx+2)] = dxAy - dyAx;
+            int kpx = i+_ngb+1+(j+_ngb)*(_nx+2);
+            int kpy = i+_ngb+(j+_ngb+2)*(_nx+1);
+            int kf = i+j*(_nkx_vec+1);
+            delEx[kpx] = -(sol_x[kf] - _lastAx[kf])/(c*dt);
+            delEy[kpy] = -(sol_y[kf] - _lastAy[kf])/(c*dt);
+            double dyAx = (sol_x[kf+(_nkx_vec+1)] - sol_x[kf])/_dy;
+            double dxAy = (sol_y[kf+1] - sol_y[kf])/_dx;
+            delBz[kpx+(_nx+2)] = dxAy - dyAx;
+        }
+    }
+
+    // store Ax,Ay
+    for(int k = 0; k < arrSize; k++){
+        _lastAx[k] = sol_x[k];
+        _lastAy[k] = sol_y[k];
+    }
+
+    // electro-static と合算
+    float* Ex = (float*)_ExBuffer.contents;
+    float* Ey = (float*)_EyBuffer.contents;
+    float* Bz = (float*)_BzBuffer.contents;
+    float* totalEx = (float*)_totalExBuffer.contents;
+    float* totalEy = (float*)_totalEyBuffer.contents;
+    float* totalBz = (float*)_totalBzBuffer.contents;
+    for (int i = 0; i <= _nx+1; i++){
+        for (int j = 0; j <= _ny; j++){
+            int k = i + j*(_nx+2);
+            totalEx[k] = Ex[k] + delEx[k];
+        }
+    }
+    for (int i = 0; i <= _nx; i++){
+        for (int j = 0; j <= _ny+1; j++){
+            int k = i + j*(_nx+1);
+            totalEy[k] = Ey[k] + delEy[k];
+        }
+    }
+    for (int i = 0; i <= _nx+1; i++){
+        for (int j = 0; j <= _ny+1; j++){
+            int k = i + j*(_nx+2);
+            totalBz[k] = Bz[k] + delBz[k];
         }
     }
 
     // time-series csv
-    std::ofstream ofs;
-    ofs.open("sol.csv");
-    if (!ofs) throw std::runtime_error("Cannot open csv file: sol.csv");
-    ofs << "i,j,rhs_decompose,sol_decompose,rhs_Ax,sol_Ax,rhs_Ay,sol_Ay" << "\n";
+    // std::ofstream ofs;
+    // ofs.open("sol.csv");
+    // if (!ofs) throw std::runtime_error("Cannot open csv file: sol.csv");
+    // ofs << "i,j,rhs_decompose,sol_decompose,rhs_Ax,sol_Ax,rhs_Ay,sol_Ay" << "\n";
 
-    // output sol
-    for (int j = 0; j <= _nky_vec; j++){
-        for (int i = 0; i <= _nkx_vec; i++){
-            int k = i+j*(_nkx_vec+1);
-            ofs << i << "," << j << ","
-            << fmtSci(rhs[k],6) << ","
-            << fmtSci(sol[k],6) << ","
-            << fmtSci(rhs_x[k],6) << ","
-            << fmtSci(sol_x[k],6) << ","
-            << fmtSci(rhs_y[k],6) << ","
-            << fmtSci(sol_y[k],6) << "\n";
-        }
-    }
+    // // output sol
+    // for (int j = 0; j <= _nky_vec; j++){
+    //     for (int i = 0; i <= _nkx_vec; i++){
+    //         int k = i+j*(_nkx_vec+1);
+    //         ofs << i << "," << j << ","
+    //         << fmtSci(rhs[k],6) << ","
+    //         << fmtSci(sol[k],6) << ","
+    //         << fmtSci(rhs_x[k],6) << ","
+    //         << fmtSci(sol_x[k],6) << ","
+    //         << fmtSci(rhs_y[k],6) << ","
+    //         << fmtSci(sol_y[k],6) << "\n";
+    //     }
+    // }
 
     // 収束状況
     std::map<std::string, std::string> data ={
@@ -1337,7 +1416,12 @@ typedef amgcl::make_solver<
 - (id<MTLBuffer>)BxBuffer { return _BxBuffer; }
 - (id<MTLBuffer>)ByBuffer { return _ByBuffer; }
 - (id<MTLBuffer>)BzBuffer { return _BzBuffer; }
+- (id<MTLBuffer>)delExBuffer { return _delExBuffer; }
+- (id<MTLBuffer>)delEyBuffer { return _delEyBuffer; }
 - (id<MTLBuffer>)delBzBuffer { return _delBzBuffer; }
+- (id<MTLBuffer>)totalExBuffer { return _totalExBuffer; }
+- (id<MTLBuffer>)totalEyBuffer { return _totalEyBuffer; }
+- (id<MTLBuffer>)totalBzBuffer { return _totalBzBuffer; }
 
 // グリッド情報へのアクセサ
 - (int)ngx { return _ngx; }

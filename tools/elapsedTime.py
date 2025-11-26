@@ -74,7 +74,7 @@ if __name__ == '__main__':
     # get array
     # logfiles = ['fine_20250801025821_log.xml']
     # logfiles = ['fine_3rd_20250902130112_log.xml']
-    logfiles = ['fine_5th_20250831223517_log.xml']
+    logfiles = ['org_20251004154620_log.xml']
     cycle_arr = []
     vals = []
     vals_arr = [[] for _ in range(9)]

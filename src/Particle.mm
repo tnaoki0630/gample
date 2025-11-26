@@ -626,10 +626,13 @@ kernel void integrateChargeDensity(
     // EMFieldのバッファを直接使用
     id<MTLBuffer> ExBuffer = [fld ExBuffer];
     id<MTLBuffer> EyBuffer = [fld EyBuffer];
+    //id<MTLBuffer> ExBuffer = [fld totalExBuffer];
+    //id<MTLBuffer> EyBuffer = [fld totalEyBuffer];
     id<MTLBuffer> EzBuffer = [fld EzBuffer];
     id<MTLBuffer> BxBuffer = [fld BxBuffer];
     id<MTLBuffer> ByBuffer = [fld ByBuffer];
     id<MTLBuffer> BzBuffer = [fld BzBuffer];
+    //id<MTLBuffer> BzBuffer = [fld totalBzBuffer];
     
     // Moment のバッファを使用
     id<MTLBuffer> printBuffer = [mom printBuffer];
@@ -1036,7 +1039,7 @@ kernel void integrateChargeDensity(
         [commandBuffer commit];
         [commandBuffer waitUntilCompleted];
     }else{
-        int weightOrder = 3;
+        int weightOrder = 1;
         ParticleState* p = (ParticleState*)[_particleBuffer contents];
         float* rho = (float *)[rhoBuffer contents];
         for (int idx = 0; idx < intgPrm->pNum; idx++){

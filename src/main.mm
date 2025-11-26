@@ -183,6 +183,7 @@ int main(int argc, const char * argv[]) {
                     MEASURE("solvePoisson", [fld solvePoisson:dt withLogger:logger], dataElapsedTime);
                 }
                 if (EqFlags.EMField == 2){
+                    if (debug){ NSLog(@"darwin"); }
                     MEASURE("solveVectorPotential", [fld solveVectorPotential:dt withLogger:logger], dataElapsedTime);   
                 }
                 // output
