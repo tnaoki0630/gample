@@ -620,8 +620,8 @@ kernel void integrateChargeDensity(
     prm->constX = dt/fld.dx;
     prm->constY = dt/fld.dy;
 
-    // const bool woMetal = true; // validation
-    const bool woMetal = false; // validation
+    const bool woMetal = true; // validation
+    // const bool woMetal = false; // validation
     
     // EMFieldのバッファを直接使用
     id<MTLBuffer> ExBuffer = [fld ExBuffer];
@@ -679,10 +679,10 @@ kernel void integrateChargeDensity(
         float* Bx = (float *)[BxBuffer contents];
         float* By = (float *)[ByBuffer contents];
         float* Bz = (float *)[BzBuffer contents];
-        int BC_Xmin = 1;
-        int BC_Xmax = 1;
-        int BC_Ymin = 0;
-        int BC_Ymax = 0;
+        const int BC_Xmin = 1;
+        const int BC_Xmax = 1;
+        const int BC_Ymin = 0;
+        const int BC_Ymax = 0;
         for (int idx = 0; idx < prm->pNum; idx++){
             // get particle
             ParticleState& p = ptcl[idx];
@@ -1011,8 +1011,8 @@ kernel void integrateChargeDensity(
     integrationParams* intgPrm = (integrationParams*)[_integrationParamsBuffer contents];
     intgPrm->pNum = prm->pNum;
     
-    // const bool woMetal = true; // validation of atomic calculation
-    const bool woMetal = false;
+    const bool woMetal = true; // validation of atomic calculation
+    //const bool woMetal = false;
 
     if(!woMetal){
         // コマンドバッファとエンコーダの作成

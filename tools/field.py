@@ -449,6 +449,7 @@ if __name__ == '__main__':
     # # electron
     mesh, fields = getField("bin/"+pname+f"_Moments_electron_{cycle:08}.bin")
     trPe = np.zeros((ny+1,nx+1))
+    Pezz = np.zeros((ny+1,nx+1))
     for name, type_id, arr in fields:
         ## 圧力テンソルはスキップ
         if('electron_P' not in name):
@@ -464,6 +465,7 @@ if __name__ == '__main__':
         if(name == "electron_Pxx"): trPe += arr
         if(name == "electron_Pyy"): trPe += arr
         if(name == "electron_Pzz"): trPe += arr
+        if(name == "electron_Pzz"): Pezz += arr
     # temperature
     name = "electron_T"
     kb = 1.380649e-23 # [J/K]
@@ -472,6 +474,10 @@ if __name__ == '__main__':
     arr = np.where(ne > 0, trPe/(3*kb*ne*1e6)*KtoeV, 0) ## ne > 0 の要素だけ計算
     print(f"{name}: min={arr.min()}, max={arr.max()}")
     plotField2d(arr, name, f"fig/{name}.png" , type_id, True,dict_cmin.get(name),dict_cmax.get(name))
+    plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , ypos_1dxplot)
+    name = "electron_Tzz"
+    arr = np.where(ne > 0, Pezz/(kb*ne*1e6)*KtoeV, 0) ## ne > 0 の要素だけ計算
+    print(f"{name}: min={arr.min()}, max={arr.max()}")
     plotField1dx(arr, name, f"fig/{name}_1d_min.png" , type_id , ypos_1dxplot)
     # Debye length
     dx = 0.005e-2 # [m]
